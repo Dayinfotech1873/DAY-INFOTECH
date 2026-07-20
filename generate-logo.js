@@ -28,27 +28,46 @@ const svgContent = `
   
   <!-- Centered Minimalist Brand Typography with Rainbow Gradient -->
   <g transform="translate(512, 512)">
+    <!-- Add a subtle drop shadow/glow effect -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10" />
+      <feOffset dx="0" dy="5" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
     <text 
       text-anchor="middle" 
       dominant-baseline="middle"
-      font-family="Impact, Charcoal, 'Arial Black', sans-serif" 
-      font-weight="950" 
-      font-size="320" 
+      font-family="system-ui, -apple-system, sans-serif" 
+      font-weight="900" 
+      font-size="380" 
       fill="url(#rainbowGradient)" 
-      y="-160"
-      textLength="850"
+      stroke="white"
+      stroke-width="8"
+      y="-140"
+      textLength="900"
       lengthAdjust="spacingAndGlyphs"
+      filter="url(#shadow)"
     >DAY</text>
     <text 
       text-anchor="middle" 
       dominant-baseline="middle"
-      font-family="Impact, Charcoal, 'Arial Black', sans-serif" 
-      font-weight="950" 
-      font-size="160" 
+      font-family="system-ui, -apple-system, sans-serif" 
+      font-weight="900" 
+      font-size="180" 
       fill="url(#rainbowGradient)" 
-      y="160"
-      textLength="850"
+      stroke="white"
+      stroke-width="4"
+      y="180"
+      textLength="900"
       lengthAdjust="spacingAndGlyphs"
+      filter="url(#shadow)"
     >INFOTECH</text>
   </g>
 </svg>
@@ -66,6 +85,12 @@ async function main() {
     .resize(1024, 1024)
     .png()
     .toFile(path.join(assetsDir, 'logo.png'));
+  
+  // Also save to root of public for easier access
+  await sharp(Buffer.from(svgContent))
+    .resize(512, 512)
+    .png()
+    .toFile(path.join(process.cwd(), 'public', 'logo.png'));
   
   // 2. Sync files
   const files = ['logo.png'];
