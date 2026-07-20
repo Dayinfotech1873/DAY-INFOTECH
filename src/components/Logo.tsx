@@ -17,7 +17,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 100, showText
     <div className={`flex flex-col items-center justify-center text-center ${className}`}>
       {/* Real Brand Logo Image */}
       <img
-        src="/assets/logo.png?v=20260719"
+        src="/assets/logo.png?v=20260721"
         alt="DAY INFOTECH"
         width={size}
         height={size}

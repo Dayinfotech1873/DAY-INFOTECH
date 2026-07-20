@@ -106,9 +106,6 @@ Your response must strictly be a JSON object containing:
     }
   });
 
-  // Serve static assets folder directly
-  app.use("/assets", express.static(path.join(process.cwd(), "assets")));
-
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

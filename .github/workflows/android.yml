@@ -32,6 +32,12 @@ jobs:
       - name: Build Web App
         run: npm run build
 
+      - name: Generate App Logo PNGs
+        run: node generate-logo.js
+
+      - name: Generate Android Assets (Icons & Splash)
+        run: npx capacitor-assets generate --android
+
       - name: Sync Web Code to Capacitor
         run: npx cap sync
 
