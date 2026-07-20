@@ -119,7 +119,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             <span className="h-1 w-6 bg-linear-to-l from-transparent to-amber-400 rounded-full" />
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-black tracking-widest uppercase font-display bg-linear-to-r from-amber-300 via-rose-400 to-sky-400 bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]">
+          <h1 className="text-4xl md:text-5xl font-black tracking-widest uppercase font-display bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]">
             DAY INFOTECH
           </h1>
 

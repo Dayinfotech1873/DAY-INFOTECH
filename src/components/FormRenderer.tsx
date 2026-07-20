@@ -6553,7 +6553,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
       </div>
 
       {/* Form Action Buttons (Save Draft & Submit) */}
-      <div className="bg-slate-50 px-6 py-4.5 border-t border-slate-200 flex flex-col sm:flex-row gap-3 justify-between items-center rounded-b-3xl">
+      <div className="bg-slate-50 px-4 md:px-6 py-4 md:py-4.5 border-t border-slate-200 flex flex-col sm:flex-row gap-3 justify-between items-center rounded-b-3xl">
         <div className="text-xs text-slate-500 font-semibold text-left">
           * કૃપા કરીને સબમિટ કરતા પહેલા તમામ વિગતો ચકાસી લો. (Please verify all details before submitting.)
         </div>

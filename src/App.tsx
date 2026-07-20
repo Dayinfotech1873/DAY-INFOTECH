@@ -767,8 +767,8 @@ export default function App() {
             </div>
           </motion.div>
         )}
-        <div className={`${activeTheme.bgClass} min-h-screen flex flex-col px-0 md:px-8 relative z-10`} style={activeTheme.bgStyle}>
-        <div className="max-w-xl mx-auto w-full space-y-0 md:space-y-6 min-h-screen flex flex-col justify-center py-0 md:py-10">
+        <div className={`${activeTheme.bgClass} min-h-screen flex flex-col px-0 md:px-8 relative z-10 pb-safe pt-safe`} style={activeTheme.bgStyle}>
+        <div className="max-w-xl mx-auto w-full space-y-0 md:space-y-6 min-h-screen-safe flex flex-col justify-center py-2 md:py-10">
           
           {/* Admin Greetings Banner (GIF Style Flashing) */}
           {isGreetingsActive && greetingsMsg && (

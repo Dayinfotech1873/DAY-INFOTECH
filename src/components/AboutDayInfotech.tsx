@@ -100,7 +100,7 @@ export const AboutDayInfotech: React.FC = () => {
             <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"></span>
             {language === 'gu' ? 'ડિજિટલ સેવા કેન્દ્ર' : 'Digital Service Center'}
           </span>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight font-display">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent">
             DAY INFOTECH
           </h2>
           <p className="text-sm md:text-base text-slate-100 font-medium leading-relaxed">

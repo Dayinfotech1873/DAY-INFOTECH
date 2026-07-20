@@ -2,43 +2,70 @@
 <svg
   width="1024"
   height="1024"
-  viewBox="0 0 512 512"
+  viewBox="0 0 1024 1024"
   fill="none"
   xmlns="http://www.w3.org/2000/svg"
 >
-  <!-- No background circle for true transparency -->
+  <!-- White background -->
+  <circle cx="512" cy="512" r="512" fill="white" />
   
-  <!-- Outer Decorative Ring (Professional Gradient-like effect using paths) -->
-  <circle cx="256" cy="256" r="230" stroke="#0284C7" stroke-width="24" opacity="0.1" />
-  <circle cx="256" cy="256" r="210" stroke="#EA580C" stroke-width="16" opacity="0.1" />
+  <!-- Outer Rings -->
+  <circle cx="512" cy="512" r="495" stroke="#1E3A8A" stroke-width="20" />
+  <circle cx="512" cy="512" r="470" stroke="#F97316" stroke-width="15" />
+  <circle cx="512" cy="512" r="450" stroke="#0EA5E9" stroke-width="5" opacity="0.2" />
 
-  <!-- Modern Abstract "D" / Digital Point Symbol -->
-  <g id="MainSymbol">
-    <!-- Main "D" Curve -->
-    <path 
-      d="M160 120 V392 C160 392 340 392 340 256 C340 120 160 120 160 120Z" 
-      fill="#1E3A8A" 
-    />
-    
-    <!-- Inner Accent for Depth -->
-    <path 
-      d="M190 150 V362 C190 362 300 362 300 256 C300 150 190 150 190 150Z" 
-      fill="#0284C7" 
-    />
-
-    <!-- The "Digital Point" Accent -->
-    <path 
-      d="M220 180 V332 C220 332 260 332 260 256 C260 180 220 180 220 180Z" 
-      fill="#F97316" 
-    />
-
-    <!-- Highlight Dot -->
-    <circle cx="340" cy="256" r="32" fill="#F97316" />
-    <circle cx="340" cy="256" r="12" fill="white" />
+  <!-- The Sun -->
+  <g id="Sun">
+    <circle cx="512" cy="450" r="100" fill="#F97316" />
+    <g stroke="#F97316" stroke-width="12" stroke-linecap="round">
+      <line x1="512" y1="320" x2="512" y2="260" />
+      <line x1="512" y1="580" x2="512" y2="640" />
+      <line x1="412" y1="450" x2="352" y2="450" />
+      <line x1="612" y1="450" x2="672" y2="450" />
+      <line x1="441" y1="379" x2="399" y2="337" />
+      <line x1="583" y1="521" x2="625" y2="563" />
+      <line x1="441" y1="521" x2="399" y2="563" />
+      <line x1="583" y1="379" x2="625" y2="337" />
+    </g>
   </g>
 
-  <!-- Connectivity Nodes -->
-  <circle cx="256" cy="80" r="20" fill="#0284C7" />
-  <circle cx="256" cy="432" r="20" fill="#EA580C" />
-  <circle cx="80" cy="256" r="20" fill="#1E3A8A" />
+  <!-- Figures -->
+  <g id="Figures">
+    <!-- Blue Figure (Left) -->
+    <path 
+      d="M440 580 C360 400 300 400 220 580 C260 540 320 520 440 580Z" 
+      fill="#1E3A8A" 
+    />
+    <circle cx="330" cy="360" r="55" fill="#1E3A8A" />
+    <path d="M440 580 L512 250" stroke="#1E3A8A" stroke-width="35" stroke-linecap="round" />
+    
+    <!-- Orange Figure (Right) -->
+    <path 
+      d="M584 580 C664 400 724 400 804 580 C764 540 704 520 584 580Z" 
+      fill="#EA580C" 
+    />
+    <circle cx="694" cy="360" r="55" fill="#EA580C" />
+    <path d="M584 580 L512 250" stroke="#EA580C" stroke-width="35" stroke-linecap="round" />
+  </g>
+
+  <!-- Digital Connectivity Waves -->
+  <g id="DigitalWaves">
+    <path d="M220 800 Q512 550 804 800" stroke="#1E3A8A" stroke-width="25" fill="none" stroke-linecap="round" />
+    <path d="M190 850 Q512 600 834 850" stroke="#F97316" stroke-width="20" fill="none" stroke-linecap="round" />
+    <path d="M160 900 Q512 650 864 900" stroke="#1E3A8A" stroke-width="15" fill="none" stroke-linecap="round" />
+    
+    <circle cx="360" cy="720" r="20" fill="#1E3A8A" />
+    <circle cx="664" cy="720" r="20" fill="#F97316" />
+    <circle cx="512" cy="250" r="40" fill="#F97316" />
+    <circle cx="512" cy="250" r="18" fill="white" />
+    
+    <circle cx="430" cy="780" r="16" fill="#0EA5E9" />
+    <circle cx="594" cy="780" r="16" fill="#EA580C" />
+    <circle cx="300" cy="760" r="14" fill="#1E3A8A" />
+    <circle cx="724" cy="760" r="14" fill="#EA580C" />
+  </g>
+
+  <!-- Typography -->
+  <text x="512" y="930" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="950" font-size="95" fill="#1E3A8A" letter-spacing="-2">DAY INFOTECH</text>
+  <text x="512" y="985" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="46" fill="#1E3A8A" letter-spacing="10">digital point</text>
 </svg>

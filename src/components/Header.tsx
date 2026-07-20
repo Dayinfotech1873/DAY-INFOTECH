@@ -430,7 +430,7 @@ export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThem
       <div className={activeTheme.brandBarClass}>
         
         <div className="flex items-center space-x-2">
-          <Logo size={36} showText={false} className="bg-white p-0.5 rounded-lg shadow-xs shrink-0" />
+          <Logo size={44} showText={false} className="bg-white rounded-lg shadow-xs shrink-0" />
           <div>
             <div className="flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse"></span>
@@ -441,7 +441,7 @@ export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThem
                 <span>{t('visitors', 'common')}: {visitorCount}</span>
               </div>
             </div>
-            <h1 className="text-base md:text-lg font-black font-display tracking-tight uppercase text-white leading-none mt-0.5">
+            <h1 className="text-base md:text-lg font-black font-display tracking-tight uppercase bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent leading-none mt-0.5">
               DAY INFOTECH
             </h1>
             <p className={`${activeTheme.brandSubtext} text-[10px] leading-tight font-medium opacity-90 mt-0.5`}>{t('brand_subtitle', 'common')}</p>

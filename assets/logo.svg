@@ -6,31 +6,33 @@
   fill="none"
   xmlns="http://www.w3.org/2000/svg"
 >
-  <!-- Standard Solid Background for maximum clarity -->
-  <circle cx="256" cy="256" r="250" fill="#FFFFFF" />
+  <!-- Pure white background for maximum compatibility -->
+  <rect width="512" height="512" fill="white" />
   
-  <!-- Bold Outer Ring -->
-  <circle cx="256" cy="256" r="230" stroke="#1E3A8A" stroke-width="20" />
-  <circle cx="256" cy="256" r="215" stroke="#F97316" stroke-width="10" />
+  <!-- Outer Rings -->
+  <circle cx="256" cy="256" r="240" stroke="#1E3A8A" stroke-width="12" />
+  <circle cx="256" cy="256" r="228" stroke="#F97316" stroke-width="8" />
 
-  <!-- Bold Abstract "D" / Connectivity Symbol -->
-  <g id="StandardSymbol">
+  <!-- Professional Iconography -->
+  <g id="CenterSymbol">
+    <!-- Main Bold "D" Shape -->
     <path 
-      d="M170 130 V382 C170 382 350 382 350 256 C350 130 170 130 170 130Z" 
+      d="M170 140 V372 C170 372 342 372 342 256 C342 140 170 140 170 140Z" 
       fill="#1E3A8A" 
     />
+    
+    <!-- Accent Inner Shape -->
     <path 
-      d="M205 165 V347 C205 347 315 347 315 256 C315 165 205 165 205 165Z" 
+      d="M205 175 V337 C205 337 305 337 305 256 C305 175 205 175 205 175Z" 
       fill="#F97316" 
     />
-    
-    <!-- Central Node Point -->
-    <circle cx="350" cy="256" r="35" fill="#1E3A8A" />
-    <circle cx="350" cy="256" r="15" fill="white" />
+
+    <!-- Connectivity Dot -->
+    <circle cx="342" cy="256" r="40" fill="#1E3A8A" />
+    <circle cx="342" cy="256" r="16" fill="white" />
   </g>
 
-  <!-- High-Contrast Connectivity Dots -->
-  <circle cx="256" cy="75" r="22" fill="#1E3A8A" />
-  <circle cx="256" cy="437" r="22" fill="#F97316" />
-  <circle cx="75" cy="256" r="22" fill="#1E3A8A" />
+  <!-- Connectivity Nodes -->
+  <circle cx="256" cy="85" r="24" fill="#1E3A8A" />
+  <circle cx="256" cy="427" r="24" fill="#F97316" />
 </svg>
