@@ -1385,7 +1385,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
 
   if (isServiceClosed) {
     return (
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-md p-6 md:p-12 text-center space-y-6 max-w-2xl mx-auto my-8">
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-md p-6 md:p-12 text-center space-y-6 max-w-4xl mx-auto my-8">
         <div className="mx-auto w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center text-rose-500">
           <AlertTriangle className="h-8 w-8" />
         </div>
@@ -6584,7 +6584,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 overflow-hidden"
+              className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-slate-100 overflow-hidden"
             >
               {/* Modal Header */}
               <div className="bg-indigo-950 text-white px-6 py-4 flex justify-between items-center relative overflow-hidden">

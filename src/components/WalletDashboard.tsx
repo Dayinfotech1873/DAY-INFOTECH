@@ -587,7 +587,7 @@ export const WalletDashboard: React.FC<WalletDashboardProps> = ({
             {/* TAB: BALANCE (Add Money QR) */}
             {subTab === 'BALANCE' && (
               userId === 'guest_user' ? (
-                <div className={`w-full ${activeTheme.cardBg} border-2 border-dashed border-rose-500/30 rounded-3xl p-8 text-center space-y-4 shadow-lg max-w-2xl mx-auto mt-4`}>
+                <div className={`w-full ${activeTheme.cardBg} border-2 border-dashed border-rose-500/30 rounded-3xl p-8 text-center space-y-4 shadow-lg max-w-4xl mx-auto mt-4`}>
                   <div className="mx-auto w-16 h-16 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center border border-rose-500/25">
                     <AlertTriangle className="h-8 w-8" />
                   </div>
@@ -988,7 +988,7 @@ export const WalletDashboard: React.FC<WalletDashboardProps> = ({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="max-w-2xl mx-auto"
+                className="max-w-4xl mx-auto"
               >
                 <div className={`${activeTheme.cardBg} border ${activeTheme.cardBorder} rounded-3xl p-4 space-y-4 shadow-lg`}>
                   <div className="space-y-1">

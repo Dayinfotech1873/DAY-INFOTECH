@@ -768,7 +768,7 @@ export default function App() {
           </motion.div>
         )}
         <div className={`${activeTheme.bgClass} min-h-screen flex flex-col px-0 md:px-8 relative z-10 pb-safe pt-safe`} style={activeTheme.bgStyle}>
-        <div className="max-w-xl mx-auto w-full space-y-0 md:space-y-6 min-h-screen-safe flex flex-col justify-center py-2 md:py-10">
+        <div className="max-w-4xl mx-auto w-full space-y-0 md:space-y-8 min-h-screen-safe flex flex-col justify-center py-2 md:py-8 px-2 md:px-0">
           
           {/* Admin Greetings Banner (GIF Style Flashing) */}
           {isGreetingsActive && greetingsMsg && (
@@ -2241,7 +2241,7 @@ export default function App() {
         </div>
 
         {/* Simple Footer */}
-        <footer className="max-w-xl mx-auto w-full text-center text-[11px] text-slate-400 font-sans space-y-1 mt-8">
+        <footer className="max-w-4xl mx-auto w-full text-center text-[11px] text-slate-400 font-sans space-y-1 mt-10 pb-6">
           <p>© 2026 DAY INFOTECH - Digital Point.</p>
           <p className="text-[9px] text-slate-500">
             તમામ વિગતો અને અપલોડ કરેલા દસ્તાવેજો ક્લાઉડ સ્ટોરેજ સાથે લિંક થાય છે.

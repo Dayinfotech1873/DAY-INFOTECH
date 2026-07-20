@@ -2224,7 +2224,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
           </div>
         </div>
       ) : activeTab === 'SEND_MESSAGE' ? (
-        <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="space-y-6 max-w-4xl mx-auto">
           <div className="bg-white rounded-3xl border border-slate-200 p-3.5 md:p-5 shadow-sm space-y-4">
           <div className="border-b border-slate-100 pb-2.5">
             <h2 className="text-sm md:text-base font-black text-slate-800 flex items-center gap-2">

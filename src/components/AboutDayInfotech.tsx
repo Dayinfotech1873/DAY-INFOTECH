@@ -95,7 +95,7 @@ export const AboutDayInfotech: React.FC = () => {
         <div className="absolute top-0 right-0 -mt-12 -mr-12 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
         <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
         
-        <div className="relative space-y-4 max-w-2xl">
+        <div className="relative space-y-4 max-w-4xl mx-auto">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-black tracking-wider uppercase text-yellow-300 border border-white/10">
             <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"></span>
             {language === 'gu' ? 'ડિજિટલ સેવા કેન્દ્ર' : 'Digital Service Center'}

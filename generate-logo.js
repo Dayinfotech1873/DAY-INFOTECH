@@ -12,63 +12,62 @@ const svgContent = `
   xmlns="http://www.w3.org/2000/svg"
 >
   <defs>
-    <linearGradient id="rainbowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#FF0000;stop-opacity:1" />
-      <stop offset="16.6%" style="stop-color:#FF7F00;stop-opacity:1" />
-      <stop offset="33.3%" style="stop-color:#FFFF00;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#00FF00;stop-opacity:1" />
-      <stop offset="66.6%" style="stop-color:#0000FF;stop-opacity:1" />
-      <stop offset="83.3%" style="stop-color:#4B0082;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#9400D3;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-
-  <!-- Clean white background -->
-  <rect width="1024" height="1024" fill="white" />
-  
-  <!-- Centered Minimalist Brand Typography with Rainbow Gradient -->
-  <g transform="translate(512, 512)">
-    <!-- Add a subtle drop shadow/glow effect -->
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="10" />
-      <feOffset dx="0" dy="5" result="offsetblur" />
+      <feGaussianBlur in="SourceAlpha" stdDeviation="12" />
+      <feOffset dx="0" dy="6" result="offsetblur" />
       <feComponentTransfer>
-        <feFuncA type="linear" slope="0.5" />
+        <feFuncA type="linear" slope="0.6" />
       </feComponentTransfer>
       <feMerge>
         <feMergeNode />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
+  </defs>
 
+  <!-- Professional rounded white background -->
+  <rect width="1024" height="1024" fill="white" rx="160" />
+  
+  <g transform="translate(512, 512)">
     <text 
       text-anchor="middle" 
       dominant-baseline="middle"
       font-family="system-ui, -apple-system, sans-serif" 
-      font-weight="900" 
-      font-size="380" 
-      fill="url(#rainbowGradient)" 
-      stroke="white"
-      stroke-width="8"
+      font-weight="950" 
+      font-size="400" 
+      stroke="#1e1b4b"
+      stroke-width="4"
       y="-140"
       textLength="900"
       lengthAdjust="spacingAndGlyphs"
       filter="url(#shadow)"
-    >DAY</text>
+    >
+      <tspan fill="#ef4444">D</tspan>
+      <tspan fill="#f59e0b">A</tspan>
+      <tspan fill="#10b981">Y</tspan>
+    </text>
     <text 
       text-anchor="middle" 
       dominant-baseline="middle"
       font-family="system-ui, -apple-system, sans-serif" 
-      font-weight="900" 
-      font-size="180" 
-      fill="url(#rainbowGradient)" 
-      stroke="white"
-      stroke-width="4"
+      font-weight="950" 
+      font-size="190" 
+      stroke="#1e1b4b"
+      stroke-width="2"
       y="180"
       textLength="900"
       lengthAdjust="spacingAndGlyphs"
       filter="url(#shadow)"
-    >INFOTECH</text>
+    >
+      <tspan fill="#3b82f6">I</tspan>
+      <tspan fill="#6366f1">N</tspan>
+      <tspan fill="#8b5cf6">F</tspan>
+      <tspan fill="#ec4899">O</tspan>
+      <tspan fill="#06b6d4">T</tspan>
+      <tspan fill="#14b8a6">E</tspan>
+      <tspan fill="#f43f5e">C</tspan>
+      <tspan fill="#f97316">H</tspan>
+    </text>
   </g>
 </svg>
 `;

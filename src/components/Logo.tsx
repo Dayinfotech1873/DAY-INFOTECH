@@ -26,20 +26,11 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 80, showText 
         style={{ width: size, height: size }}
       >
         <defs>
-          <linearGradient id="logoRainbow" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style={{ stopColor: '#FF0000', stopOpacity: 1 }} />
-            <stop offset="16.6%" style={{ stopColor: '#FF7F00', stopOpacity: 1 }} />
-            <stop offset="33.3%" style={{ stopColor: '#FFFF00', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#00FF00', stopOpacity: 1 }} />
-            <stop offset="66.6%" style={{ stopColor: '#0000FF', stopOpacity: 1 }} />
-            <stop offset="83.3%" style={{ stopColor: '#4B0082', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#9400D3', stopOpacity: 1 }} />
-          </linearGradient>
           <filter id="logoShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="10" />
-            <feOffset dx="0" dy="5" result="offsetblur" />
+            <feGaussianBlur in="SourceAlpha" stdDeviation="12" />
+            <feOffset dx="0" dy="6" result="offsetblur" />
             <feComponentTransfer>
-              <feFuncA type="linear" slope="0.5" />
+              <feFuncA type="linear" slope="0.6" />
             </feComponentTransfer>
             <feMerge>
               <feMergeNode />
@@ -48,35 +39,49 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 80, showText 
           </filter>
         </defs>
 
+        {/* White rounded background rect like an app icon */}
+        <rect width="1024" height="1024" fill="white" rx="160" />
+
         <g transform="translate(512, 512)">
           <text 
             textAnchor="middle" 
             dominantBaseline="middle"
             fontFamily="system-ui, -apple-system, sans-serif" 
-            fontWeight="900" 
-            fontSize="380" 
-            fill="url(#logoRainbow)" 
-            stroke="white"
-            strokeWidth="12"
+            fontWeight="950" 
+            fontSize="400" 
+            stroke="#1e1b4b"
+            strokeWidth="4"
             y="-140"
             textLength="900"
             lengthAdjust="spacingAndGlyphs"
             filter="url(#logoShadow)"
-          >DAY</text>
+          >
+            <tspan fill="#ef4444">D</tspan>
+            <tspan fill="#f59e0b">A</tspan>
+            <tspan fill="#10b981">Y</tspan>
+          </text>
           <text 
             textAnchor="middle" 
             dominantBaseline="middle"
             fontFamily="system-ui, -apple-system, sans-serif" 
-            fontWeight="900" 
-            fontSize="180" 
-            fill="url(#logoRainbow)" 
-            stroke="white"
-            strokeWidth="6"
+            fontWeight="950" 
+            fontSize="190" 
+            stroke="#1e1b4b"
+            strokeWidth="2"
             y="180"
             textLength="900"
             lengthAdjust="spacingAndGlyphs"
             filter="url(#logoShadow)"
-          >INFOTECH</text>
+          >
+            <tspan fill="#3b82f6">I</tspan>
+            <tspan fill="#6366f1">N</tspan>
+            <tspan fill="#8b5cf6">F</tspan>
+            <tspan fill="#ec4899">O</tspan>
+            <tspan fill="#06b6d4">T</tspan>
+            <tspan fill="#14b8a6">E</tspan>
+            <tspan fill="#f43f5e">C</tspan>
+            <tspan fill="#f97316">H</tspan>
+          </text>
         </g>
       </svg>
 
