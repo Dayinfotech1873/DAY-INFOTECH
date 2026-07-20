@@ -767,15 +767,15 @@ export default function App() {
             </div>
           </motion.div>
         )}
-        <div className={`${activeTheme.bgClass} min-h-screen flex flex-col px-0 md:px-8 relative z-10 pb-safe pt-safe`} style={activeTheme.bgStyle}>
-        <div className="max-w-4xl mx-auto w-full space-y-0 md:space-y-8 min-h-screen-safe flex flex-col justify-center py-2 md:py-8 px-2 md:px-0">
+        <div className={`${activeTheme.bgClass} min-h-screen flex flex-col px-4 md:px-8 relative z-10 py-6 md:py-12 justify-center`} style={activeTheme.bgStyle}>
+        <div className="max-w-5xl mx-auto w-full gap-6 md:gap-8 min-h-fit flex flex-col md:grid md:grid-cols-12 items-stretch justify-center">
           
           {/* Admin Greetings Banner (GIF Style Flashing) */}
           {isGreetingsActive && greetingsMsg && (
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-slate-900 border-4 animate-rainbow-border-flash rounded-2xl md:rounded-3xl p-3 md:p-6 text-center select-none"
+              className="bg-slate-900 border-4 animate-rainbow-border-flash rounded-2xl md:rounded-3xl p-3 md:p-6 text-center select-none md:col-span-12"
             >
               <h2 className="text-xl md:text-3xl font-black tracking-tight animate-rainbow-flash font-sans leading-tight whitespace-pre-wrap">
                 {greetingsMsg}
@@ -784,7 +784,7 @@ export default function App() {
           )}
 
           {/* Main Logo & Brand Card */}
-          <div className={`hidden md:block ${activeTheme.cardBg} p-4 rounded-3xl border ${activeTheme.cardBorder} shadow-md text-center space-y-3`}>
+          <div className={`hidden md:flex md:flex-col md:justify-center md:col-span-5 ${activeTheme.cardBg} p-8 rounded-3xl border ${activeTheme.cardBorder} shadow-lg text-center space-y-5`}>
             <Logo size={120} showText={false} />
             <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-1.5">
               <p className="text-slate-800 font-extrabold text-sm leading-normal">
@@ -824,7 +824,7 @@ export default function App() {
           </div>
 
           {/* Login Gate Action Card */}
-          <div className={`${activeTheme.cardBg} rounded-2xl md:rounded-3xl border ${activeTheme.cardBorder} shadow-md overflow-hidden`}>
+          <div className={`md:col-span-7 ${activeTheme.cardBg} rounded-2xl md:rounded-3xl border ${activeTheme.cardBorder} shadow-lg overflow-hidden flex flex-col justify-center`}>
             
             <div className="p-3 sm:p-6 md:p-8 space-y-3 md:space-y-6">
               
@@ -2241,7 +2241,7 @@ export default function App() {
         </div>
 
         {/* Simple Footer */}
-        <footer className="max-w-4xl mx-auto w-full text-center text-[11px] text-slate-400 font-sans space-y-1 mt-10 pb-6">
+        <footer className="max-w-xl mx-auto w-full text-center text-[11px] text-slate-400 font-sans space-y-1 mt-8">
           <p>© 2026 DAY INFOTECH - Digital Point.</p>
           <p className="text-[9px] text-slate-500">
             તમામ વિગતો અને અપલોડ કરેલા દસ્તાવેજો ક્લાઉડ સ્ટોરેજ સાથે લિંક થાય છે.

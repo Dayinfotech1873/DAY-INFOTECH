@@ -886,46 +886,6 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
         <div className="space-y-4">
           {!isOwner() && (
             <>
-              {/* Applicant Welcome Header */}
-              <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 rounded-3xl p-5 md:p-8 text-white relative overflow-hidden shadow-xl border border-white/5">
-                <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
-                
-                <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-indigo-300 font-black text-[10px] md:text-xs tracking-widest uppercase">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      {language === 'gu' ? 'ડેશબોર્ડમાં સ્વાગત છે' : 'Welcome to Dashboard'}
-                    </div>
-                    <h2 className="text-2xl md:text-3xl font-black tracking-tight">
-                      {language === 'gu' ? 'નમસ્તે,' : 'Hello,'} <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500">
-                        {currentUser.displayName || currentUser.username || 'User'}
-                      </span>
-                    </h2>
-                    <p className="text-slate-400 text-xs md:text-sm max-w-xl leading-relaxed font-medium">
-                      {language === 'gu' 
-                        ? 'તમારી બધી સરકારી અરજીઓ અને દસ્તાવેજો અહીં સુરક્ષિત રીતે સંગ્રહિત છે. તમે ગમે ત્યારે તેને ટ્રેક કરી શકો છો.' 
-                        : 'All your government applications and documents are securely stored here. You can track them anytime.'}
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center min-w-[100px] hover:bg-white/10 transition-colors">
-                      <span className="text-2xl font-black text-amber-400 font-mono">{applications.length}</span>
-                      <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400">
-                        {language === 'gu' ? 'અરજીઓ' : 'Apps'}
-                      </span>
-                    </div>
-                    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex flex-col items-center justify-center min-w-[100px] hover:bg-white/10 transition-colors">
-                      <span className="text-2xl font-black text-emerald-400 font-mono">₹{walletBalance}</span>
-                      <span className="text-[9px] uppercase tracking-wider font-bold text-slate-400">
-                        {language === 'gu' ? 'બેલેન્સ' : 'Balance'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Aadhar Mobile Link News Ticker */}
               <div className="bg-white border-2 border-rose-500 rounded-2xl shadow-md overflow-hidden flex items-stretch">
                 {/* News Header Label - Styled like dynamic news board */}
