@@ -450,7 +450,7 @@ export const WalletDashboard: React.FC<WalletDashboardProps> = ({
             </div>
             DAY INFOTECH વોલેટ સર્વિસ (Wallet Portal)
           </h2>
-          <p className="text-xs text-slate-400 font-semibold max-w-xl">
+          <p className="text-xs text-slate-400 font-semibold max-w-4xl mx-auto">
             તમારા ઓનલાઈન ફોર્મની ચુકવણી ઝડપી બનાવવા વોલેટ નો ઉપયોગ કરો. ₹100 થી ગમે તેટલા પૈસા ઓટોમેટિક સ્કેન કરીને જમા કરી શકો છો.
           </p>
         </div>

@@ -77,7 +77,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           duration: 0.8, 
           ease: "easeOut" 
         }}
-        className="flex flex-col items-center justify-center text-center px-6 relative z-10 max-w-xl"
+        className="flex flex-col items-center justify-center text-center px-6 relative z-10 max-w-4xl mx-auto"
       >
         {/* Pulsing Outer Glowing Halo for the Logo */}
         <div className="relative mb-8">
