@@ -100,7 +100,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             transition={{ duration: 1.2, ease: "easeOut" }}
             className="relative bg-white/5 p-4 rounded-full border border-white/10 backdrop-blur-md shadow-2xl"
           >
-            <Logo size={120} showText={false} className="drop-shadow-[0_10px_15px_rgba(244,63,94,0.15)]" />
+            <Logo size={80} showText={false} className="drop-shadow-[0_10px_15px_rgba(244,63,94,0.15)]" />
           </motion.div>
         </div>
 

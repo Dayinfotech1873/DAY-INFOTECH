@@ -6,7 +6,7 @@ interface LogoProps {
   showText?: boolean;
 }
 
-export const Logo: React.FC<LogoProps> = ({ className = '', size = 100, showText = true }) => {
+export const Logo: React.FC<LogoProps> = ({ className = '', size = 80, showText = true }) => {
   let currentTheme = 'light';
   try {
     currentTheme = typeof window !== 'undefined' ? localStorage.getItem('dashboard_theme') || 'light' : 'light';
@@ -17,11 +17,11 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 100, showText
     <div className={`flex flex-col items-center justify-center text-center ${className}`}>
       {/* Real Brand Logo Image */}
       <img
-        src="/assets/logo.png?v=20260721"
+        src="/assets/logo.png?v=20260725"
         alt="DAY INFOTECH"
         width={size}
         height={size}
-        className="object-contain select-none pointer-events-none drop-shadow-md transition-transform duration-300 hover:scale-105"
+        className="object-contain select-none pointer-events-none transition-transform duration-300 hover:scale-105"
         style={{ width: size, height: size }}
         referrerPolicy="no-referrer"
       />

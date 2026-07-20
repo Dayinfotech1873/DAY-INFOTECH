@@ -114,7 +114,6 @@ Your response must strictly be a JSON object containing:
       res.status(500).json({ error: error.message || "Failed to process document with Gemini AI" });
     }
   });
-  app.use("/assets", import_express.default.static(import_path.default.join(process.cwd(), "assets")));
   if (process.env.NODE_ENV !== "production") {
     const vite = await (0, import_vite.createServer)({
       server: { middlewareMode: true },

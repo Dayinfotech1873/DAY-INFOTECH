@@ -1385,7 +1385,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
 
   if (isServiceClosed) {
     return (
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-md p-8 md:p-12 text-center space-y-6 max-w-2xl mx-auto my-8">
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-md p-6 md:p-12 text-center space-y-6 max-w-2xl mx-auto my-8">
         <div className="mx-auto w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center text-rose-500">
           <AlertTriangle className="h-8 w-8" />
         </div>
@@ -1412,7 +1412,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
   return (
     <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden max-w-full mx-auto">
       {/* Form Header banner */}
-      <div className="bg-indigo-900 p-6 md:p-8 text-white relative">
+      <div className="bg-indigo-900 p-4 md:p-8 text-white relative">
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <Award className="h-32 w-32" />
         </div>
@@ -1489,7 +1489,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
       </div>
 
       {/* Main Form Fields */}
-      <div className="p-6 md:p-8 space-y-8">
+      <div className="p-4 md:p-8 space-y-8">
         
         {submitError && (
           <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 flex items-start gap-4 animate-pulse shadow-sm">
