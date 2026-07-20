@@ -1,0 +1,1 @@
+sed -i 's/<OnlineUsersView currentUser={currentUser} theme={activeTheme} \/>/<OnlineUsersView currentUser={currentUser} theme={activeTheme} onMessageUser={(user) => { setChatTargetUser(user); setActiveView("MESSAGES"); }} \/>/g' src/App.tsx

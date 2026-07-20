@@ -1,0 +1,363 @@
+{
+  "entities": {
+    "ApplicationEntry": {
+      "title": "Application Entry",
+      "description": "An application form submission for PAN CARD, VOTER ID, E-SHRAM, or FARMER SUBSIDY",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique application ID"
+        },
+        "formType": {
+          "type": "string",
+          "description": "The type of form: PAN_CARD, VOTER_ID, E_SHRAM, or FARMER_SUBSIDY"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current workflow status: DRAFT, COMPLETED, CORRECTION_REQUIRED, or APPROVED"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp when the application was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp when the application was last updated"
+        },
+        "details": {
+          "type": "object",
+          "description": "Form fields containing personal details"
+        },
+        "documents": {
+          "type": "object",
+          "description": "Uploaded documents in base64/dataurl format"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The Firebase Authentication UID of the applicant"
+        },
+        "adminFeedback": {
+          "type": "string",
+          "description": "Optional correction feedback/mistake explanation from the owner"
+        }
+      },
+      "required": [
+        "id",
+        "formType",
+        "status",
+        "createdAt",
+        "updatedAt",
+        "details",
+        "documents",
+        "userId"
+      ]
+    },
+    "User": {
+      "title": "Custom User",
+      "description": "A registered custom applicant user",
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "The unique lowercase username"
+        },
+        "name": {
+          "type": "string",
+          "description": "Applicant's full name"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "Applicant's 10-digit mobile number"
+        },
+        "password": {
+          "type": "string",
+          "description": "Applicant's password"
+        },
+        "dob": {
+          "type": "string",
+          "description": "Applicant's Date of Birth"
+        },
+        "gender": {
+          "type": "string",
+          "description": "Applicant's Gender"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp when the user registered"
+        }
+      },
+      "required": [
+        "username",
+        "name",
+        "mobile",
+        "password",
+        "dob",
+        "gender",
+        "createdAt"
+      ]
+    },
+    "ForgotPasswordRequest": {
+      "title": "Forgot Password Request",
+      "description": "A credential recovery request raised by an applicant",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique request identifier"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "Applicant's 10-digit mobile number"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of request: pending or resolved"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp when requested"
+        },
+        "userMatches": {
+          "type": "array",
+          "description": "Accounts found with matching mobile number"
+        }
+      },
+      "required": [
+        "id",
+        "mobile",
+        "status",
+        "createdAt"
+      ]
+    },
+    "ServiceSettings": {
+      "title": "Service Settings",
+      "description": "Global status configuration for each form service",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "statuses": {
+          "type": "object",
+          "description": "Map of FormType to boolean status (true = active, false = disabled)"
+        }
+      },
+      "required": [
+        "id",
+        "statuses"
+      ]
+    },
+    "Wallet": {
+      "title": "Wallet",
+      "description": "A digital wallet for tracking an applicant's balance",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique wallet ID, which is the same as the userId"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The user ID of the wallet owner"
+        },
+        "balance": {
+          "type": "number",
+          "description": "The wallet balance in INR"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp when the wallet balance was last updated"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "balance",
+        "updatedAt"
+      ]
+    },
+    "WalletTransaction": {
+      "title": "Wallet Transaction",
+      "description": "A deposit, payment, or refund transaction inside the wallet system",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique transaction ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The user ID associated with this transaction"
+        },
+        "userName": {
+          "type": "string",
+          "description": "Applicant's name for administrative reference"
+        },
+        "userMobile": {
+          "type": "string",
+          "description": "Applicant's mobile number"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The transaction amount in INR"
+        },
+        "type": {
+          "type": "string",
+          "description": "The transaction type",
+          "enum": [
+            "DEPOSIT_REQUEST",
+            "DEPOSIT_APPROVED",
+            "DEPOSIT_REJECTED",
+            "PAYMENT",
+            "REFUND_REQUEST",
+            "REFUND_APPROVED",
+            "REFUND_REJECTED"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the transaction",
+          "enum": [
+            "PENDING",
+            "COMPLETED",
+            "REJECTED"
+          ]
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "The payment method utilized",
+          "enum": [
+            "UPI_QR",
+            "WALLET_DEDUCTION",
+            "REFUND"
+          ]
+        },
+        "referenceId": {
+          "type": "string",
+          "description": "Optional reference ID like a UTR number or form ID"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp when the transaction was created"
+        },
+        "approvedAt": {
+          "type": "string",
+          "description": "Optional ISO timestamp when the transaction was approved or rejected"
+        },
+        "refundMethod": {
+          "type": "string",
+          "description": "Optional chosen method for a refund: CASH or UPI"
+        },
+        "upiId": {
+          "type": "string",
+          "description": "Optional applicant's UPI ID if UPI is chosen for refund"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional administrative notes or explanation"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "userName",
+        "userMobile",
+        "amount",
+        "type",
+        "status",
+        "paymentMethod",
+        "createdAt"
+      ]
+    },
+    "OfflineForm": {
+      "title": "Offline Form",
+      "description": "An offline government or private PDF form",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        },
+        "pdfName": {
+          "type": "string"
+        },
+        "pdfDataUrl": {
+          "type": "string"
+        },
+        "downloadCount": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "price",
+        "pdfDataUrl",
+        "createdAt"
+      ]
+    },
+    "UsedUsername": {
+      "title": "Used Username Lock",
+      "description": "Lock record for a previously used username",
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "releasedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "username",
+        "releasedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/offline_forms/{formId}": {
+      "schema": "OfflineForm",
+      "description": "Offline PDF forms uploaded by the owner"
+    },
+    "/applications/{applicationId}": {
+      "schema": "ApplicationEntry",
+      "description": "Form submissions and drafts from applicants"
+    },
+    "/users/{username}": {
+      "schema": "User",
+      "description": "Custom registered users for credentials verification"
+    },
+    "/password_requests/{requestId}": {
+      "schema": "ForgotPasswordRequest",
+      "description": "Applicant forgot password recovery requests"
+    },
+    "/settings/{docId}": {
+      "schema": "ServiceSettings",
+      "description": "Global application configuration settings"
+    },
+    "/wallets/{userId}": {
+      "schema": "Wallet",
+      "description": "Wallets storing current balances of applicants"
+    },
+    "/wallet_transactions/{txId}": {
+      "schema": "WalletTransaction",
+      "description": "Transactions log for tracking deposit requests, wallet payments, and refunds"
+    },
+    "/used_usernames/{username}": {
+      "schema": "UsedUsername",
+      "description": "Locked usernames that were previously used and cannot be re-registered for 90 days"
+    }
+  }
+}

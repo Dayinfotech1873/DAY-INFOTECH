@@ -1,0 +1,8 @@
+{
+	"appId": "com.dayinfotech.app",
+	"appName": "DAY Infotech",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}

@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Clean modern font-scaling and weights */
+html {
+  font-size: 14px; /* Highly compact and readable for mobile and web dashboards */
+}
+
+/* Smooth scrolling for main content */
+main, .overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+
+body {
+  font-weight: 400; /* Standard natural default weight */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: contain; /* Prevents chrome pull-to-refresh pull down lockups */
+}
+
+/* Custom scrollbar and minor print overrides */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* News Ticker Scrolling Animation */
+@keyframes marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 40s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes rainbow-flash {
+  0%, 100% { color: #ff0055; text-shadow: 0 0 12px rgba(255,0,85,0.5); }
+  14% { color: #00ffcc; text-shadow: 0 0 12px rgba(0,255,204,0.5); }
+  28% { color: #9900ff; text-shadow: 0 0 12px rgba(153,0,255,0.5); }
+  42% { color: #ffff00; text-shadow: 0 0 12px rgba(255,255,0,0.5); }
+  56% { color: #ff00ff; text-shadow: 0 0 12px rgba(255,0,255,0.5); }
+  70% { color: #00ff00; text-shadow: 0 0 12px rgba(0,255,0,0.5); }
+  84% { color: #ff3300; text-shadow: 0 0 12px rgba(255,51,0,0.5); }
+}
+
+@keyframes rainbow-border-flash {
+  0%, 100% { border-color: #ff0055; box-shadow: 0 0 18px rgba(255,0,85,0.3); }
+  14% { border-color: #00ffcc; box-shadow: 0 0 18px rgba(0,255,204,0.3); }
+  28% { border-color: #9900ff; box-shadow: 0 0 18px rgba(153,0,255,0.3); }
+  42% { border-color: #ffff00; box-shadow: 0 0 18px rgba(255,255,0,0.3); }
+  56% { border-color: #ff00ff; box-shadow: 0 0 18px rgba(255,0,255,0.3); }
+  70% { border-color: #00ff00; box-shadow: 0 0 18px rgba(0,255,0,0.3); }
+  84% { border-color: #ff3300; box-shadow: 0 0 18px rgba(255,51,0,0.3); }
+}
+
+.animate-rainbow-flash {
+  animation: rainbow-flash 2.5s linear infinite;
+}
+
+.animate-rainbow-border-flash {
+  animation: rainbow-border-flash 2.5s linear infinite;
+}
+
+
+

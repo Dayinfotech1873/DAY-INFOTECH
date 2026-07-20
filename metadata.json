@@ -1,0 +1,6 @@
+{
+  "name": "DAY INFOTECH",
+  "description": "An interactive digital assistant for filling out Gujarat Government forms including PAN Card, Voter ID, E-Shram Card, and Farmer Subsidy Scheme applications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
