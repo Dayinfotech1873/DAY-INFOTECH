@@ -162,6 +162,14 @@ export default function App() {
     if (ua.includes('wv') || ua.includes('webview') || ua.includes('crosswalk') || ua.includes('apk_app')) {
       return true;
     }
+    // Often, Android WebView has 'Version/X.X' along with 'Chrome'
+    if (ua.includes('android') && ua.includes('version/')) {
+      return true;
+    }
+    // General Android device check to ensure all APK users see the update banner
+    if (ua.includes('android')) {
+      return true;
+    }
     return false;
   };
 
@@ -181,11 +189,23 @@ export default function App() {
     return false;
   };
 
+  const getRunningApkVersion = () => {
+    if (typeof window === 'undefined') return "1.0.0";
+    const params = new URLSearchParams(window.location.search);
+    const v = params.get('v') || params.get('version') || params.get('apk_version') || params.get('app_version');
+    if (v) return v;
+    try {
+      const stored = localStorage.getItem('running_apk_version');
+      if (stored) return stored;
+    } catch (e) {}
+    return "1.0.0";
+  };
+
   const isOutdatedApk = () => {
-    const CURRENT_APK_VERSION = "1.0.0";
     if (!isApkClient()) return false;
     if (!apkConfig?.version) return false;
-    return apkConfig.version !== CURRENT_APK_VERSION;
+    const runningVersion = getRunningApkVersion();
+    return apkConfig.version !== runningVersion;
   };
 
   const downloadApkFile = () => {
@@ -202,25 +222,45 @@ export default function App() {
       const relativePath = url.substring(idx);
       url = window.location.origin + relativePath;
     } else if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0')) {
-      // If localhost is present but we need external
       const parts = url.split('/');
       const lastPart = parts[parts.length - 1];
       url = `${window.location.origin}/uploads/${lastPart}`;
     }
 
-    if (url.startsWith('data:')) {
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = apkConfig.fileName || 'day_infotech.apk';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      window.open(url, '_blank');
-    }
+    console.log("Downloading APK from:", url);
+
+    // Dynamic direct browser download trigger
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = apkConfig.fileName || 'day_infotech.apk';
+    link.target = '_self'; // download in the current context (extremely important for Android WebViews!)
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // WebView compatibility fallback
+    setTimeout(() => {
+      window.location.href = url;
+    }, 150);
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const isApkParam = params.get('platform') === 'apk' || params.get('apk') === 'true';
+      if (isApkParam) {
+        try {
+          localStorage.setItem('is_apk_client', 'true');
+        } catch (e) {}
+      }
+      const v = params.get('v') || params.get('version') || params.get('apk_version') || params.get('app_version');
+      if (v) {
+        try {
+          localStorage.setItem('running_apk_version', v);
+        } catch (e) {}
+      }
+    }
+
     const unsubscribe = subscribeToApkConfig((config) => {
       if (config) {
         setApkConfig(config);
@@ -866,6 +906,45 @@ export default function App() {
               <h2 className="text-xl md:text-3xl font-black tracking-tight animate-rainbow-flash font-sans leading-tight whitespace-pre-wrap">
                 {greetingsMsg}
               </h2>
+            </motion.div>
+          )}
+
+          {/* APK New Version Alert Banner on Login Screen */}
+          {isApkClient() && isOutdatedApk() && (
+            <motion.div
+              initial={{ scale: 0.95, y: -10, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-2 border-amber-500/30 rounded-3xl p-5 md:p-6 text-left relative overflow-hidden backdrop-blur-sm shadow-lg space-y-4"
+            >
+              <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl"></div>
+              <div className="flex items-start gap-3.5 relative z-10">
+                <div className="bg-amber-500/20 p-2.5 rounded-2xl text-amber-500 shrink-0">
+                  <AlertTriangle className="h-6 w-6 text-amber-500" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block px-2.5 py-0.5 bg-amber-500/20 border border-amber-500/30 text-amber-600 font-extrabold text-[10px] uppercase rounded-full tracking-wider animate-pulse">
+                      UPDATE AVAILABLE
+                    </span>
+                  </div>
+                  <h3 className="text-base font-black text-slate-950 mt-1.5 leading-tight font-sans">
+                    {language === 'gu' ? 'એપ્લિકેશન અપડેટ ઉપલબ્ધ છે!' : 'Application Update Available!'}
+                  </h3>
+                  <p className="text-xs font-bold text-slate-700 mt-1 leading-relaxed">
+                    {language === 'gu' 
+                      ? `એપ્લિકેશનનું નવું વર્ઝન (v${apkConfig?.version}) ઉપલબ્ધ છે. વધુ સારી સ્પીડ, સિક્યોરિટી અને નવી સુવિધાઓ માટે કૃપા કરીને નીચેના બટનથી અત્યારે જ નવું વર્ઝન ડાઉનલોડ કરો.` 
+                      : `A newer version (v${apkConfig?.version}) of the application is available. For better speed, safety, and performance, please download and update now.`}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={downloadApkFile}
+                className="w-full relative z-10 py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-sm rounded-2xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer border border-amber-400/20 group"
+              >
+                <Download className="h-4.5 w-4.5 text-white transition-transform group-hover:translate-y-0.5 shrink-0" />
+                <span>{language === 'gu' ? `નવું વર્ઝન ડાઉનલોડ કરો (v${apkConfig?.version})` : `Download New Version (v${apkConfig?.version})`}</span>
+              </button>
             </motion.div>
           )}
 
@@ -2251,14 +2330,23 @@ export default function App() {
                     <span>{language === 'gu' ? 'WhatsApp ચેટ કરો (7600361873)' : 'WhatsApp Chat (7600361873)'}</span>
                   </a>
                   
-                  {!isApkClient() && (
+                  {(!isApkClient() || isOutdatedApk()) && (
                     <button
                       type="button"
                       onClick={downloadApkFile}
-                      className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex-1"
+                      className={`inline-flex items-center justify-center gap-2 px-5 py-3 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex-1 ${
+                        isOutdatedApk() 
+                          ? 'bg-amber-600 hover:bg-amber-700 animate-pulse' 
+                          : 'bg-indigo-600 hover:bg-indigo-700'
+                      }`}
                     >
                       <Download className="h-4 w-4 text-white shrink-0" />
-                      <span>{language === 'gu' ? `એન્ડ્રોઇડ એપ ડાઉનલોડ (APK v${apkConfig?.version || '1.0.0'})` : `Download Android App (APK v${apkConfig?.version || '1.0.0'})`}</span>
+                      <span>
+                        {isOutdatedApk() 
+                          ? (language === 'gu' ? `નવું વર્ઝન અપડેટ કરો (v${apkConfig?.version})` : `Update App (v${apkConfig?.version})`)
+                          : (language === 'gu' ? `એન્ડ્રોઇડ એપ ડાઉનલોડ (APK v${apkConfig?.version || '1.0.0'})` : `Download Android App (APK v${apkConfig?.version || '1.0.0'})`)
+                        }
+                      </span>
                     </button>
                   )}
                 </div>

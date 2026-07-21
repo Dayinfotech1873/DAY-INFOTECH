@@ -492,13 +492,34 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
     if (ua.includes('wv') || ua.includes('webview') || ua.includes('crosswalk') || ua.includes('apk_app')) {
       return true;
     }
+    // Often, Android WebView has 'Version/X.X' along with 'Chrome'
+    if (ua.includes('android') && ua.includes('version/')) {
+      return true;
+    }
+    // General Android device check to ensure all APK users see the update banner
+    if (ua.includes('android')) {
+      return true;
+    }
     return false;
+  };
+
+  const getRunningApkVersion = () => {
+    if (typeof window === 'undefined') return "1.0.0";
+    const params = new URLSearchParams(window.location.search);
+    const v = params.get('v') || params.get('version') || params.get('apk_version') || params.get('app_version');
+    if (v) return v;
+    try {
+      const stored = safeGetLocalStorage('running_apk_version');
+      if (stored) return stored;
+    } catch (e) {}
+    return "1.0.0";
   };
 
   const isOutdatedApk = () => {
     if (!isApkClient()) return false;
     if (!apkConfig?.version) return false;
-    return apkConfig.version !== CURRENT_APK_VERSION;
+    const runningVersion = getRunningApkVersion();
+    return apkConfig.version !== runningVersion;
   };
 
   const downloadApkFile = () => {
@@ -520,18 +541,22 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
       url = `${window.location.origin}/uploads/${lastPart}`;
     }
 
-    if (url.startsWith('data:')) {
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = apkConfig.fileName || 'day_infotech.apk';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      showToast(language === 'gu' ? 'ડાઉનલોડ શરૂ થઈ રહ્યું છે...' : 'Downloading starting...', 'success');
-    } else {
-      window.open(url, '_blank');
-      showToast(language === 'gu' ? 'ડાઉનલોડ પેજ ખુલી રહ્યું છે...' : 'Opening download page...', 'success');
-    }
+    console.log("Downloading tracker APK from:", url);
+    showToast(language === 'gu' ? 'ડાઉનલોડ શરૂ થઈ રહ્યું છે...' : 'Download starting...', 'success');
+
+    // Dynamic direct browser download trigger
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = apkConfig.fileName || 'day_infotech.apk';
+    link.target = '_self'; // download in current frame (critical for WebView)
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // WebView compatibility fallback
+    setTimeout(() => {
+      window.location.href = url;
+    }, 150);
   };
 
   const loadApkConfigData = async () => {
@@ -620,6 +645,18 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
 
   // Real-time subscription to APK update settings
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const isApkParam = params.get('platform') === 'apk' || params.get('apk') === 'true';
+      if (isApkParam) {
+        safeSetLocalStorage('is_apk_client', 'true');
+      }
+      const v = params.get('v') || params.get('version') || params.get('apk_version') || params.get('app_version');
+      if (v) {
+        safeSetLocalStorage('running_apk_version', v);
+      }
+    }
+
     const unsubApk = subscribeToApkConfig((config) => {
       if (config) {
         setApkConfig(config);
@@ -1214,15 +1251,24 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
               {language === 'gu' ? 'કોઈ પાસવર્ડ યાદ રાખવાની જરૂર નથી. ફક્ત તમારા Google એકાઉન્ટનો ઉપયોગ કરો.' : 'No need to remember passwords. Just use your Google account.'}
             </p>
 
-            {!isApkClient() && (
+            {(!isApkClient() || isOutdatedApk()) && (
               <div className="w-full max-w-3xl pt-2">
                 <button
                   type="button"
                   onClick={downloadApkFile}
-                  className="w-full py-3.5 border-2 border-dashed border-indigo-200 bg-indigo-50/40 hover:bg-indigo-600 hover:text-white text-indigo-700 font-black text-xs rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                  className={`w-full py-3.5 border-2 border-dashed transition-all flex items-center justify-center gap-2 cursor-pointer group rounded-2xl ${
+                    isOutdatedApk() 
+                      ? 'border-amber-300 bg-amber-50/40 hover:bg-amber-600 hover:text-white text-amber-700 font-extrabold text-sm' 
+                      : 'border-indigo-200 bg-indigo-50/40 hover:bg-indigo-600 hover:text-white text-indigo-700 font-black text-xs'
+                  }`}
                 >
-                  <Download className="h-4.5 w-4.5 text-indigo-600 group-hover:text-white shrink-0 transition-transform group-hover:translate-y-0.5" />
-                  <span>{language === 'gu' ? `એન્ડ્રોઇડ એપ ડાઉનલોડ કરો (Download APK v${apkConfig?.version || '1.0.0'})` : `Download Android App (APK v${apkConfig?.version || '1.0.0'})`}</span>
+                  <Download className={`h-4.5 w-4.5 shrink-0 transition-transform group-hover:translate-y-0.5 ${isOutdatedApk() ? 'text-amber-600 group-hover:text-white' : 'text-indigo-600 group-hover:text-white'}`} />
+                  <span>
+                    {isOutdatedApk() 
+                      ? (language === 'gu' ? `નવું વર્ઝન અપડેટ કરો (Download APK v${apkConfig?.version})` : `Update New Version (Download APK v${apkConfig?.version})`)
+                      : (language === 'gu' ? `એન્ડ્રોઇડ એપ ડાઉનલોડ કરો (Download APK v${apkConfig?.version || '1.0.0'})` : `Download Android App (Download APK v${apkConfig?.version || '1.0.0'})`)
+                    }
+                  </span>
                 </button>
               </div>
             )}
