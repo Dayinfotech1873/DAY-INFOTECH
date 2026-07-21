@@ -16,7 +16,7 @@ export function MaintenanceView({ theme, onLogout }: MaintenanceViewProps) {
         
         {/* Main Logo */}
         <div className="flex justify-center mb-8">
-          <Logo size={120} showText={false} />
+          <Logo size={120} showText={true} />
         </div>
 
         {/* Maintenance Card */}

@@ -12,9 +12,9 @@ const PORT = 3000;
 async function startServer() {
   const app = express();
 
-  // Parse JSON payloads up to 50mb to handle base64 images and APK uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // Parse JSON payloads up to 100mb to handle base64 images and APK uploads
+  app.use(express.json({ limit: "100mb" }));
+  app.use(express.urlencoded({ limit: "100mb", extended: true }));
 
   // Custom static uploads serving
   const uploadsDir = path.join(process.cwd(), "uploads");

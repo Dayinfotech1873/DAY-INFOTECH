@@ -854,14 +854,14 @@ export default function App() {
           </motion.div>
         )}
         <div className={`${activeTheme.bgClass} min-h-screen flex flex-col px-4 md:px-8 relative z-10 py-6 md:py-12 justify-center`} style={activeTheme.bgStyle}>
-        <div className="max-w-5xl mx-auto w-full gap-6 md:gap-8 min-h-fit flex flex-col md:grid md:grid-cols-12 items-stretch justify-center">
+        <div className="max-w-xl mx-auto w-full gap-6 min-h-fit flex flex-col items-stretch justify-center">
           
           {/* Admin Greetings Banner (GIF Style Flashing) */}
           {isGreetingsActive && greetingsMsg && (
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-slate-900 border-4 animate-rainbow-border-flash rounded-2xl md:rounded-3xl p-3 md:p-6 text-center select-none md:col-span-12"
+              className="bg-slate-900 border-4 animate-rainbow-border-flash rounded-2xl md:rounded-3xl p-3 md:p-6 text-center select-none"
             >
               <h2 className="text-xl md:text-3xl font-black tracking-tight animate-rainbow-flash font-sans leading-tight whitespace-pre-wrap">
                 {greetingsMsg}
@@ -869,26 +869,13 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* Main Logo & Brand Card */}
-          <div className={`hidden md:flex md:flex-col md:justify-center md:col-span-5 ${activeTheme.cardBg} p-8 rounded-3xl border ${activeTheme.cardBorder} shadow-lg text-center space-y-5`}>
-            <Logo size={120} showText={false} />
-            <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-1.5">
-              <p className="text-slate-800 font-extrabold text-sm leading-normal">
-                {t("Digital Service Point & Online Form Assistant", "ડિજિટલ સર્વિસ સેન્ટર અને ઓનલાઇન ફોર્મ આસિસ્ટન્ટ")}
-              </p>
-              <p className="text-slate-500 font-bold text-xs">
-                {t("Complete all your online work in one place", "આપનું તમામ ઓનલાઇન કામ એક જ જગ્યાએ પૂર્ણ કરો")}
-              </p>
-            </div>
-          </div>
-
-          {/* Right Column Card (Login/Signup Form) */}
-          <div className={`md:col-span-7 ${activeTheme.cardBg} p-6 md:p-10 rounded-3xl border ${activeTheme.cardBorder} shadow-xl flex flex-col justify-between relative`}>
+          {/* Centered Card (Login/Signup Form) */}
+          <div className={`${activeTheme.cardBg} p-6 md:p-10 rounded-3xl border ${activeTheme.cardBorder} shadow-xl flex flex-col justify-between relative`}>
             <div>
               <div className="text-center space-y-1.5 border-b border-slate-100 pb-4 mb-4">
-                {/* Mobile-Only Header Brand Logo */}
-                <div className="flex md:hidden justify-center pb-2">
-                  <Logo size={70} showText={true} />
+                {/* Universal Header Brand Logo - Prominently visible on all devices */}
+                <div className="flex justify-center pb-3">
+                  <Logo size={85} showText={true} />
                 </div>
                 <h2 className="text-lg md:text-xl font-black text-slate-950 font-sans tracking-wide uppercase">
                   {authMode === 'LOGIN' 

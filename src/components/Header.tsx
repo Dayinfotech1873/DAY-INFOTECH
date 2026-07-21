@@ -431,7 +431,7 @@ export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThem
       <div className={activeTheme.brandBarClass}>
         
         <div className="flex items-center space-x-2">
-          <Logo size={44} showText={false} className="bg-white rounded-lg shadow-xs shrink-0" />
+          <Logo size={44} showText={false} className="shrink-0" />
           <div>
             <div className="flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse"></span>

@@ -12,111 +12,75 @@ const svgContent = `
   xmlns="http://www.w3.org/2000/svg"
 >
   <defs>
-    <!-- Deep Navy/Space Premium Background Gradient -->
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="50%" stop-color="#1e1b4b" />
-      <stop offset="100%" stop-color="#311042" />
+    <linearGradient id="logoBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080711" />
+      <stop offset="50%" stop-color="#121324" />
+      <stop offset="100%" stop-color="#1b1736" />
     </linearGradient>
 
-    <!-- Warm Sun/Day Rose-to-Orange Gradient -->
-    <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f43f5e" />
-      <stop offset="60%" stop-color="#f97316" />
-      <stop offset="100%" stop-color="#eab308" />
+    <linearGradient id="logoDayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff1a66" />
+      <stop offset="60%" stop-color="#ff5500" />
+      <stop offset="100%" stop-color="#ffaa00" />
     </linearGradient>
 
-    <!-- Digital Info Tech Cyan-to-Blue Gradient -->
-    <linearGradient id="techGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#06b6d4" />
-      <stop offset="50%" stop-color="#3b82f6" />
-      <stop offset="100%" stop-color="#6366f1" />
+    <linearGradient id="logoTechGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="50%" stop-color="#4facfe" />
+      <stop offset="100%" stop-color="#7f00ff" />
     </linearGradient>
 
-    <!-- Outer Ring Gold Gradient -->
-    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fbbf24" />
-      <stop offset="50%" stop-color="#34d399" />
-      <stop offset="100%" stop-color="#60a5fa" />
+    <linearGradient id="logoRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff007f" />
+      <stop offset="100%" stop-color="#00f2fe" />
     </linearGradient>
-
-    <!-- Futuristic Neon Glow Filter -->
-    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
   </defs>
 
-  <!-- Squircle container with premium gradient background -->
-  <rect width="1024" height="1024" rx="240" fill="url(#bgGradient)" />
+  <!-- 1. Base Squircle Container -->
+  <rect width="1024" height="1024" rx="240" fill="url(#logoBgGrad)" />
 
-  <!-- Tech decorative concentric pattern -->
-  <circle cx="512" cy="512" r="410" stroke="url(#ringGradient)" stroke-width="6" stroke-dasharray="24 16" opacity="0.25" />
-  <circle cx="512" cy="512" r="360" stroke="#ffffff" stroke-width="2" opacity="0.1" />
+  <!-- 2. Cyber Orbit Rings (Outer Branding) -->
+  <circle cx="512" cy="512" r="425" stroke="url(#logoRingGrad)" stroke-width="10" stroke-dasharray="24 18" opacity="0.35" />
+  <circle cx="512" cy="512" r="375" stroke="#ffffff" stroke-width="3" stroke-dasharray="6 8" opacity="0.15" />
 
-  <!-- Ambient glow in the center -->
-  <circle cx="512" cy="512" r="160" fill="url(#sunGradient)" opacity="0.15" filter="url(#neonGlow)" />
+  <!-- 3. Tech Horizon Waves -->
+  <path d="M 142 512 A 370 370 0 0 1 882 512" fill="none" stroke="url(#logoTechGrad)" stroke-width="4" opacity="0.2" />
+  <path d="M 172 512 A 340 340 0 0 0 852 512" fill="none" stroke="url(#logoDayGrad)" stroke-width="2" opacity="0.15" />
 
+  <!-- 4. Ambient Glowing Center Aura -->
+  <circle cx="512" cy="512" r="260" fill="url(#logoDayGrad)" opacity="0.06" />
+  <circle cx="512" cy="512" r="180" fill="url(#logoTechGrad)" opacity="0.06" />
+
+  <!-- 5. Center Monogram Group (DI Interlocking Masterpiece) -->
   <g transform="translate(512, 512)">
-    <!-- Tech Digital Orbit Path -->
-    <path 
-      d="M -280,0 A 280,280 0 1,1 280,0" 
-      fill="none" 
-      stroke="url(#techGradient)" 
-      stroke-width="14" 
-      stroke-linecap="round" 
-      stroke-dasharray="40 25" 
-      opacity="0.8"
-    />
-    <path 
-      d="M 280,0 A 280,280 0 0,1 -280,0" 
-      fill="none" 
-      stroke="url(#sunGradient)" 
-      stroke-width="14" 
-      stroke-linecap="round" 
-      stroke-dasharray="60 30" 
-      opacity="0.8"
-    />
+    <!-- Active Orbit Halves -->
+    <path d="M -310 0 A 310 310 0 0 1 310 0" fill="none" stroke="url(#logoTechGrad)" stroke-width="18" stroke-linecap="round" stroke-dasharray="40 30" opacity="0.8" />
+    <path d="M 310 0 A 310 310 0 0 1 -310 0" fill="none" stroke="url(#logoDayGrad)" stroke-width="18" stroke-linecap="round" stroke-dasharray="60 35" opacity="0.8" />
 
-    <!-- Interlocking "D" and "I" Monogram Geometric Shapes -->
-    <!-- Left Vertical Pillar for "I" -->
-    <rect 
-      x="-160" 
-      y="-180" 
-      width="64" 
-      height="360" 
-      rx="32" 
-      fill="url(#techGradient)" 
-      filter="url(#neonGlow)"
-    />
+    <!-- Vertical Column for 'I' in Tech Blue -->
+    <rect x="-155" y="-190" width="80" height="380" rx="40" fill="url(#logoTechGrad)" opacity="0.25" />
+    <rect x="-145" y="-180" width="60" height="360" rx="30" fill="url(#logoTechGrad)" />
+    <rect x="-133" y="-165" width="36" height="330" rx="18" fill="#ffffff" opacity="0.2" />
     
-    <!-- Digital Dot Node above "I" -->
-    <circle 
-      cx="-128" 
-      cy="-240" 
-      r="36" 
-      fill="url(#techGradient)" 
-      filter="url(#neonGlow)"
-    />
-    
-    <!-- Glowing Golden "D" Arc intersecting the "I" -->
-    <path 
-      d="M -110,-140 C -10,-140 140,-90 140,0 C 140,90 -10,140 -110,140" 
-      fill="none" 
-      stroke="url(#sunGradient)" 
-      stroke-width="64" 
-      stroke-linecap="round" 
-      stroke-linejoin="round"
-      filter="url(#neonGlow)"
-    />
+    <!-- Cyber Dot/Sun representing 'DAY' -->
+    <circle cx="-115" cy="-250" r="45" fill="url(#logoDayGrad)" opacity="0.3" />
+    <circle cx="-115" cy="-250" r="32" fill="url(#logoDayGrad)" />
+    <circle cx="-115" cy="-250" r="12" fill="#ffffff" opacity="0.4" />
 
-    <!-- Additional decorative digital nodes to represent data flow -->
-    <circle cx="0" cy="-140" r="14" fill="#ffffff" opacity="0.9" />
-    <circle cx="140" cy="0" r="16" fill="#ffffff" opacity="0.9" />
-    <circle cx="0" cy="140" r="14" fill="#ffffff" opacity="0.9" />
+    <!-- Sweeping Bold Loop for 'D' in Day Red-Gold -->
+    <path d="M -80 -140 C 25 -140 170 -80 170 0 C 170 80 25 140 -80 140" fill="none" stroke="url(#logoDayGrad)" stroke-width="90" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" />
+    <path d="M -80 -140 C 25 -140 170 -80 170 0 C 170 80 25 140 -80 140" fill="none" stroke="url(#logoDayGrad)" stroke-width="70" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M -80 -140 C 25 -140 170 -80 170 0 C 170 80 25 140 -80 140" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" />
+
+    <!-- Connecting Data Nodes -->
+    <circle cx="0" cy="-140" r="24" fill="url(#logoTechGrad)" opacity="0.3" />
+    <circle cx="0" cy="-140" r="14" fill="#ffffff" />
+    
+    <circle cx="170" cy="0" r="28" fill="url(#logoDayGrad)" opacity="0.3" />
+    <circle cx="170" cy="0" r="16" fill="#ffffff" />
+    
+    <circle cx="0" cy="140" r="24" fill="url(#logoTechGrad)" opacity="0.3" />
+    <circle cx="0" cy="140" r="14" fill="#ffffff" />
   </g>
 </svg>
 `;

@@ -305,6 +305,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
   onUpdateUser,
 }) => {
   const { language } = useLanguage();
+
   const [applications, setApplications] = useState<ApplicationEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [formFilter, setFormFilter] = useState<'ALL' | FormType>('ALL');
@@ -1132,8 +1133,8 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
           <div className="absolute bottom-0 left-0 -mb-24 -ml-24 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl"></div>
           
           <div className="relative p-6 md:p-10 flex flex-col items-center text-center space-y-6">
-            <div className="w-24 h-24 md:w-32 md:h-32 bg-slate-50 rounded-full flex items-center justify-center shadow-inner border border-slate-100">
-              <Logo size={120} />
+            <div className="flex justify-center pb-2">
+              <Logo size={90} showText={true} />
             </div>
             
             <div className="space-y-2 max-w-2xl">
@@ -3036,6 +3037,16 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
                     )}
                   </div>
                   
+                  {isApkClient() && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-2 text-[10px] font-semibold text-amber-800 leading-relaxed shadow-xs">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-black text-amber-950 block pb-0.5">⚠️ WebView અપલોડ સૂચના (Upload Tip):</span>
+                        એન્ડ્રોઇડ એપની અંદરથી સીધી ફાઇલ અપલોડ કરવામાં મોબાઈલ બ્રાઉઝરની મર્યાદા નડી શકે છે. જો ફાઇલ પસંદ કરવાનું બટન ન ખુલે, તો કૃપા કરીને આ વેબસાઈટને ક્રોમ (Chrome) બ્રાઉઝરમાં ખોલો અથવા ઉપર ગૂગલ ડ્રાઇવ લિંકનો ઉપયોગ કરો.
+                      </div>
+                    </div>
+                  )}
+
                   <div className="relative border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-4 transition-all bg-slate-50/30 flex flex-col items-center justify-center space-y-1.5 text-center group cursor-pointer">
                     <input
                       type="file"
@@ -3044,8 +3055,8 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          if (file.size > 15 * 1024 * 1024) {
-                            showToast(language === 'gu' ? 'તમે ૧૫ MB થી મોટી ફાઇલ પસંદ કરી છે!' : 'You selected a file larger than 15MB!', 'error');
+                          if (file.size > 48 * 1024 * 1024) {
+                            showToast(language === 'gu' ? 'તમે ૪૮ MB થી મોટી ફાઇલ પસંદ કરી છે!' : 'You selected a file larger than 48MB!', 'error');
                             return;
                           }
                           setApkFileNameInput(file.name);
@@ -3105,7 +3116,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
                           {apkFileNameInput ? apkFileNameInput : (language === 'gu' ? 'APK ફાઇલ પસંદ કરો અથવા ડ્રેગ કરો' : 'Select or Drag APK file')}
                         </div>
                         <div className="text-[9px] text-slate-400 font-bold font-mono">
-                          મહત્તમ ફાઇલ સાઇઝ મર્યાદા: ૧૫ MB (ઝડપી અપલોડ માટે ઑપ્ટિમાઇઝ કરેલ)
+                          મહત્તમ ફાઇલ સાઇઝ મર્યાદા: ૪૮ MB (ઝડપી અપલોડ માટે ઑપ્ટિમાઇઝ કરેલ)
                         </div>
                       </>
                     )}
