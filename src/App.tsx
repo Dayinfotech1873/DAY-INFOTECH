@@ -204,6 +204,7 @@ export default function App() {
   const isOutdatedApk = () => {
     if (!isApkClient()) return false;
     if (!apkConfig?.version) return false;
+    if (apkConfig?.showUpdateAlert === false) return false;
     const runningVersion = getRunningApkVersion();
     return apkConfig.version !== runningVersion;
   };
@@ -214,17 +215,70 @@ export default function App() {
       return;
     }
     
+    const DEFAULT_REMOTE_ORIGIN = 'https://ais-pre-aqx4kalvz6yd25bw3dujmj-686165071824.asia-southeast1.run.app';
+    const isLocalOrigin = (originStr: string) => {
+      const lower = originStr.toLowerCase();
+      return lower.includes('localhost') || 
+             lower.includes('127.0.0.1') || 
+             lower.includes('0.0.0.0') || 
+             lower.startsWith('file:') || 
+             lower.startsWith('content:');
+    };
+
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
     let url = apkConfig.downloadUrl;
+
     if (url.startsWith('/uploads/')) {
-      url = window.location.origin + url;
+      if (isLocalOrigin(currentOrigin)) {
+        let savedRemoteOrigin = '';
+        try {
+          savedRemoteOrigin = localStorage.getItem('last_known_remote_origin') || '';
+        } catch (e) {}
+        
+        if (savedRemoteOrigin && !isLocalOrigin(savedRemoteOrigin)) {
+          url = `${savedRemoteOrigin}${url}`;
+        } else {
+          url = `${DEFAULT_REMOTE_ORIGIN}${url}`;
+        }
+      } else {
+        url = `${currentOrigin}${url}`;
+      }
     } else if (url.includes('/uploads/')) {
       const idx = url.indexOf('/uploads/');
       const relativePath = url.substring(idx);
-      url = window.location.origin + relativePath;
-    } else if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0')) {
+      
+      if (isLocalOrigin(currentOrigin)) {
+        let savedRemoteOrigin = '';
+        try {
+          savedRemoteOrigin = localStorage.getItem('last_known_remote_origin') || '';
+        } catch (e) {}
+        
+        if (savedRemoteOrigin && !isLocalOrigin(savedRemoteOrigin)) {
+          url = `${savedRemoteOrigin}${relativePath}`;
+        } else {
+          url = `${DEFAULT_REMOTE_ORIGIN}${relativePath}`;
+        }
+      } else {
+        url = `${currentOrigin}${relativePath}`;
+      }
+    } else if (isLocalOrigin(url)) {
       const parts = url.split('/');
       const lastPart = parts[parts.length - 1];
-      url = `${window.location.origin}/uploads/${lastPart}`;
+      
+      if (!isLocalOrigin(currentOrigin)) {
+        url = `${currentOrigin}/uploads/${lastPart}`;
+      } else {
+        let savedRemoteOrigin = '';
+        try {
+          savedRemoteOrigin = localStorage.getItem('last_known_remote_origin') || '';
+        } catch (e) {}
+        
+        if (savedRemoteOrigin && !isLocalOrigin(savedRemoteOrigin)) {
+          url = `${savedRemoteOrigin}/uploads/${lastPart}`;
+        } else {
+          url = `${DEFAULT_REMOTE_ORIGIN}/uploads/${lastPart}`;
+        }
+      }
     }
 
     console.log("Downloading APK from:", url);
@@ -246,6 +300,18 @@ export default function App() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const origin = window.location.origin;
+      const isLocal = origin.includes('localhost') || 
+                      origin.includes('127.0.0.1') || 
+                      origin.includes('0.0.0.0') || 
+                      origin.startsWith('file:') || 
+                      origin.startsWith('content:');
+      if (!isLocal) {
+        try {
+          localStorage.setItem('last_known_remote_origin', origin);
+        } catch (e) {}
+      }
+
       const params = new URLSearchParams(window.location.search);
       const isApkParam = params.get('platform') === 'apk' || params.get('apk') === 'true';
       if (isApkParam) {

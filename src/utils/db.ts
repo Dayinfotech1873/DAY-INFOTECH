@@ -2234,20 +2234,22 @@ export async function deleteCustomUser(username: string): Promise<void> {
 }
 
 // Fetch APK update settings from Firestore
-export async function getApkConfig(): Promise<{ version: string; downloadUrl: string; fileName?: string; updatedAt: string } | null> {
+export async function getApkConfig(): Promise<{ version: string; downloadUrl: string; fileName?: string; showUpdateAlert?: boolean; updatedAt: string } | null> {
   try {
     const docRef = doc(db, 'settings', 'apk_update');
     const snapshot = await getDoc(docRef);
     if (snapshot.exists()) {
       const data = snapshot.data();
       if (data) {
-        safeSetLocalStorage('apk_update_config_fallback', JSON.stringify(data));
-        return {
+        const config = {
           version: data.version || '1.0.0',
           downloadUrl: data.downloadUrl || '',
           fileName: data.fileName || '',
+          showUpdateAlert: data.showUpdateAlert !== false,
           updatedAt: data.updatedAt || new Date().toISOString()
         };
+        safeSetLocalStorage('apk_update_config_fallback', JSON.stringify(config));
+        return config;
       }
     }
   } catch (error) {
@@ -2265,7 +2267,7 @@ export async function getApkConfig(): Promise<{ version: string; downloadUrl: st
 }
 
 // Subscribe to APK update settings in real-time
-export function subscribeToApkConfig(callback: (config: { version: string; downloadUrl: string; fileName?: string; updatedAt?: string } | null) => void) {
+export function subscribeToApkConfig(callback: (config: { version: string; downloadUrl: string; fileName?: string; showUpdateAlert?: boolean; updatedAt?: string } | null) => void) {
   const docRef = doc(db, 'settings', 'apk_update');
   return onSnapshot(docRef, (snapshot) => {
     try {
@@ -2276,6 +2278,7 @@ export function subscribeToApkConfig(callback: (config: { version: string; downl
             version: data.version || '1.0.0',
             downloadUrl: data.downloadUrl || '',
             fileName: data.fileName || '',
+            showUpdateAlert: data.showUpdateAlert !== false,
             updatedAt: data.updatedAt || new Date().toISOString()
           };
           safeSetLocalStorage('apk_update_config_fallback', JSON.stringify(config));
@@ -2302,7 +2305,7 @@ export function subscribeToApkConfig(callback: (config: { version: string; downl
 }
 
 // Save APK update settings to Firestore
-export async function saveApkConfig(config: { version: string; downloadUrl: string; fileName?: string }): Promise<void> {
+export async function saveApkConfig(config: { version: string; downloadUrl: string; fileName?: string; showUpdateAlert?: boolean }): Promise<void> {
   const data = {
     ...config,
     updatedAt: new Date().toISOString()

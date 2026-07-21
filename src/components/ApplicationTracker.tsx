@@ -447,11 +447,12 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
 
   // APK update states
   const CURRENT_APK_VERSION = "1.0.0";
-  const [apkConfig, setApkConfig] = useState<{ version: string; downloadUrl: string; fileName?: string; updatedAt?: string } | null>(null);
+  const [apkConfig, setApkConfig] = useState<{ version: string; downloadUrl: string; fileName?: string; showUpdateAlert?: boolean; updatedAt?: string } | null>(null);
   const [apkVersionInput, setApkVersionInput] = useState('');
   const [apkUrlInput, setApkUrlInput] = useState('');
   const [apkFileInput, setApkFileInput] = useState<string | null>(null);
   const [apkFileNameInput, setApkFileNameInput] = useState('');
+  const [showUpdateAlertInput, setShowUpdateAlertInput] = useState(true);
   const [isSavingApk, setIsSavingApk] = useState(false);
   const [isUploadingApk, setIsUploadingApk] = useState(false);
 
@@ -518,6 +519,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
   const isOutdatedApk = () => {
     if (!isApkClient()) return false;
     if (!apkConfig?.version) return false;
+    if (apkConfig?.showUpdateAlert === false) return false;
     const runningVersion = getRunningApkVersion();
     return apkConfig.version !== runningVersion;
   };
@@ -528,17 +530,58 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
       return;
     }
     
+    const DEFAULT_REMOTE_ORIGIN = 'https://ais-pre-aqx4kalvz6yd25bw3dujmj-686165071824.asia-southeast1.run.app';
+    const isLocalOrigin = (originStr: string) => {
+      const lower = originStr.toLowerCase();
+      return lower.includes('localhost') || 
+             lower.includes('127.0.0.1') || 
+             lower.includes('0.0.0.0') || 
+             lower.startsWith('file:') || 
+             lower.startsWith('content:');
+    };
+
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
     let url = apkConfig.downloadUrl;
+
     if (url.startsWith('/uploads/')) {
-      url = window.location.origin + url;
+      if (isLocalOrigin(currentOrigin)) {
+        const savedRemoteOrigin = safeGetLocalStorage('last_known_remote_origin') || '';
+        if (savedRemoteOrigin && !isLocalOrigin(savedRemoteOrigin)) {
+          url = `${savedRemoteOrigin}${url}`;
+        } else {
+          url = `${DEFAULT_REMOTE_ORIGIN}${url}`;
+        }
+      } else {
+        url = `${currentOrigin}${url}`;
+      }
     } else if (url.includes('/uploads/')) {
       const idx = url.indexOf('/uploads/');
       const relativePath = url.substring(idx);
-      url = window.location.origin + relativePath;
-    } else if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0')) {
+      
+      if (isLocalOrigin(currentOrigin)) {
+        const savedRemoteOrigin = safeGetLocalStorage('last_known_remote_origin') || '';
+        if (savedRemoteOrigin && !isLocalOrigin(savedRemoteOrigin)) {
+          url = `${savedRemoteOrigin}${relativePath}`;
+        } else {
+          url = `${DEFAULT_REMOTE_ORIGIN}${relativePath}`;
+        }
+      } else {
+        url = `${currentOrigin}${relativePath}`;
+      }
+    } else if (isLocalOrigin(url)) {
       const parts = url.split('/');
       const lastPart = parts[parts.length - 1];
-      url = `${window.location.origin}/uploads/${lastPart}`;
+      
+      if (!isLocalOrigin(currentOrigin)) {
+        url = `${currentOrigin}/uploads/${lastPart}`;
+      } else {
+        const savedRemoteOrigin = safeGetLocalStorage('last_known_remote_origin') || '';
+        if (savedRemoteOrigin && !isLocalOrigin(savedRemoteOrigin)) {
+          url = `${savedRemoteOrigin}/uploads/${lastPart}`;
+        } else {
+          url = `${DEFAULT_REMOTE_ORIGIN}/uploads/${lastPart}`;
+        }
+      }
     }
 
     console.log("Downloading tracker APK from:", url);
@@ -568,6 +611,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
         setApkUrlInput(data.downloadUrl || '');
         setApkFileNameInput(data.fileName || '');
         setApkFileInput(data.downloadUrl?.startsWith('data:') ? data.downloadUrl : null);
+        setShowUpdateAlertInput(data.showUpdateAlert !== false);
       }
     } catch (e) {
       console.error('Error loading APK config:', e);
@@ -3045,6 +3089,31 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
                   </div>
                 </div>
 
+                {/* Admin Toggle Switch for showUpdateAlert */}
+                <div className="bg-indigo-50/40 rounded-2xl p-4 border border-indigo-100/50 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-black text-slate-700 block">
+                      અપડેટ મેસેજ બતાવો (Show Update Alert Message) :
+                    </span>
+                    <span className="text-[9px] text-slate-500 font-medium block leading-normal max-w-sm">
+                      નવા વર્ઝનનો મેસેજ યુઝરના ડિવાઇસ પર બતાવવા માટે ચાલુ રાખો. જો તમે આ બંધ કરશો, તો નવું વર્ઝન હોવા છતાં યુઝરને કોઈ મેસેજ દેખાશે નહીં.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowUpdateAlertInput(!showUpdateAlertInput)}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+                      showUpdateAlertInput ? 'bg-indigo-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                        showUpdateAlertInput ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
                 <div className="space-y-1">
                   <label className="text-xs font-black text-slate-700 flex items-center gap-1">
                     <span>૨. ડાઉનલોડ લિંક (Direct Download Link) :</span>
@@ -3183,10 +3252,17 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
 
                       setIsSavingApk(true);
                       try {
+                        // Normalize the upload path with current origin for saved DB value to ensure it works across contexts
+                        let finalDownloadUrl = apkUrlInput.trim();
+                        if (finalDownloadUrl.startsWith('/uploads/') && typeof window !== 'undefined') {
+                          finalDownloadUrl = window.location.origin + finalDownloadUrl;
+                        }
+
                         await saveApkConfig({
                           version: apkVersionInput.trim(),
-                          downloadUrl: apkUrlInput.trim(),
-                          fileName: apkFileNameInput || 'GujaratForm_Update.apk'
+                          downloadUrl: finalDownloadUrl,
+                          fileName: apkFileNameInput || 'GujaratForm_Update.apk',
+                          showUpdateAlert: showUpdateAlertInput
                         });
                         await loadApkConfigData();
                         showToast(language === 'gu' ? 'APK અપડેટ સેટિંગ્સ સફળતાપૂર્વક સાચવવામાં આવી!' : 'APK update settings saved successfully!', 'success');
