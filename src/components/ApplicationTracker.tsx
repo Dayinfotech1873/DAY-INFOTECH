@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, FileText, CheckCircle, Clock, Edit3, Trash2, Eye, Printer, ArrowLeft, 
-  Download, Inbox, Award, Check, UserCheck, CreditCard, Sprout, Landmark, X, AlertTriangle, LogIn, Heart, Shield, HelpCircle, Briefcase, Gift, Settings,
-  Globe, ExternalLink, Users, XCircle, Megaphone, Info, Image, Facebook, Instagram, Percent, QrCode
+  Download, Upload, Inbox, Award, Check, UserCheck, CreditCard, Sprout, Landmark, X, AlertTriangle, LogIn, Heart, Shield, HelpCircle, Briefcase, Gift, Settings, User,
+  Globe, ExternalLink, Users, XCircle, Megaphone, Info, Image, Facebook, Instagram, Percent, QrCode, RefreshCw, Sparkles
 } from 'lucide-react';
 import { AboutDayInfotech } from './AboutDayInfotech';
 import { UserProfileCustomizer } from './UserProfileCustomizer';
@@ -58,7 +58,10 @@ import {
   createWalletTransaction,
   updateUserProfile,
   toggleBlockUser,
-  deleteCustomUser
+  deleteCustomUser,
+  getApkConfig,
+  saveApkConfig,
+  subscribeToApkConfig
 } from '../utils/db';
 import { WalletDashboard } from './WalletDashboard';
 import { THEMES } from '../utils/theme';
@@ -219,6 +222,30 @@ export const ALL_SERVICES_LIST: {
     icon: HelpCircle, 
     colorClass: 'text-slate-600 border-slate-200 bg-slate-50 hover:bg-slate-100', 
     bgClass: 'bg-slate-600 hover:bg-slate-700' 
+  },
+  {
+    type: 'RATION_CARD_ADD_NAME',
+    labelGu: 'રેશન કાર્ડ નામ ઉમેરવું (Add Name)',
+    labelEn: 'Ration Card Add Name',
+    icon: FileText,
+    colorClass: 'text-indigo-600 border-indigo-200 bg-indigo-50 hover:bg-indigo-100',
+    bgClass: 'bg-indigo-600 hover:bg-indigo-700'
+  },
+  {
+    type: 'RATION_CARD_REMOVE_NAME',
+    labelGu: 'રેશન કાર્ડ નામ કમી કરવું (Remove Name)',
+    labelEn: 'Ration Card Remove Name',
+    icon: FileText,
+    colorClass: 'text-rose-600 border-rose-200 bg-rose-50 hover:bg-rose-100',
+    bgClass: 'bg-rose-600 hover:bg-rose-700'
+  },
+  {
+    type: 'RATION_CARD_CORRECTION',
+    labelGu: 'રેશન કાર્ડ સુધારો (Correction)',
+    labelEn: 'Ration Card Correction',
+    icon: FileText,
+    colorClass: 'text-teal-600 border-teal-200 bg-teal-50 hover:bg-teal-100',
+    bgClass: 'bg-teal-600 hover:bg-teal-700'
   }
 ];
 
@@ -265,7 +292,8 @@ interface ApplicationTrackerProps {
   onAddNew: (type: FormType) => void;
   refreshTrigger: number;
   themeId: string;
-  activeTrackerTab?: 'DASHBOARD' | 'APPLICATIONS' | 'USERS' | 'SERVICES' | 'OFFICIAL_WEBSITES' | 'SEND_MESSAGE' | 'APPLY_SERVICE' | 'YOUR_APPLICATIONS' | 'ABOUT_DAY_INFOTECH' | 'WALLET' | 'PROFILE';
+  activeTrackerTab?: 'DASHBOARD' | 'APPLICATIONS' | 'USERS' | 'SERVICES' | 'OFFICIAL_WEBSITES' | 'SEND_MESSAGE' | 'APPLY_SERVICE' | 'YOUR_APPLICATIONS' | 'ABOUT_DAY_INFOTECH' | 'WALLET' | 'PROFILE' | 'APK_SETTINGS';
+  onUpdateUser?: (updatedUser: any) => void;
 }
 
 export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
@@ -274,6 +302,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
   refreshTrigger,
   themeId,
   activeTrackerTab,
+  onUpdateUser,
 }) => {
   const { language } = useLanguage();
   const [applications, setApplications] = useState<ApplicationEntry[]>([]);
@@ -289,6 +318,28 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [printMode, setPrintMode] = useState<'FULL' | 'BILL'>('FULL');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        loadApplications(),
+        loadAnnouncement(),
+        loadGreetings(),
+        loadWalletStats(),
+        loadApkConfigData()
+      ]);
+      showToast(language === 'gu' ? 'ડેટા સફળતાપૂર્વક અપડેટ થયો!' : 'Data updated successfully!', 'success');
+    } catch (e) {
+      console.error(e);
+      showToast(language === 'gu' ? 'અપડેટ કરવામાં ભૂલ આવી!' : 'Failed to update!', 'error');
+    } finally {
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 600);
+    }
+  };
 
   // Service toggling state
   const [serviceStatuses, setServiceStatuses] = useState<Record<string, boolean>>({
@@ -307,6 +358,9 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
     MANAV_KALYAN: true,
     KUVAR_BAI_MAMERU: true,
     OTHER_SERVICE: true,
+    RATION_CARD_ADD_NAME: true,
+    RATION_CARD_REMOVE_NAME: true,
+    RATION_CARD_CORRECTION: true,
   });
   const [isSavingServices, setIsSavingServices] = useState(false);
   const [pricesState, setPricesState] = useState<Record<string, number>>({ ...SERVICE_PRICES });
@@ -314,7 +368,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
 
   // Owner/Applicant dashboard tab and data state
   const [activeTab, setActiveTabInternal] = useState<
-    'DASHBOARD' | 'APPLICATIONS' | 'USERS' | 'SERVICES' | 'OFFICIAL_WEBSITES' | 'SEND_MESSAGE' | 'APPLY_SERVICE' | 'YOUR_APPLICATIONS' | 'ABOUT_DAY_INFOTECH' | 'WALLET' | 'PROFILE'
+    'DASHBOARD' | 'APPLICATIONS' | 'USERS' | 'SERVICES' | 'OFFICIAL_WEBSITES' | 'SEND_MESSAGE' | 'APPLY_SERVICE' | 'YOUR_APPLICATIONS' | 'ABOUT_DAY_INFOTECH' | 'WALLET' | 'PROFILE' | 'APK_SETTINGS'
   >('DASHBOARD');
   const [tabHistory, setTabHistory] = useState<typeof activeTab[]>([]);
 
@@ -390,6 +444,110 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
   const [greetingsInput, setGreetingsInput] = useState('');
   const [isSavingGreetings, setIsSavingGreetings] = useState(false);
 
+  // APK update states
+  const CURRENT_APK_VERSION = "1.0.0";
+  const [apkConfig, setApkConfig] = useState<{ version: string; downloadUrl: string; fileName?: string; updatedAt?: string } | null>(null);
+  const [apkVersionInput, setApkVersionInput] = useState('');
+  const [apkUrlInput, setApkUrlInput] = useState('');
+  const [apkFileInput, setApkFileInput] = useState<string | null>(null);
+  const [apkFileNameInput, setApkFileNameInput] = useState('');
+  const [isSavingApk, setIsSavingApk] = useState(false);
+  const [isUploadingApk, setIsUploadingApk] = useState(false);
+
+  const safeGetLocalStorage = (key: string): string | null => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return window.localStorage.getItem(key);
+      }
+    } catch (e) {
+      console.warn('LocalStorage is blocked or unavailable:', e);
+    }
+    return null;
+  };
+
+  const safeSetLocalStorage = (key: string, value: string): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(key, value);
+      }
+    } catch (e) {
+      console.warn('LocalStorage is blocked or unavailable:', e);
+    }
+  };
+
+  const isApkClient = () => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('platform') === 'apk' || params.get('apk') === 'true') {
+      return true;
+    }
+    if (safeGetLocalStorage('is_apk_client') === 'true') {
+      return true;
+    }
+    if ((window as any).isApk === true || (window as any).isApkClient === true) {
+      return true;
+    }
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes('wv') || ua.includes('webview') || ua.includes('crosswalk') || ua.includes('apk_app')) {
+      return true;
+    }
+    return false;
+  };
+
+  const isOutdatedApk = () => {
+    if (!isApkClient()) return false;
+    if (!apkConfig?.version) return false;
+    return apkConfig.version !== CURRENT_APK_VERSION;
+  };
+
+  const downloadApkFile = () => {
+    if (!apkConfig || !apkConfig.downloadUrl) {
+      showToast(language === 'gu' ? 'ડાઉનલોડ લિંક ઉપલબ્ધ નથી!' : 'Download link not available!', 'error');
+      return;
+    }
+    
+    let url = apkConfig.downloadUrl;
+    if (url.startsWith('/uploads/')) {
+      url = window.location.origin + url;
+    } else if (url.includes('/uploads/')) {
+      const idx = url.indexOf('/uploads/');
+      const relativePath = url.substring(idx);
+      url = window.location.origin + relativePath;
+    } else if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0')) {
+      const parts = url.split('/');
+      const lastPart = parts[parts.length - 1];
+      url = `${window.location.origin}/uploads/${lastPart}`;
+    }
+
+    if (url.startsWith('data:')) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = apkConfig.fileName || 'day_infotech.apk';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast(language === 'gu' ? 'ડાઉનલોડ શરૂ થઈ રહ્યું છે...' : 'Downloading starting...', 'success');
+    } else {
+      window.open(url, '_blank');
+      showToast(language === 'gu' ? 'ડાઉનલોડ પેજ ખુલી રહ્યું છે...' : 'Opening download page...', 'success');
+    }
+  };
+
+  const loadApkConfigData = async () => {
+    try {
+      const data = await getApkConfig();
+      if (data) {
+        setApkConfig(data);
+        setApkVersionInput(data.version || '');
+        setApkUrlInput(data.downloadUrl || '');
+        setApkFileNameInput(data.fileName || '');
+        setApkFileInput(data.downloadUrl?.startsWith('data:') ? data.downloadUrl : null);
+      }
+    } catch (e) {
+      console.error('Error loading APK config:', e);
+    }
+  };
+
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 5000);
@@ -459,6 +617,20 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
     };
   }, []);
 
+  // Real-time subscription to APK update settings
+  useEffect(() => {
+    const unsubApk = subscribeToApkConfig((config) => {
+      if (config) {
+        setApkConfig(config);
+        setApkVersionInput(config.version || '');
+        setApkUrlInput(config.downloadUrl || '');
+        setApkFileNameInput(config.fileName || '');
+        setApkFileInput(config.downloadUrl?.startsWith('data:') ? config.downloadUrl : null);
+      }
+    });
+    return () => unsubApk();
+  }, []);
+
   // Real-time subscription to custom users and password requests for owner
   useEffect(() => {
     if (!isOwner()) return;
@@ -486,6 +658,9 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
         // User account was deleted by admin
         logoutCustomUser();
         setCurrentUser(null);
+        if (onUpdateUser) {
+          onUpdateUser(null);
+        }
         showToast('તમારું એકાઉન્ટ એડમિન દ્વારા ડિલીટ કરવામાં આવ્યું છે. (Your account has been deleted by admin.)', 'error');
         setTimeout(() => {
           window.location.reload();
@@ -496,6 +671,9 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
           // User account was blocked by admin
           logoutCustomUser();
           setCurrentUser(null);
+          if (onUpdateUser) {
+            onUpdateUser(null);
+          }
           showToast('તમારું એકાઉન્ટ એડમિન દ્વારા કામચલાઉ ધોરણે બ્લોક કરવામાં આવ્યું છે. (Your account has been temporarily blocked by admin.)', 'error');
           setTimeout(() => {
             window.location.reload();
@@ -581,6 +759,9 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
       if (type === 'KUVAR_BAI_MAMERU') return 'કુંવરબાઈ મામેરું યોજના';
       if (type === 'UDHYAM_AADHAR') return 'ઉદ્યમ આધાર (MSME)';
       if (type === 'OTHER_SERVICE') return 'અન્ય સેવાઓ પૂછપરછ';
+      if (type === 'RATION_CARD_ADD_NAME') return 'રેશન કાર્ડ નામ ઉમેરવું';
+      if (type === 'RATION_CARD_REMOVE_NAME') return 'રેશન કાર્ડ નામ કમી કરવું';
+      if (type === 'RATION_CARD_CORRECTION') return 'રેશન કાર્ડ સુધારો';
     } else {
       if (type === 'PAN_CARD') return 'New PAN Card';
       if (type === 'PAN_CARD_CORRECTION') return 'PAN Card Correction';
@@ -597,6 +778,9 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
       if (type === 'KUVAR_BAI_MAMERU') return 'Kuvar Bai Mameru';
       if (type === 'UDHYAM_AADHAR') return 'New Udhyam MSME';
       if (type === 'OTHER_SERVICE') return 'Other Services Enquiry';
+      if (type === 'RATION_CARD_ADD_NAME') return 'Ration Card Add Name';
+      if (type === 'RATION_CARD_REMOVE_NAME') return 'Ration Card Remove Name';
+      if (type === 'RATION_CARD_CORRECTION') return 'Ration Card Correction';
     }
     return type;
   };
@@ -981,6 +1165,32 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
               </div>
             </div>
 
+            {isApkClient() && isOutdatedApk() && (
+              <div className="w-full max-w-3xl p-4 bg-amber-50 border border-amber-200 rounded-3xl text-left space-y-3 animate-pulse shadow-md">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5.5 w-5.5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-black text-amber-900 leading-tight border-b border-amber-200/50 pb-1 flex items-center gap-1.5">
+                      {language === 'gu' ? 'એપ્લિકેશનનું નવું વર્ઝન ઉપલબ્ધ છે!' : 'New Application Update Available!'}
+                    </h4>
+                    <p className="text-xs font-semibold text-amber-700 leading-relaxed mt-1">
+                      {language === 'gu' 
+                        ? `એપ્લિકેશનનું નવું વર્ઝન (v${apkConfig?.version}) ઉપલબ્ધ થયું છે. શ્રેષ્ઠ કામગીરી અને નવી સુવિધાઓ માટે કૃપા કરીને નવું વર્ઝન ડાઉનલોડ કરીને ઇન્સ્ટોલ કરો.` 
+                        : `A newer version (v${apkConfig?.version}) of the application is available. Please download and update to the latest version for better performance and security.`}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={downloadApkFile}
+                  className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-black text-sm rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>{language === 'gu' ? 'નવું વર્ઝન અપડેટ કરો' : 'Update New Version'}</span>
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center pt-2">
               <button
                 onClick={async () => {
@@ -1002,13 +1212,26 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
             <p className="text-[10px] md:text-xs text-slate-400 font-bold tracking-tight">
               {language === 'gu' ? 'કોઈ પાસવર્ડ યાદ રાખવાની જરૂર નથી. ફક્ત તમારા Google એકાઉન્ટનો ઉપયોગ કરો.' : 'No need to remember passwords. Just use your Google account.'}
             </p>
+
+            {!isApkClient() && (
+              <div className="w-full max-w-3xl pt-2">
+                <button
+                  type="button"
+                  onClick={downloadApkFile}
+                  className="w-full py-3.5 border-2 border-dashed border-indigo-200 bg-indigo-50/40 hover:bg-indigo-600 hover:text-white text-indigo-700 font-black text-xs rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                >
+                  <Download className="h-4.5 w-4.5 text-indigo-600 group-hover:text-white shrink-0 transition-transform group-hover:translate-y-0.5" />
+                  <span>{language === 'gu' ? `એન્ડ્રોઇડ એપ ડાઉનલોડ કરો (Download APK v${apkConfig?.version || '1.0.0'})` : `Download Android App (APK v${apkConfig?.version || '1.0.0'})`}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* Owner Dashboard - Quick Access Grid Cards */}
       {isOwner() && activeTab === 'DASHBOARD' && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5 mb-4">
           {/* Card 1: All Applications */}
           <button
             onClick={() => setActiveTab('APPLICATIONS')}
@@ -1222,12 +1445,69 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
               </p>
             </div>
           </button>
+
+          {/* Card 7: APK Release Management */}
+          <button
+            onClick={() => setActiveTab('APK_SETTINGS')}
+            className={`p-3 md:p-3.5 rounded-2xl border text-left flex flex-col justify-between h-25 md:h-27 transition-all duration-300 cursor-pointer group relative overflow-hidden ${
+              activeTab === 'APK_SETTINGS'
+                ? 'bg-indigo-50/90 backdrop-blur-md border-indigo-600 ring-4 ring-indigo-500/15 shadow-md shadow-indigo-500/10 -translate-y-0.5'
+                : 'bg-white/95 backdrop-blur-md border-slate-200 hover:border-indigo-400 hover:shadow-lg hover:-translate-y-0.5 shadow-sm'
+            }`}
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="flex items-start justify-between w-full">
+              <div className={`p-1.5 md:p-2 rounded-xl border transition-all duration-300 ${
+                activeTab === 'APK_SETTINGS'
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-105'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 group-hover:bg-indigo-50 group-hover:text-indigo-600 group-hover:border-indigo-100'
+              }`}>
+                <Download className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
+              </div>
+              {activeTab === 'APK_SETTINGS' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-650 animate-ping"></span>
+              )}
+            </div>
+            <div className="mt-1.5">
+              <h4 className="text-[12px] md:text-[13px] font-black text-slate-800 leading-tight tracking-tight group-hover:text-indigo-900 transition-colors">
+                APK મેનેજમેન્ટ
+              </h4>
+              <p className="text-[9px] font-extrabold text-slate-400 font-mono mt-0.5 leading-none">
+                APK Settings
+              </p>
+            </div>
+          </button>
         </div>
       )}
 
       {/* Applicant Dashboard - Quick Access Grid Cards */}
       {!isOwner() && activeTab === 'DASHBOARD' && (
         <div className="space-y-6">
+          {/* Quick Actions Header with Refresh Button */}
+          <div className="flex justify-between items-center bg-white/60 p-4 rounded-2xl border border-slate-100 shadow-xs">
+            <div>
+              <h3 className="text-sm md:text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <Sparkles className="h-4.5 w-4.5 text-indigo-600" />
+                {language === 'gu' ? 'મુખ્ય ડેશબોર્ડ અને ક્વિક એક્સેસ' : 'Main Dashboard & Quick Access'}
+              </h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">
+                {language === 'gu' ? 'તમારી અરજીઓ અને ખાતાની માહિતી અહીં ઉપલબ્ધ છે' : 'Your applications and account details are available here'}
+              </p>
+            </div>
+            <button
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs font-bold border transition-all shadow-xs cursor-pointer ${
+                isRefreshing
+                  ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
+                  : 'bg-white border-slate-200 hover:border-indigo-400 text-slate-700 hover:bg-slate-50 active:scale-95'
+              }`}
+            >
+              <RefreshCw className={`h-3.5 w-3.5 text-indigo-600 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{language === 'gu' ? 'રિફ્રેશ (Refresh)' : 'Refresh'}</span>
+            </button>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {/* Card 1: Apply for Services */}
             <button
@@ -2674,10 +2954,325 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
           currentUser={currentUser}
           onUpdateUser={(updated) => {
             setCurrentUser(updated);
-            // also sync back to sessionStorage / parent states if needed
+            if (onUpdateUser) {
+              onUpdateUser(updated);
+            }
           }}
           showToast={(msg, type) => showToast(msg, type || 'success')}
         />
+      ) : activeTab === 'APK_SETTINGS' && isOwner() ? (
+        <div className="space-y-6 max-w-4xl mx-auto" id="apk-settings-panel">
+          <div className="bg-white rounded-3xl border border-slate-200 p-4 md:p-6 shadow-sm space-y-5">
+            <div className="border-b border-slate-100 pb-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base md:text-lg font-black text-slate-800 flex items-center gap-2">
+                  <Download className="h-5.5 w-5.5 text-indigo-600" />
+                  APK ડાઉનલોડ અને વર્ઝન મેનેજમેન્ટ (APK Release & Update Settings)
+                </h2>
+                <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2.5 py-0.5">
+                  Admin Only
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+                અહીંથી તમે એપ્લિકેશનનું લેટેસ્ટ વર્ઝન, ડાઉનલોડ લિંક અથવા સીધું APK અપલોડ કરી શકો છો. ગ્રાહકોને તેમની લૉગિન સ્ક્રીન પર અપડેટ ડાઉનલોડ કરવા માટેનો મેસેજ અને બટન આપોઆપ દેખાશે.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Left Form: Edit Fields */}
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-slate-700 flex items-center gap-1">
+                    <span>૧. નવું વર્ઝન કોડ (Latest Version, e.g., 1.0.1) :</span>
+                    <span className="text-rose-500 font-bold">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={apkVersionInput}
+                    onChange={(e) => setApkVersionInput(e.target.value)}
+                    placeholder="વર્ઝન લખો (દા.ત. 1.0.1)"
+                    className="w-full text-xs font-medium p-3 rounded-2xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50 transition-all font-mono"
+                  />
+                  <div className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                    ચાલુ APK વર્ઝન <strong>{CURRENT_APK_VERSION}</strong> છે. જો તમે અહીં તેનાથી અલગ વર્ઝન (દા.ત. 1.0.1) નાખશો, તો જ APK યુઝર્સને લોગીન સ્ક્રીન પર અપડેટ મેસેજ દેખાશે.
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-slate-700 flex items-center gap-1">
+                    <span>૨. ડાઉનલોડ લિંક (Direct Download Link) :</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={apkUrlInput}
+                    onChange={(e) => {
+                      setApkUrlInput(e.target.value);
+                      if (e.target.value) {
+                        setApkFileInput(null);
+                        setApkFileNameInput('');
+                      }
+                    }}
+                    placeholder="દા.ત. Google Drive, Mediafire અથવા અન્ય ડાઉનલોડ લિંક પેસ્ટ કરો"
+                    className="w-full text-xs font-medium p-3 rounded-2xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-slate-50/50 transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-black text-slate-700">
+                      <span>અથવા સીધું APK ફાઇલ અપલોડ કરો (Direct APK Upload) :</span>
+                    </label>
+                    {apkFileInput && (
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setApkFileInput(null);
+                          setApkFileNameInput('');
+                        }}
+                        className="text-[10px] text-rose-600 font-black hover:underline"
+                      >
+                        ફાઇલ હટાવો
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="relative border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-4 transition-all bg-slate-50/30 flex flex-col items-center justify-center space-y-1.5 text-center group cursor-pointer">
+                    <input
+                      type="file"
+                      accept=".apk"
+                      disabled={isUploadingApk}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 15 * 1024 * 1024) {
+                            showToast(language === 'gu' ? 'તમે ૧૫ MB થી મોટી ફાઇલ પસંદ કરી છે!' : 'You selected a file larger than 15MB!', 'error');
+                            return;
+                          }
+                          setApkFileNameInput(file.name);
+                          setIsUploadingApk(true);
+                          
+                          const reader = new FileReader();
+                          reader.onload = async (event) => {
+                            try {
+                              const result = event.target?.result as string;
+                              const response = await fetch('/api/upload-apk', {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                  fileData: result,
+                                  fileName: file.name
+                                })
+                              });
+                              
+                              if (!response.ok) {
+                                throw new Error('Upload failed');
+                              }
+                              
+                              const data = await response.json();
+                              if (data.success && data.downloadUrl) {
+                                setApkFileInput(data.downloadUrl);
+                                setApkUrlInput(data.downloadUrl);
+                                setApkFileNameInput(data.fileName);
+                                showToast(language === 'gu' ? 'APK ફાઇલ સર્વર પર સફળતાપૂર્વક અપલોડ થઈ ગઈ!' : 'APK file uploaded to server successfully!', 'success');
+                              } else {
+                                throw new Error('Upload returned unsuccessful status');
+                              }
+                            } catch (err) {
+                              console.error('APK upload error:', err);
+                              showToast(language === 'gu' ? 'APK અપલોડ કરવામાં ભૂલ આવી! કૃપા કરીને ફરીથી પ્રયાસ કરો.' : 'Failed to upload APK! Please try again.', 'error');
+                            } finally {
+                              setIsUploadingApk(false);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                    {isUploadingApk ? (
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <span className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
+                        <div className="text-xs font-black text-indigo-700 animate-pulse">
+                          {language === 'gu' ? 'સર્વર પર અપલોડ થઈ રહ્યું છે... (કૃપા કરીને રાહ જુઓ)' : 'Uploading to server... (Please wait)'}
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="h-6 w-6 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+                        <div className="text-xs font-black text-slate-700">
+                          {apkFileNameInput ? apkFileNameInput : (language === 'gu' ? 'APK ફાઇલ પસંદ કરો અથવા ડ્રેગ કરો' : 'Select or Drag APK file')}
+                        </div>
+                        <div className="text-[9px] text-slate-400 font-bold font-mono">
+                          મહત્તમ ફાઇલ સાઇઝ મર્યાદા: ૧૫ MB (ઝડપી અપલોડ માટે ઑપ્ટિમાઇઝ કરેલ)
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={async () => {
+                      if (!apkVersionInput.trim()) {
+                        showToast(language === 'gu' ? 'કૃપા કરીને વર્ઝન કોડ લખો!' : 'Please enter version code!', 'error');
+                        return;
+                      }
+                      if (!apkUrlInput.trim()) {
+                        showToast(language === 'gu' ? 'કૃપા કરીને ડાઉનલોડ લિંક અથવા APK ફાઇલ આપો!' : 'Please provide download link or APK file!', 'error');
+                        return;
+                      }
+
+                      setIsSavingApk(true);
+                      try {
+                        await saveApkConfig({
+                          version: apkVersionInput.trim(),
+                          downloadUrl: apkUrlInput.trim(),
+                          fileName: apkFileNameInput || 'GujaratForm_Update.apk'
+                        });
+                        await loadApkConfigData();
+                        showToast(language === 'gu' ? 'APK અપડેટ સેટિંગ્સ સફળતાપૂર્વક સાચવવામાં આવી!' : 'APK update settings saved successfully!', 'success');
+                      } catch (err) {
+                        console.error(err);
+                        showToast(language === 'gu' ? 'સાચવવામાં નિષ્ફળતા મળી!' : 'Failed to save settings!', 'error');
+                      } finally {
+                        setIsSavingApk(false);
+                      }
+                    }}
+                    disabled={isSavingApk}
+                    className="flex-1 py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:bg-slate-300"
+                  >
+                    {isSavingApk ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>સેવ થઈ રહ્યું છે...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4" />
+                        <span>અપડેટ સાચવો (Save Settings)</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('DASHBOARD')}
+                    className="py-3 px-4 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-2xl transition-all cursor-pointer"
+                  >
+                    પાછા જાઓ
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: Preview & Simulation Dashboard */}
+              <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4 space-y-4">
+                <div className="border-b border-slate-200/60 pb-2 flex items-center justify-between">
+                  <h3 className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" />
+                    લાઈવ પ્રિવ્યુ અને ટેસ્ટીંગ સિમ્યુલેટર
+                  </h3>
+                  <span className="text-[9px] font-black text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5 border border-emerald-100 flex items-center gap-1 animate-pulse">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Active
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="text-xs text-slate-500 font-semibold leading-relaxed">
+                    યુઝર કઈ ડિવાઇસ અથવા પ્લેટફોર્મ પરથી ખોલે છે તેના આધારે લોગીન સ્ક્રીન કેવી દેખાશે તેનું અહીં ટેસ્ટીંગ કરો:
+                  </div>
+
+                  {/* Simulator Toggles */}
+                  <div className="grid grid-cols-2 gap-2 bg-slate-200/50 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        safeSetLocalStorage('is_apk_client', 'false');
+                        // simple state retrigger by calling loading again
+                        loadApkConfigData();
+                        showToast(language === 'gu' ? 'વેબ એપ્લિકેશન મોડ સેટ થયો!' : 'Web App mode simulated!', 'success');
+                      }}
+                      className={`py-2 text-[10px] font-black rounded-lg transition-all ${
+                        safeGetLocalStorage('is_apk_client') !== 'true'
+                          ? 'bg-white text-indigo-950 shadow-xs'
+                          : 'text-slate-600 hover:text-indigo-950'
+                      }`}
+                    >
+                      Web App (બ્રાઉઝર મોડ)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        safeSetLocalStorage('is_apk_client', 'true');
+                        loadApkConfigData();
+                        showToast(language === 'gu' ? 'APK એપ્લિકેશન મોડ સેટ થયો!' : 'APK Client mode simulated!', 'success');
+                      }}
+                      className={`py-2 text-[10px] font-black rounded-lg transition-all ${
+                        safeGetLocalStorage('is_apk_client') === 'true'
+                          ? 'bg-white text-indigo-950 shadow-xs'
+                          : 'text-slate-600 hover:text-indigo-950'
+                      }`}
+                    >
+                      APK Client (મોબાઇલ એપ મોડ)
+                    </button>
+                  </div>
+
+                  {/* Visual Preview Box */}
+                  <div className="border border-slate-200 rounded-2xl bg-white p-4 shadow-inner space-y-3">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1">
+                      Login Screen Interface Preview
+                    </div>
+
+                    {safeGetLocalStorage('is_apk_client') === 'true' ? (
+                      apkVersionInput && apkVersionInput !== CURRENT_APK_VERSION ? (
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2 animate-fade-in">
+                          <div className="flex gap-2">
+                            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                            <div>
+                              <h4 className="text-[11px] font-black text-amber-900 leading-tight">
+                                એપ્લિકેશન અપડેટ ઉપલબ્ધ છે! (v{apkVersionInput})
+                              </h4>
+                              <p className="text-[10px] font-medium text-amber-700 leading-normal mt-0.5">
+                                એપ્લિકેશનનું નવું વર્ઝન (v{apkVersionInput}) ઉપલબ્ધ છે. વધુ સારા અનુભવ માટે કૃપા કરીને નીચેના બટનથી નવું વર્ઝન ડાઉનલોડ કરો.
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={downloadApkFile}
+                            className="w-full py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-black text-[10px] rounded-lg transition-all flex items-center justify-center gap-1.5"
+                          >
+                            <Download className="h-3 w-3" />
+                            નવું વર્ઝન અપડેટ કરો
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                          <CheckCircle className="h-6 w-6 text-emerald-500 mx-auto mb-1" />
+                          <p className="text-[11px] font-black text-slate-700">એપ્લિકેશન સંપૂર્ણ અપડેટ છે (v{CURRENT_APK_VERSION})</p>
+                          <p className="text-[9px] text-slate-400 font-medium mt-0.5">APK પ્લેટફોર્મ પર કોઈ ડાઉનલોડ બટન દેખાશે નહીં.</p>
+                        </div>
+                      )
+                    ) : (
+                      <div className="space-y-2.5">
+                        <div className="p-2 bg-slate-50 border border-slate-150 rounded-lg text-center text-[10px] font-semibold text-slate-600">
+                          બ્રાઉઝરમાં ગ્રાહકોને ગુગલ લોગીનની નીચે આ બટન કાયમ દેખાશે:
+                        </div>
+                        <button
+                          type="button"
+                          onClick={downloadApkFile}
+                          className="w-full py-3 border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-black text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer group"
+                        >
+                          <Download className="h-4 w-4 text-indigo-600 group-hover:text-white shrink-0 transition-transform group-hover:translate-y-0.5" />
+                          <span>એન્ડ્રોઇડ એપ ડાઉનલોડ કરો (Download APK v{apkVersionInput || '1.0.0'})</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : null}
 
 
@@ -2713,6 +3308,81 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
               {/* Printable Receipt Workspace */}
               <div className="p-6 md:p-8 space-y-8 max-h-[70vh] overflow-y-auto" id="print-receipt-content">
                 
+                {(() => {
+                  const matchedUser = viewingEntry.userId ? customUsers.find(u => u.uid === viewingEntry.userId || u.username === viewingEntry.userId.replace('custom_', '')) : null;
+                  if (!isOwner() || !matchedUser) return null;
+                  return (
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50/55 border border-indigo-100 rounded-2xl p-4 shadow-xs no-print mb-6">
+                      <div className="flex items-center gap-2 border-b border-indigo-100 pb-2.5 mb-3">
+                        <UserCheck className="h-4.5 w-4.5 text-indigo-600" />
+                        <h3 className="text-xs font-black text-indigo-900 uppercase tracking-wider">
+                          અરજદારની પ્રોફાઇલ (Applicant Profile)
+                        </h3>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-4 items-start">
+                        {/* Profile Pic */}
+                        <div className="h-14 w-14 rounded-full border-2 border-white shadow-sm bg-indigo-100 overflow-hidden shrink-0 flex items-center justify-center">
+                          {matchedUser.profilePic ? (
+                            <img src={matchedUser.profilePic} alt={matchedUser.name} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                          ) : (
+                            <span className="text-indigo-700 font-black text-lg">
+                              {matchedUser.name?.charAt(0) || 'U'}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Details Grid */}
+                        <div className="flex-1 space-y-1.5">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <span className="text-sm font-black text-slate-800">{matchedUser.name || 'અનામી અરજદાર'}</span>
+                            <span className="text-[10px] font-bold font-mono bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">@{matchedUser.username}</span>
+                            {matchedUser.mobile && (
+                              <span className="text-xs font-mono text-indigo-600 font-bold">{matchedUser.mobile}</span>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-1 text-[11px] font-medium text-slate-600 pt-0.5">
+                            {matchedUser.occupation && (
+                              <div>💼 <span className="text-slate-400">વ્યવસાય:</span> <strong className="text-slate-800">{matchedUser.occupation}</strong></div>
+                            )}
+                            {matchedUser.location && (
+                              <div>📍 <span className="text-slate-400">રહેઠાણ:</span> <strong className="text-slate-800">{matchedUser.location}</strong></div>
+                            )}
+                            {matchedUser.education && (
+                              <div>🎓 <span className="text-slate-400">લાયકાત:</span> <strong className="text-slate-800">{matchedUser.education}</strong></div>
+                            )}
+                            {matchedUser.birthPlace && (
+                              <div>🎂 <span className="text-slate-400">જન્મ સ્થળ:</span> <strong className="text-slate-800">{matchedUser.birthPlace}</strong></div>
+                            )}
+                          </div>
+                          
+                          {matchedUser.bio && (
+                            <div className="text-[11px] text-slate-500 italic border-t border-indigo-100/50 pt-1.5 mt-1">
+                              " {matchedUser.bio} "
+                            </div>
+                          )}
+                          
+                          {(matchedUser.facebookUrl || matchedUser.instagramUrl) && (
+                            <div className="flex items-center gap-4 pt-1">
+                              {matchedUser.facebookUrl && (
+                                <a href={matchedUser.facebookUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-650 hover:underline text-[10px] font-bold">
+                                  <Facebook className="h-3.5 w-3.5" /> Facebook
+                                </a>
+                              )}
+                              {matchedUser.instagramUrl && (
+                                <a href={matchedUser.instagramUrl.startsWith('http') ? matchedUser.instagramUrl : `https://instagram.com/${matchedUser.instagramUrl.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-pink-650 hover:underline text-[10px] font-bold">
+                                  <Instagram className="h-3.5 w-3.5" /> Instagram ({matchedUser.instagramUrl})
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {viewingEntry.status === 'DRAFT' && (
                   <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-amber-950 shadow-xs flex items-start gap-3 no-print">
                     <div className="p-1.5 bg-amber-100 rounded-lg text-amber-700 shrink-0">

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   User, Calendar, Phone, Mail, FileText, ArrowRight, Save, CheckCircle, 
   RefreshCw, Award, ArrowLeft, Landmark, Sprout, CreditCard, AlertTriangle, HelpCircle,
-  UserCheck, X, Wallet, QrCode, Plus, PlusCircle
+  UserCheck, X, Wallet, QrCode, Plus, PlusCircle, Edit3
 } from 'lucide-react';
 import { 
   FormType, 
@@ -43,6 +43,12 @@ import {
   BirthCertificateCorrectionDocs,
   DeathCertificateDetails,
   DeathCertificateDocs,
+  RationCardAddNameDetails,
+  RationCardAddNameDocs,
+  RationCardRemoveNameDetails,
+  RationCardRemoveNameDocs,
+  RationCardCorrectionDetails,
+  RationCardCorrectionDocs,
   ApplicationEntry, 
   DocumentUpload 
 } from '../types';
@@ -84,7 +90,13 @@ import {
   initialBirthCertificateCorrectionDetails,
   initialBirthCertificateCorrectionDocs,
   initialDeathCertificateDetails,
-  initialDeathCertificateDocs
+  initialDeathCertificateDocs,
+  initialRationCardAddNameDetails,
+  initialRationCardAddNameDocs,
+  initialRationCardRemoveNameDetails,
+  initialRationCardRemoveNameDocs,
+  initialRationCardCorrectionDetails,
+  initialRationCardCorrectionDocs
 } from '../utils/formDefaults';
 import { saveApplication, getServiceStatuses, isOwner, getWallet, updateWalletBalance, createWalletTransaction, getLoggedInUser, getServicePrices, subscribeToServicePrices, subscribeToServiceDiscounts, ServiceDiscounts } from '../utils/db';
 import { Wallet as WalletType } from '../types';
@@ -115,6 +127,9 @@ export let SERVICE_PRICES: Record<FormType, number> = {
   BIRTH_CERTIFICATE_CORRECTION: 150,
   DEATH_CERTIFICATE: 180,
   OTHER_SERVICE: 0,
+  RATION_CARD_ADD_NAME: 500,
+  RATION_CARD_REMOVE_NAME: 400,
+  RATION_CARD_CORRECTION: 0,
 };
 
 export let SERVICE_DISCOUNTS = {
@@ -183,6 +198,15 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
   const [kuvarDetails, setKuvarDetails] = useState<KuvarBaiMameruDetails>({ ...initialKuvarDetails });
   const [kuvarDocs, setKuvarDocs] = useState<KuvarBaiMameruDocs>({ ...initialKuvarDocs });
 
+  const [rationCardAddDetails, setRationCardAddDetails] = useState<RationCardAddNameDetails>({ ...initialRationCardAddNameDetails });
+  const [rationCardAddDocs, setRationCardAddDocs] = useState<RationCardAddNameDocs>({ ...initialRationCardAddNameDocs });
+
+  const [rationCardRemoveDetails, setRationCardRemoveDetails] = useState<RationCardRemoveNameDetails>({ ...initialRationCardRemoveNameDetails });
+  const [rationCardRemoveDocs, setRationCardRemoveDocs] = useState<RationCardRemoveNameDocs>({ ...initialRationCardRemoveNameDocs });
+
+  const [rationCardCorrectionDetails, setRationCardCorrectionDetails] = useState<RationCardCorrectionDetails>({ ...initialRationCardCorrectionDetails });
+  const [rationCardCorrectionDocs, setRationCardCorrectionDocs] = useState<RationCardCorrectionDocs>({ ...initialRationCardCorrectionDocs });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -208,6 +232,9 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
       case 'MANAV_KALYAN': return 'MANAV KALYAN YOJNA (માનવ કલ્યાણ યોજના)';
       case 'KUVAR_BAI_MAMERU': return 'KUVAR BAI MAMERU YOJANA (કુંવરબાઈ મામેરું યોજના)';
       case 'OTHER_SERVICE': return 'OTHER SERVICE (અન્ય સરકારી સેવાઓ)';
+      case 'RATION_CARD_ADD_NAME': return 'RATION CARD ADD NAME (રેશન કાર્ડ નામ ઉમેરવું)';
+      case 'RATION_CARD_REMOVE_NAME': return 'RATION CARD REMOVE NAME (રેશન કાર્ડ નામ કમી કરવું)';
+      case 'RATION_CARD_CORRECTION': return 'RATION CARD CORRECTION (રેશન કાર્ડ સુધારો)';
       default: return String(type);
     }
   };
@@ -467,6 +494,15 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
       } else if (editingEntry.formType === 'KUVAR_BAI_MAMERU') {
         setKuvarDetails(editingEntry.details as KuvarBaiMameruDetails);
         setKuvarDocs(editingEntry.documents as KuvarBaiMameruDocs);
+      } else if (editingEntry.formType === 'RATION_CARD_ADD_NAME') {
+        setRationCardAddDetails(editingEntry.details as RationCardAddNameDetails);
+        setRationCardAddDocs(editingEntry.documents as RationCardAddNameDocs);
+      } else if (editingEntry.formType === 'RATION_CARD_REMOVE_NAME') {
+        setRationCardRemoveDetails(editingEntry.details as RationCardRemoveNameDetails);
+        setRationCardRemoveDocs(editingEntry.documents as RationCardRemoveNameDocs);
+      } else if (editingEntry.formType === 'RATION_CARD_CORRECTION') {
+        setRationCardCorrectionDetails(editingEntry.details as RationCardCorrectionDetails);
+        setRationCardCorrectionDocs(editingEntry.documents as RationCardCorrectionDocs);
       }
     } else {
       // Reset to defaults
@@ -508,6 +544,13 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
       setManavDocs({ ...initialManavDocs });
       setKuvarDetails({ ...initialKuvarDetails });
       setKuvarDocs({ ...initialKuvarDocs });
+
+      setRationCardAddDetails({ ...initialRationCardAddNameDetails });
+      setRationCardAddDocs({ ...initialRationCardAddNameDocs });
+      setRationCardRemoveDetails({ ...initialRationCardRemoveNameDetails });
+      setRationCardRemoveDocs({ ...initialRationCardRemoveNameDocs });
+      setRationCardCorrectionDetails({ ...initialRationCardCorrectionDetails });
+      setRationCardCorrectionDocs({ ...initialRationCardCorrectionDocs });
     }
     setErrors({});
   }, [editingEntry, formType]);
@@ -570,6 +613,21 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
 
   const handleKuvarDetailsChange = (key: keyof KuvarBaiMameruDetails, value: string) => {
     setKuvarDetails(prev => ({ ...prev, [key]: value }));
+    removeError(key);
+  };
+
+  const handleRationCardAddDetailsChange = (key: keyof RationCardAddNameDetails, value: string) => {
+    setRationCardAddDetails(prev => ({ ...prev, [key]: value }));
+    removeError(key);
+  };
+
+  const handleRationCardRemoveDetailsChange = (key: keyof RationCardRemoveNameDetails, value: string) => {
+    setRationCardRemoveDetails(prev => ({ ...prev, [key]: value }));
+    removeError(key);
+  };
+
+  const handleRationCardCorrectionDetailsChange = (key: keyof RationCardCorrectionDetails, value: string) => {
+    setRationCardCorrectionDetails(prev => ({ ...prev, [key]: value }));
     removeError(key);
   };
 
@@ -1207,6 +1265,52 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
         if (!kuvarDocs.kanyaPitaIncomeCertificate) newErrors.kanyaPitaIncomeCertificate = 'કન્યાના પિતાનું આવકનું પ્રમાણપત્ર';
         if (!kuvarDocs.kanyaBankPassbook) newErrors.kanyaBankPassbook = 'કન્યાની બેંક પાસબુક અપલોડ કરો';
         if (!kuvarDocs.marriageCertificate) newErrors.marriageCertificate = 'લગ્નનું પ્રમાણપત્ર અપલોડ કરો';
+      } else if (formType === 'RATION_CARD_ADD_NAME') {
+        if (!rationCardAddDetails.firstName.trim()) newErrors.firstName = 'પ્રથમ નામ જરૂરી છે';
+        if (!rationCardAddDetails.lastName.trim()) newErrors.lastName = 'અટક જરૂરી છે';
+        if (!rationCardAddDetails.dob) newErrors.dob = 'જન્મ તારીખ જરૂરી છે';
+        if (!rationCardAddDetails.gender) newErrors.gender = 'લિંગ જરૂરી છે';
+        if (!rationCardAddDetails.fatherFirstName.trim()) newErrors.fatherFirstName = 'પિતાનું નામ જરૂરી છે';
+        if (!rationCardAddDetails.fatherLastName.trim()) newErrors.fatherLastName = 'પિતાની અટક જરૂરી છે';
+        if (!rationCardAddDetails.motherFirstName.trim()) newErrors.motherFirstName = 'માતાનું નામ જરૂરી છે';
+        if (!rationCardAddDetails.motherLastName.trim()) newErrors.motherLastName = 'માતાની અટક જરૂરી છે';
+        if (!rationCardAddDetails.address.trim()) newErrors.address = 'સરનામું જરૂરી છે';
+        if (!rationCardAddDetails.rationCardNumber.trim()) newErrors.rationCardNumber = 'રેશન કાર્ડ નંબર જરૂરી છે';
+        if (!rationCardAddDetails.relationshipWithHead) newErrors.relationshipWithHead = 'મુખ્ય સભ્ય સાથેનો સંબંધ જરૂરી છે';
+        if (!rationCardAddDetails.rationCategory) newErrors.rationCategory = 'રેશન કેટેગરી જરૂરી છે';
+        if (!rationCardAddDetails.caste.trim()) newErrors.caste = 'જ્ઞાતિ જરૂરી છે';
+
+        // Documents
+        if (!rationCardAddDocs.aadharCardFront) newErrors.aadharCardFront = 'આધાર કાર્ડ આગળનો ભાગ જરૂરી છે';
+        if (!rationCardAddDocs.aadharCardBack) newErrors.aadharCardBack = 'આધાર કાર્ડ પાછળનો ભાગ જરૂરી છે';
+        if (!rationCardAddDocs.rationCardFront) newErrors.rationCardFront = 'રેશન કાર્ડ આગળનો ભાગ જરૂરી છે';
+        if (!rationCardAddDocs.rationCardBack) newErrors.rationCardBack = 'રેશન કાર્ડ પાછળનો ભાગ જરૂરી છે';
+        if (!rationCardAddDocs.headAadharFront) newErrors.headAadharFront = 'રેશનકાર્ડના મુખ્ય સભ્યનું આધાર કાર્ડ (આગળ) જરૂરી છે';
+        if (!rationCardAddDocs.headAadharBack) newErrors.headAadharBack = 'રેશનકાર્ડના મુખ્ય સભ્યનું આધાર કાર્ડ (પાછળ) જરૂરી છે';
+      } else if (formType === 'RATION_CARD_REMOVE_NAME') {
+        if (!rationCardRemoveDetails.firstName.trim()) newErrors.firstName = 'પ્રથમ નામ જરૂરી છે';
+        if (!rationCardRemoveDetails.lastName.trim()) newErrors.lastName = 'અટક જરૂરી છે';
+        if (!rationCardRemoveDetails.gender) newErrors.gender = 'લિંગ જરૂરી છે';
+        if (!rationCardRemoveDetails.rationCardNumber.trim()) newErrors.rationCardNumber = 'રેશન કાર્ડ નંબર જરૂરી છે';
+        if (!rationCardRemoveDetails.address.trim()) newErrors.address = 'સરનામું જરૂરી છે';
+        if (!rationCardRemoveDetails.removeReason) newErrors.removeReason = 'કમી કરવાનું કારણ જરૂરી છે';
+
+        // Documents
+        if (!rationCardRemoveDocs.aadharCardFront) newErrors.aadharCardFront = 'આધાર કાર્ડ આગળનો ભાગ જરૂરી છે';
+        if (!rationCardRemoveDocs.aadharCardBack) newErrors.aadharCardBack = 'આધાર કાર્ડ પાછળનો ભાગ જરૂરી છે';
+        if (!rationCardRemoveDocs.rationCardFront) newErrors.rationCardFront = 'રેશન કાર્ડ આગળનો ભાગ જરૂરી છે';
+        if (!rationCardRemoveDocs.rationCardBack) newErrors.rationCardBack = 'રેશન કાર્ડ પાછળનો ભાગ જરૂરી છે';
+
+        // Conditional Docs
+        if (rationCardRemoveDetails.removeReason === 'DEATH' && !rationCardRemoveDocs.deathCertificate) {
+          newErrors.deathCertificate = 'મરણ પ્રમાણપત્ર જરૂરી છે';
+        }
+        if (rationCardRemoveDetails.removeReason === 'CHANGE_ADDRESS' && !rationCardRemoveDocs.addressProof) {
+          newErrors.addressProof = 'સરનામાનો પુરાવો જરૂરી છે';
+        }
+        if (rationCardRemoveDetails.removeReason === 'MARRIAGE' && !rationCardRemoveDocs.marriageCertificate) {
+          newErrors.marriageCertificate = 'લગ્ન કંકોતરી/પ્રમાણપત્ર જરૂરી છે';
+        }
       }
     } else {
       // Draft mode - no validation requirements. Allows saving drafts even with completely empty values.
@@ -1316,6 +1420,15 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
       } else if (formType === 'KUVAR_BAI_MAMERU') {
         activeDetails = kuvarDetails;
         activeDocs = kuvarDocs;
+      } else if (formType === 'RATION_CARD_ADD_NAME') {
+        activeDetails = rationCardAddDetails;
+        activeDocs = rationCardAddDocs;
+      } else if (formType === 'RATION_CARD_REMOVE_NAME') {
+        activeDetails = rationCardRemoveDetails;
+        activeDocs = rationCardRemoveDocs;
+      } else if (formType === 'RATION_CARD_CORRECTION') {
+        activeDetails = rationCardCorrectionDetails;
+        activeDocs = rationCardCorrectionDocs;
       }
 
       const newEntry: ApplicationEntry = {
@@ -1443,6 +1556,10 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                formType === 'BIRTH_CERTIFICATE_CORRECTION' ? 'BIRTH CERTIFICATE CORRECTION' :
                formType === 'DEATH_CERTIFICATE' ? 'DEATH CERTIFICATE' :
 
+               formType === 'RATION_CARD_ADD_NAME' ? 'RATION CARD - ADD NAME' :
+               formType === 'RATION_CARD_REMOVE_NAME' ? 'RATION CARD - REMOVE NAME' :
+               formType === 'RATION_CARD_CORRECTION' ? 'RATION CARD - CORRECTION' :
+
                'OTHER SERVICES'}
             </span>
             <h1 className="text-xl md:text-2xl font-bold font-display mt-2 tracking-tight">
@@ -1462,6 +1579,10 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                formType === 'BIRTH_CERTIFICATE_CORRECTION' ? 'જન્મ પ્રમાણપત્ર સુધારવા માટેનું અરજી ફોર્મ' :
                formType === 'DEATH_CERTIFICATE' ? 'મરણ પ્રમાણપત્ર મેળવવા માટેનું અરજી ફોર્મ' :
 
+               formType === 'RATION_CARD_ADD_NAME' ? 'રેશન કાર્ડમાં નવું નામ ઉમેરવા માટેનું અરજી ફોર્મ' :
+               formType === 'RATION_CARD_REMOVE_NAME' ? 'રેશન કાર્ડમાંથી નામ કમી કરવા માટેનું અરજી ફોર્મ' :
+               formType === 'RATION_CARD_CORRECTION' ? 'રેશન કાર્ડમાં સુધારો કરવા માટેનું અરજી ફોર્મ' :
+
                'અન્ય સરકારી સેવાઓ પૂછપરછ ફોર્મ'}
             </h1>
             <p className="text-xs text-indigo-200 mt-1 italic font-sans">
@@ -1476,6 +1597,11 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                formType === 'UDHYAM_AADHAR' ? 'Application Form for Udhyam Aadhar (MSME) Registration' :
                formType === 'MANAV_KALYAN' ? 'Application Form for Manav Kalyan Yojna (Draw System Scheme)' :
                formType === 'KUVAR_BAI_MAMERU' ? 'Application Form for Kuvar Bai Mameru Yojana (Maternity/Marriage Aid)' :
+
+               formType === 'RATION_CARD_ADD_NAME' ? 'Application Form to Add Name in Ration Card' :
+               formType === 'RATION_CARD_REMOVE_NAME' ? 'Application Form to Remove Name from Ration Card' :
+               formType === 'RATION_CARD_CORRECTION' ? 'Application Form for Ration Card Correction Entry' :
+
                'Inquiry and Application Form for Other Government Services'}
             </p>
           </div>
@@ -6550,6 +6676,519 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
           </div>
         )}
 
+
+        {formType === 'RATION_CARD_ADD_NAME' && (
+          <div className="space-y-8 animate-fade-in">
+            {/* 1. Beneficiary Information */}
+            <section className="space-y-4">
+              <div className="border-b border-slate-100 pb-2 flex justify-between items-baseline">
+                <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                  <User className="h-4.5 w-4.5 text-indigo-600" /> ૧. જે સભ્યનું નામ ઉમેરવાનું છે તેની વિગતો (1. New Member Details)
+                </h3>
+                <span className="text-xs text-rose-500">* દર્શાવેલ વિગતો ફરજિયાત છે</span>
+              </div>
+
+              <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                <p className="text-xs font-bold text-slate-800 border-b border-slate-200/60 pb-1">સભ્યનું નામ અને જન્મ તારીખ (Member Name & DOB)</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div id="firstName" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">પ્રથમ નામ (First Name) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.firstName}
+                      onChange={e => handleRationCardAddDetailsChange('firstName', e.target.value.toUpperCase())}
+                      placeholder="e.g. ARJUN"
+                      className={`w-full bg-white border ${errors.firstName ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.firstName && <p className="text-xs text-red-500 mt-0.5">{errors.firstName}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">મધ્યમ નામ (Middle Name)</label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.middleName}
+                      onChange={e => handleRationCardAddDetailsChange('middleName', e.target.value.toUpperCase())}
+                      placeholder="e.g. RAMESHBHAI"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase"
+                    />
+                  </div>
+                  <div id="lastName" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">અટક (Last Name) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.lastName}
+                      onChange={e => handleRationCardAddDetailsChange('lastName', e.target.value.toUpperCase())}
+                      placeholder="e.g. PATEL"
+                      className={`w-full bg-white border ${errors.lastName ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.lastName && <p className="text-xs text-red-500 mt-0.5">{errors.lastName}</p>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div id="dob" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">જન્મ તારીખ (Date of Birth) <span className="text-red-500">*</span></label>
+                    <input
+                      type="date"
+                      value={rationCardAddDetails.dob}
+                      onChange={e => handleRationCardAddDetailsChange('dob', e.target.value)}
+                      className={`w-full bg-white border ${errors.dob ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden`}
+                    />
+                    {errors.dob && <p className="text-xs text-red-500 mt-0.5">{errors.dob}</p>}
+                  </div>
+                  <div id="gender" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">લિંગ (Gender) <span className="text-red-500">*</span></label>
+                    <select
+                      value={rationCardAddDetails.gender}
+                      onChange={e => handleRationCardAddDetailsChange('gender', e.target.value)}
+                      className={`w-full bg-white border ${errors.gender ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden`}
+                    >
+                      <option value="">પસંદ કરો (Select)</option>
+                      <option value="MALE">પુરુષ (Male)</option>
+                      <option value="FEMALE">સ્ત્રી (Female)</option>
+                      <option value="OTHER">અન્ય (Other)</option>
+                    </select>
+                    {errors.gender && <p className="text-xs text-red-500 mt-0.5">{errors.gender}</p>}
+                  </div>
+                  <div id="caste" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">જ્ઞાતિ (Caste / Category) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.caste}
+                      onChange={e => handleRationCardAddDetailsChange('caste', e.target.value.toUpperCase())}
+                      placeholder="e.g. HINDU - PATEL (OBC/GEN/SC/ST)"
+                      className={`w-full bg-white border ${errors.caste ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.caste && <p className="text-xs text-red-500 mt-0.5">{errors.caste}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Parents details */}
+              <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                <p className="text-xs font-bold text-slate-800 border-b border-slate-200/60 pb-1">માતા-પિતાની વિગતો (Parent Details)</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div id="fatherFirstName" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">પિતાનું પ્રથમ નામ (Father First Name) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.fatherFirstName}
+                      onChange={e => handleRationCardAddDetailsChange('fatherFirstName', e.target.value.toUpperCase())}
+                      placeholder="e.g. RAMESHBHAI"
+                      className={`w-full bg-white border ${errors.fatherFirstName ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.fatherFirstName && <p className="text-xs text-red-500 mt-0.5">{errors.fatherFirstName}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">પિતાનું મધ્યમ નામ (Father Middle Name)</label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.fatherMiddleName}
+                      onChange={e => handleRationCardAddDetailsChange('fatherMiddleName', e.target.value.toUpperCase())}
+                      placeholder="e.g. DHIRUBHAI"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase"
+                    />
+                  </div>
+                  <div id="fatherLastName" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">પિતાની અટક (Father Last Name) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.fatherLastName}
+                      onChange={e => handleRationCardAddDetailsChange('fatherLastName', e.target.value.toUpperCase())}
+                      placeholder="e.g. PATEL"
+                      className={`w-full bg-white border ${errors.fatherLastName ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.fatherLastName && <p className="text-xs text-red-500 mt-0.5">{errors.fatherLastName}</p>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div id="motherFirstName" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">માતાનું પ્રથમ નામ (Mother First Name) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.motherFirstName}
+                      onChange={e => handleRationCardAddDetailsChange('motherFirstName', e.target.value.toUpperCase())}
+                      placeholder="e.g. KOKILABEN"
+                      className={`w-full bg-white border ${errors.motherFirstName ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.motherFirstName && <p className="text-xs text-red-500 mt-0.5">{errors.motherFirstName}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">માતાનું મધ્યમ નામ (Mother Middle Name)</label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.motherMiddleName}
+                      onChange={e => handleRationCardAddDetailsChange('motherMiddleName', e.target.value.toUpperCase())}
+                      placeholder="e.g. RAMESHBHAI"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase"
+                    />
+                  </div>
+                  <div id="motherLastName" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">માતાની અટક (Mother Last Name) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.motherLastName}
+                      onChange={e => handleRationCardAddDetailsChange('motherLastName', e.target.value.toUpperCase())}
+                      placeholder="e.g. PATEL"
+                      className={`w-full bg-white border ${errors.motherLastName ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.motherLastName && <p className="text-xs text-red-500 mt-0.5">{errors.motherLastName}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Ration details */}
+              <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                <p className="text-xs font-bold text-slate-800 border-b border-slate-200/60 pb-1">રેશનકાર્ડ અને સરનામાની વિગતો (Ration Card & Address Details)</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div id="rationCardNumber" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">રેશન કાર્ડ નંબર (Ration Card Number) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardAddDetails.rationCardNumber}
+                      onChange={e => handleRationCardAddDetailsChange('rationCardNumber', e.target.value.toUpperCase())}
+                      placeholder="e.g. 24XXXXXXXXXX"
+                      className={`w-full bg-white border ${errors.rationCardNumber ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.rationCardNumber && <p className="text-xs text-red-500 mt-0.5">{errors.rationCardNumber}</p>}
+                  </div>
+                  <div id="relationshipWithHead" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">મુખ્ય સભ્ય સાથેનો સંબંધ (Relationship with Head) <span className="text-red-500">*</span></label>
+                    <select
+                      value={rationCardAddDetails.relationshipWithHead}
+                      onChange={e => handleRationCardAddDetailsChange('relationshipWithHead', e.target.value)}
+                      className={`w-full bg-white border ${errors.relationshipWithHead ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden`}
+                    >
+                      <option value="">પસંદ કરો (Select)</option>
+                      <option value="SON">પુત્ર (Son)</option>
+                      <option value="DAUGHTER">પુત્રી (Daughter)</option>
+                      <option value="WIFE">પત્ની (Wife)</option>
+                      <option value="BROTHER">ભાઈ (Brother)</option>
+                      <option value="SISTER">બહેન (Sister)</option>
+                      <option value="BROTHER_IN_LAW">બનેવી / સાળો (Brother-in-law)</option>
+                      <option value="SISTER_IN_LAW">ભાભી / સાળી (Sister-in-law)</option>
+                      <option value="OTHER">અન્ય (Other)</option>
+                    </select>
+                    {errors.relationshipWithHead && <p className="text-xs text-red-500 mt-0.5">{errors.relationshipWithHead}</p>}
+                  </div>
+                  <div id="rationCategory" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">રેશન કેટેગરી (Ration Category) <span className="text-red-500">*</span></label>
+                    <select
+                      value={rationCardAddDetails.rationCategory}
+                      onChange={e => handleRationCardAddDetailsChange('rationCategory', e.target.value)}
+                      className={`w-full bg-white border ${errors.rationCategory ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden`}
+                    >
+                      <option value="">પસંદ કરો (Select)</option>
+                      <option value="APL">APL</option>
+                      <option value="BPL">BPL / NFSA</option>
+                    </select>
+                    {errors.rationCategory && <p className="text-xs text-red-500 mt-0.5">{errors.rationCategory}</p>}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5" id="address">
+                  <label className="text-xs font-semibold text-slate-700">પૂરેપૂરું સરનામું (Full Address) <span className="text-red-500">*</span></label>
+                  <textarea
+                    rows={3}
+                    value={rationCardAddDetails.address}
+                    onChange={e => handleRationCardAddDetailsChange('address', e.target.value.toUpperCase())}
+                    placeholder="ENTER COMPLETE RESIDENTIAL ADDRESS"
+                    className={`w-full bg-white border ${errors.address ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                  />
+                  {errors.address && <p className="text-xs text-red-500 mt-0.5">{errors.address}</p>}
+                </div>
+              </div>
+            </section>
+
+            {/* Documents */}
+            <section className="space-y-4">
+              <div className="border-b border-slate-100 pb-2">
+                <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                  <FileText className="h-4.5 w-4.5 text-indigo-600" /> ૨. જરૂરી દસ્તાવેજો અપલોડ કરો (2. Upload Required Documents)
+                </h3>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200/60 p-4 rounded-2xl flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-amber-900 space-y-1">
+                  <p className="font-bold">મહત્વની સૂચના (Important Notice):</p>
+                  <p>• તમામ દસ્તાવેજો સ્પષ્ટ રીતે વાંચી શકાય તેવા હોવા જોઈએ (All documents must be clearly readable).</p>
+                  <p>• જો બીજા રેશનકાર્ડમાંથી નામ કમી કરી અહીં ઉમેરવાનું હોય, તો "નામ કમી કર્યાનો દાખલો" ફરજિયાત અપલોડ કરો.</p>
+                  <p>• જો નવું જ જન્મેલ બાળક હોય તો તેનું "જન્મ પ્રમાણપત્ર" અપલોડ કરો.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <DocumentUploader label="નવા સભ્યનું આધાર કાર્ડ (આગળ) *" gujaratiLabel="Aadhaar Card Front" document={rationCardAddDocs.aadharCardFront} onUpload={(doc) => setRationCardAddDocs({...rationCardAddDocs, aadharCardFront: doc})} />
+                  {errors.aadharCardFront && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.aadharCardFront}</p>}
+                </div>
+                <div>
+                  <DocumentUploader label="નવા સભ્યનું આધાર કાર્ડ (પાછળ) *" gujaratiLabel="Aadhaar Card Back" document={rationCardAddDocs.aadharCardBack} onUpload={(doc) => setRationCardAddDocs({...rationCardAddDocs, aadharCardBack: doc})} />
+                  {errors.aadharCardBack && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.aadharCardBack}</p>}
+                </div>
+                <div>
+                  <DocumentUploader label="રેશનકાર્ડ આગળનો ભાગ *" gujaratiLabel="Ration Card Front" document={rationCardAddDocs.rationCardFront} onUpload={(doc) => setRationCardAddDocs({...rationCardAddDocs, rationCardFront: doc})} />
+                  {errors.rationCardFront && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.rationCardFront}</p>}
+                </div>
+                <div>
+                  <DocumentUploader label="રેશનકાર્ડ પાછળનો ભાગ *" gujaratiLabel="Ration Card Back" document={rationCardAddDocs.rationCardBack} onUpload={(doc) => setRationCardAddDocs({...rationCardAddDocs, rationCardBack: doc})} />
+                  {errors.rationCardBack && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.rationCardBack}</p>}
+                </div>
+                <div>
+                  <DocumentUploader label="મુખ્ય સભ્યનું આધાર કાર્ડ (આગળ) *" gujaratiLabel="Head of Family Aadhaar Front" document={rationCardAddDocs.headAadharFront} onUpload={(doc) => setRationCardAddDocs({...rationCardAddDocs, headAadharFront: doc})} />
+                  {errors.headAadharFront && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.headAadharFront}</p>}
+                </div>
+                <div>
+                  <DocumentUploader label="મુખ્ય સભ્યનું આધાર કાર્ડ (પાછળ) *" gujaratiLabel="Head of Family Aadhaar Back" document={rationCardAddDocs.headAadharBack} onUpload={(doc) => setRationCardAddDocs({...rationCardAddDocs, headAadharBack: doc})} />
+                  {errors.headAadharBack && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.headAadharBack}</p>}
+                </div>
+                <div>
+                  <DocumentUploader label="નામ કમી કર્યાનો દાખલો (જો લાગુ પડે તો)" gujaratiLabel="Name Deletion Certificate (If Transferring)" document={rationCardAddDocs.deletionCertificate || null} onUpload={(doc) => setRationCardAddDocs({...rationCardAddDocs, deletionCertificate: doc})} />
+                </div>
+                <div>
+                  <DocumentUploader label="જન્મ પ્રમાણપત્ર (જો નવું બાળક હોય)" gujaratiLabel="Birth Certificate (If Fresh Born Baby)" document={rationCardAddDocs.birthCertificate || null} onUpload={(doc) => setRationCardAddDocs({...rationCardAddDocs, birthCertificate: doc})} />
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {formType === 'RATION_CARD_REMOVE_NAME' && (
+          <div className="space-y-8 animate-fade-in">
+            {/* 1. Member to Remove */}
+            <section className="space-y-4">
+              <div className="border-b border-slate-100 pb-2 flex justify-between items-baseline">
+                <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                  <User className="h-4.5 w-4.5 text-indigo-600" /> ૧. જે સભ્યનું નામ કમી કરવાનું છે તેની વિગતો (1. Member Removal Details)
+                </h3>
+                <span className="text-xs text-rose-500">* દર્શાવેલ વિગતો ફરજિયાત છે</span>
+              </div>
+
+              <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                <p className="text-xs font-bold text-slate-800 border-b border-slate-200/60 pb-1">સભ્યની અંગત વિગતો (Member Details)</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div id="firstName" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">પ્રથમ નામ (First Name) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardRemoveDetails.firstName}
+                      onChange={e => handleRationCardRemoveDetailsChange('firstName', e.target.value.toUpperCase())}
+                      placeholder="e.g. ASHABEN"
+                      className={`w-full bg-white border ${errors.firstName ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.firstName && <p className="text-xs text-red-500 mt-0.5">{errors.firstName}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">મધ્યમ નામ (Middle Name)</label>
+                    <input
+                      type="text"
+                      value={rationCardRemoveDetails.middleName}
+                      onChange={e => handleRationCardRemoveDetailsChange('middleName', e.target.value.toUpperCase())}
+                      placeholder="e.g. RAMESHBHAI"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase"
+                    />
+                  </div>
+                  <div id="lastName" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">અટક (Last Name) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardRemoveDetails.lastName}
+                      onChange={e => handleRationCardRemoveDetailsChange('lastName', e.target.value.toUpperCase())}
+                      placeholder="e.g. PATEL"
+                      className={`w-full bg-white border ${errors.lastName ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.lastName && <p className="text-xs text-red-500 mt-0.5">{errors.lastName}</p>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div id="gender" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">લિંગ (Gender) <span className="text-red-500">*</span></label>
+                    <select
+                      value={rationCardRemoveDetails.gender}
+                      onChange={e => handleRationCardRemoveDetailsChange('gender', e.target.value)}
+                      className={`w-full bg-white border ${errors.gender ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden`}
+                    >
+                      <option value="">પસંદ કરો (Select)</option>
+                      <option value="MALE">પુરુષ (Male)</option>
+                      <option value="FEMALE">સ્ત્રી (Female)</option>
+                      <option value="OTHER">અન્ય (Other)</option>
+                    </select>
+                    {errors.gender && <p className="text-xs text-red-500 mt-0.5">{errors.gender}</p>}
+                  </div>
+                  <div id="rationCardNumber" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">રેશન કાર્ડ નંબર (Ration Card Number) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      value={rationCardRemoveDetails.rationCardNumber}
+                      onChange={e => handleRationCardRemoveDetailsChange('rationCardNumber', e.target.value.toUpperCase())}
+                      placeholder="e.g. 24XXXXXXXXXX"
+                      className={`w-full bg-white border ${errors.rationCardNumber ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                    />
+                    {errors.rationCardNumber && <p className="text-xs text-red-500 mt-0.5">{errors.rationCardNumber}</p>}
+                  </div>
+                  <div id="removeReason" className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">કમી કરવાનું કારણ (Removal Reason) <span className="text-red-500">*</span></label>
+                    <select
+                      value={rationCardRemoveDetails.removeReason}
+                      onChange={e => handleRationCardRemoveDetailsChange('removeReason', e.target.value)}
+                      className={`w-full bg-white border ${errors.removeReason ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden`}
+                    >
+                      <option value="">પસંદ કરો (Select)</option>
+                      <option value="DEATH">મૃત્યુ પામેલ હોવાથી (Death)</option>
+                      <option value="MARRIAGE">લગ્ન થઈ ગયેલ હોવાથી (Marriage / Transfer)</option>
+                      <option value="CHANGE_ADDRESS">બીજા સ્થળે રહેવા ગયેલ હોવાથી (Change of Address)</option>
+                      <option value="OTHER">અન્ય કારણોસર (Other Reason)</option>
+                    </select>
+                    {errors.removeReason && <p className="text-xs text-red-500 mt-0.5">{errors.removeReason}</p>}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5" id="address">
+                  <label className="text-xs font-semibold text-slate-700">રેશનકાર્ડનું પૂરેપૂરું સરનામું (Full Address on Ration Card) <span className="text-red-500">*</span></label>
+                  <textarea
+                    rows={3}
+                    value={rationCardRemoveDetails.address}
+                    onChange={e => handleRationCardRemoveDetailsChange('address', e.target.value.toUpperCase())}
+                    placeholder="ENTER RESIDENTIAL ADDRESS AS PER RATION CARD"
+                    className={`w-full bg-white border ${errors.address ? 'border-red-400 focus:ring-red-100' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-100'} rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase`}
+                  />
+                  {errors.address && <p className="text-xs text-red-500 mt-0.5">{errors.address}</p>}
+                </div>
+              </div>
+            </section>
+
+            {/* Documents */}
+            <section className="space-y-4">
+              <div className="border-b border-slate-100 pb-2">
+                <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                  <FileText className="h-4.5 w-4.5 text-indigo-600" /> ૨. જરૂરી દસ્તાવેજો અપલોડ કરો (2. Upload Required Documents)
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <DocumentUploader label="કમી કરનાર સભ્યનું આધાર કાર્ડ (આગળ) *" gujaratiLabel="Member Aadhaar Card Front" document={rationCardRemoveDocs.aadharCardFront} onUpload={(doc) => setRationCardRemoveDocs({...rationCardRemoveDocs, aadharCardFront: doc})} />
+                  {errors.aadharCardFront && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.aadharCardFront}</p>}
+                </div>
+                <div>
+                  <DocumentUploader label="કમી કરનાર સભ્યનું આધાર કાર્ડ (પાછળ) *" gujaratiLabel="Member Aadhaar Card Back" document={rationCardRemoveDocs.aadharCardBack} onUpload={(doc) => setRationCardRemoveDocs({...rationCardRemoveDocs, aadharCardBack: doc})} />
+                  {errors.aadharCardBack && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.aadharCardBack}</p>}
+                </div>
+                <div>
+                  <DocumentUploader label="રેશનકાર્ડ આગળનો ભાગ *" gujaratiLabel="Ration Card Front" document={rationCardRemoveDocs.rationCardFront} onUpload={(doc) => setRationCardRemoveDocs({...rationCardRemoveDocs, rationCardFront: doc})} />
+                  {errors.rationCardFront && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.rationCardFront}</p>}
+                </div>
+                <div>
+                  <DocumentUploader label="રેશનકાર્ડ પાછળનો ભાગ *" gujaratiLabel="Ration Card Back" document={rationCardRemoveDocs.rationCardBack} onUpload={(doc) => setRationCardRemoveDocs({...rationCardRemoveDocs, rationCardBack: doc})} />
+                  {errors.rationCardBack && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.rationCardBack}</p>}
+                </div>
+
+                {/* Conditional Uploders */}
+                {rationCardRemoveDetails.removeReason === 'DEATH' && (
+                  <div className="md:col-span-2">
+                    <DocumentUploader label="મરણ પ્રમાણપત્ર *" gujaratiLabel="Death Certificate" document={rationCardRemoveDocs.deathCertificate || null} onUpload={(doc) => setRationCardRemoveDocs({...rationCardRemoveDocs, deathCertificate: doc})} />
+                    {errors.deathCertificate && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.deathCertificate}</p>}
+                  </div>
+                )}
+                {rationCardRemoveDetails.removeReason === 'MARRIAGE' && (
+                  <div className="md:col-span-2">
+                    <DocumentUploader label="લગ્ન કંકોતરી / લગ્નનું પ્રમાણપત્ર *" gujaratiLabel="Marriage Invitation or Certificate" document={rationCardRemoveDocs.marriageCertificate || null} onUpload={(doc) => setRationCardRemoveDocs({...rationCardRemoveDocs, marriageCertificate: doc})} />
+                    {errors.marriageCertificate && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.marriageCertificate}</p>}
+                  </div>
+                )}
+                {rationCardRemoveDetails.removeReason === 'CHANGE_ADDRESS' && (
+                  <div className="md:col-span-2">
+                    <DocumentUploader label="બીજા રહેઠાણનું સરનામાનો પુરાવો (લાઈટ બિલ/ચૂંટણી કાર્ડ) *" gujaratiLabel="New Address Proof" document={rationCardRemoveDocs.addressProof || null} onUpload={(doc) => setRationCardRemoveDocs({...rationCardRemoveDocs, addressProof: doc})} />
+                    {errors.addressProof && <p className="text-rose-500 text-[10px] mt-1 font-bold">{errors.addressProof}</p>}
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+        )}
+
+        {formType === 'RATION_CARD_CORRECTION' && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Correction details form */}
+            <section className="space-y-4">
+              <div className="border-b border-slate-100 pb-2 flex justify-between items-baseline">
+                <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                  <Edit3 className="h-4.5 w-4.5 text-teal-600" /> રેશન કાર્ડ વિગત સુધારો અરજી (Ration Card Correction Enquiry Form)
+                </h3>
+              </div>
+
+              <div className="bg-teal-50 border border-teal-200/50 p-4 rounded-2xl">
+                <p className="text-xs text-teal-900 leading-relaxed font-semibold">
+                  નોંધ: રેશનકાર્ડમાં નામ સુધારવું, સંબંધ સુધારવો, અથવા વિગતોની ચોકસાઈ માટે તમે અહીં સંપર્ક વિગતો અને સુધારવાની વિગતો સબમિટ કરી શકો છો. અમારા પ્રતિનિધિ તમારો સંપર્ક કરશે.
+                </p>
+              </div>
+
+              <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                <p className="text-xs font-bold text-slate-800 border-b border-slate-200/60 pb-1">અરજદારની વિગતો (Applicant Info)</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">અરજદારનું નામ (Full Name)</label>
+                    <input
+                      type="text"
+                      value={rationCardCorrectionDetails.firstName}
+                      onChange={e => handleRationCardCorrectionDetailsChange('firstName', e.target.value.toUpperCase())}
+                      placeholder="e.g. SANJAYBHAI PATEL"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">રેશન કાર્ડ નંબર (Ration Card Number)</label>
+                    <input
+                      type="text"
+                      value={rationCardCorrectionDetails.rationCardNumber}
+                      onChange={e => handleRationCardCorrectionDetailsChange('rationCardNumber', e.target.value.toUpperCase())}
+                      placeholder="e.g. 24XXXXXXXXXX"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-sm outline-hidden uppercase"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-700">સંપર્ક નંબર (Contact Number)</label>
+                    <input
+                      type="text"
+                      maxLength={10}
+                      value={rationCardCorrectionDetails.contactNumber}
+                      onChange={e => handleRationCardCorrectionDetailsChange('contactNumber', e.target.value.replace(/\D/g, ''))}
+                      placeholder="e.g. 9876543210"
+                      className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-sm outline-hidden font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-700">શું સુધારો કરવાનો છે તેની સવિસ્તાર માહિતી (Correction Details Description)</label>
+                  <textarea
+                    rows={4}
+                    value={rationCardCorrectionDetails.correctionEnquiry}
+                    onChange={e => handleRationCardCorrectionDetailsChange('correctionEnquiry', e.target.value)}
+                    placeholder="દા.ત. રેશનકાર્ડમાં પિતાના નામમાં પટેલ ની જગ્યાએ રાઠોડ કરવાનું છે, અથવા બાળકની ઉંમર સુધારવાની છે..."
+                    className="w-full bg-white border border-slate-200 rounded-xl py-2 px-3.5 text-sm outline-hidden"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* Documents */}
+            <section className="space-y-4">
+              <div className="border-b border-slate-100 pb-2">
+                <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                  <FileText className="h-4.5 w-4.5 text-indigo-600" /> દસ્તાવેજો અપલોડ કરો (Upload Documents) - વૈકલ્પિક
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DocumentUploader label="રેશનકાર્ડ આગળ-પાછળ કોપી" gujaratiLabel="Ration Card copy" document={rationCardCorrectionDocs.rationCardFront} onUpload={(doc) => setRationCardCorrectionDocs({...rationCardCorrectionDocs, rationCardFront: doc})} />
+                <DocumentUploader label="સાચું નામ ધરાવતું કોઈ પણ પ્રમાણપત્ર (આધાર/LC)" gujaratiLabel="Supporting Proof (Aadhaar or LC)" document={rationCardCorrectionDocs.supportingDoc} onUpload={(doc) => setRationCardCorrectionDocs({...rationCardCorrectionDocs, supportingDoc: doc})} />
+              </div>
+            </section>
+          </div>
+        )}
       </div>
 
       {/* Form Action Buttons (Save Draft & Submit) */}

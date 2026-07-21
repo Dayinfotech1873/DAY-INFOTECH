@@ -2,37 +2,115 @@
 <svg
   width="1024"
   height="1024"
-  viewBox="0 0 512 512"
+  viewBox="0 0 1024 1024"
   fill="none"
   xmlns="http://www.w3.org/2000/svg"
 >
-  <!-- Pure white background for maximum compatibility -->
-  <rect width="512" height="512" fill="white" />
-  
-  <!-- Outer Rings -->
-  <circle cx="256" cy="256" r="240" stroke="#1E3A8A" stroke-width="12" />
-  <circle cx="256" cy="256" r="228" stroke="#F97316" stroke-width="8" />
+  <defs>
+    <!-- Deep Navy/Space Premium Background Gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#311042" />
+    </linearGradient>
 
-  <!-- Professional Iconography -->
-  <g id="CenterSymbol">
-    <!-- Main Bold "D" Shape -->
+    <!-- Warm Sun/Day Rose-to-Orange Gradient -->
+    <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e" />
+      <stop offset="60%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#eab308" />
+    </linearGradient>
+
+    <!-- Digital Info Tech Cyan-to-Blue Gradient -->
+    <linearGradient id="techGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </linearGradient>
+
+    <!-- Outer Ring Gold Gradient -->
+    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+
+    <!-- Futuristic Neon Glow Filter -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Squircle container with premium gradient background -->
+  <rect width="1024" height="1024" rx="240" fill="url(#bgGradient)" />
+
+  <!-- Tech decorative concentric pattern -->
+  <circle cx="512" cy="512" r="410" stroke="url(#ringGradient)" stroke-width="6" stroke-dasharray="24 16" opacity="0.25" />
+  <circle cx="512" cy="512" r="360" stroke="#ffffff" stroke-width="2" opacity="0.1" />
+
+  <!-- Ambient glow in the center -->
+  <circle cx="512" cy="512" r="160" fill="url(#sunGradient)" opacity="0.15" filter="url(#neonGlow)" />
+
+  <g transform="translate(512, 512)">
+    <!-- Tech Digital Orbit Path -->
     <path 
-      d="M170 140 V372 C170 372 342 372 342 256 C342 140 170 140 170 140Z" 
-      fill="#1E3A8A" 
+      d="M -280,0 A 280,280 0 1,1 280,0" 
+      fill="none" 
+      stroke="url(#techGradient)" 
+      stroke-width="14" 
+      stroke-linecap="round" 
+      stroke-dasharray="40 25" 
+      opacity="0.8"
+    />
+    <path 
+      d="M 280,0 A 280,280 0 0,1 -280,0" 
+      fill="none" 
+      stroke="url(#sunGradient)" 
+      stroke-width="14" 
+      stroke-linecap="round" 
+      stroke-dasharray="60 30" 
+      opacity="0.8"
+    />
+
+    <!-- Interlocking "D" and "I" Monogram Geometric Shapes -->
+    <!-- Left Vertical Pillar for "I" -->
+    <rect 
+      x="-160" 
+      y="-180" 
+      width="64" 
+      height="360" 
+      rx="32" 
+      fill="url(#techGradient)" 
+      filter="url(#neonGlow)"
     />
     
-    <!-- Accent Inner Shape -->
+    <!-- Digital Dot Node above "I" -->
+    <circle 
+      cx="-128" 
+      cy="-240" 
+      r="36" 
+      fill="url(#techGradient)" 
+      filter="url(#neonGlow)"
+    />
+    
+    <!-- Glowing Golden "D" Arc intersecting the "I" -->
     <path 
-      d="M205 175 V337 C205 337 305 337 305 256 C305 175 205 175 205 175Z" 
-      fill="#F97316" 
+      d="M -110,-140 C -10,-140 140,-90 140,0 C 140,90 -10,140 -110,140" 
+      fill="none" 
+      stroke="url(#sunGradient)" 
+      stroke-width="64" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+      filter="url(#neonGlow)"
     />
 
-    <!-- Connectivity Dot -->
-    <circle cx="342" cy="256" r="40" fill="#1E3A8A" />
-    <circle cx="342" cy="256" r="16" fill="white" />
+    <!-- Additional decorative digital nodes to represent data flow -->
+    <circle cx="0" cy="-140" r="14" fill="#ffffff" opacity="0.9" />
+    <circle cx="140" cy="0" r="16" fill="#ffffff" opacity="0.9" />
+    <circle cx="0" cy="140" r="14" fill="#ffffff" opacity="0.9" />
   </g>
-
-  <!-- Connectivity Nodes -->
-  <circle cx="256" cy="85" r="24" fill="#1E3A8A" />
-  <circle cx="256" cy="427" r="24" fill="#F97316" />
 </svg>

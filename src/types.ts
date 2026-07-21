@@ -1,4 +1,70 @@
-export type FormType = 'PAN_CARD' | 'PAN_CARD_CORRECTION' | 'MINOR_PAN_CARD'  | 'VOTER_ID' | 'VOTER_ID_CORRECTION' | 'E_SHRAM' | 'FARMER_SUBSIDY' | 'CAST_CERTIFICATE' | 'INCOME_CERTIFICATE' | 'AYUSHYMAN_CARD' | 'AABHA_CARD' | 'UDHYAM_AADHAR' | 'MANAV_KALYAN' | 'KUVAR_BAI_MAMERU' | 'NEW_BIRTH_CERTIFICATE' | 'BIRTH_CERTIFICATE_CORRECTION' | 'DEATH_CERTIFICATE' | 'OTHER_SERVICE';
+export type FormType = 'PAN_CARD' | 'PAN_CARD_CORRECTION' | 'MINOR_PAN_CARD'  | 'VOTER_ID' | 'VOTER_ID_CORRECTION' | 'E_SHRAM' | 'FARMER_SUBSIDY' | 'CAST_CERTIFICATE' | 'INCOME_CERTIFICATE' | 'AYUSHYMAN_CARD' | 'AABHA_CARD' | 'UDHYAM_AADHAR' | 'MANAV_KALYAN' | 'KUVAR_BAI_MAMERU' | 'NEW_BIRTH_CERTIFICATE' | 'BIRTH_CERTIFICATE_CORRECTION' | 'DEATH_CERTIFICATE' | 'OTHER_SERVICE' | 'RATION_CARD_ADD_NAME' | 'RATION_CARD_REMOVE_NAME' | 'RATION_CARD_CORRECTION';
+
+export interface RationCardAddNameDetails {
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  dob: string;
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | '';
+  fatherFirstName: string;
+  fatherMiddleName: string;
+  fatherLastName: string;
+  motherFirstName: string;
+  motherMiddleName: string;
+  motherLastName: string;
+  address: string;
+  rationCardNumber: string;
+  relationshipWithHead: string;
+  rationCategory: 'APL' | 'BPL' | '';
+  caste: string;
+  mobile?: string;
+}
+
+export interface RationCardAddNameDocs {
+  aadharCardFront: DocumentUpload | null;
+  aadharCardBack: DocumentUpload | null;
+  rationCardFront: DocumentUpload | null;
+  rationCardBack: DocumentUpload | null;
+  deletionCertificate: DocumentUpload | null;
+  birthCertificate: DocumentUpload | null;
+  headAadharFront: DocumentUpload | null;
+  headAadharBack: DocumentUpload | null;
+  headVoterFront: DocumentUpload | null;
+  headVoterBack: DocumentUpload | null;
+}
+
+export interface RationCardRemoveNameDetails {
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | '';
+  rationCardNumber: string;
+  address: string;
+  removeReason: 'DEATH' | 'CHANGE_ADDRESS' | 'MARRIAGE' | 'OTHER' | '';
+  mobile?: string;
+}
+
+export interface RationCardRemoveNameDocs {
+  aadharCardFront: DocumentUpload | null;
+  aadharCardBack: DocumentUpload | null;
+  rationCardFront: DocumentUpload | null;
+  rationCardBack: DocumentUpload | null;
+  deathCertificate: DocumentUpload | null;
+  addressProof: DocumentUpload | null;
+  marriageCertificate: DocumentUpload | null;
+}
+
+export interface RationCardCorrectionDetails {
+  contactAdminMessage: string;
+  firstName: string;
+  rationCardNumber: string;
+  contactNumber: string;
+  correctionEnquiry: string;
+}
+
+export interface RationCardCorrectionDocs {
+  supportingDoc?: DocumentUpload | null;
+}
 
 export interface DocumentUpload {
   fileName: string;
@@ -563,8 +629,8 @@ export interface DeathCertificateDocs {
 export interface ApplicationEntry {
   id: string;
   formType: FormType;
-  details: PanCardDetails | PanCardCorrectionDetails | MinorPanCardDetails | VoterIdCorrectionDetails | VoterIdDetails | EShramDetails | FarmerSubsidyDetails | CastCertificateDetails | IncomeCertificateDetails | AyushmanCardDetails | AabhaCardDetails | UdhyamAadharDetails | ManavKalyanDetails | KuvarBaiMameruDetails | NewBirthCertificateDetails | BirthCertificateCorrectionDetails | DeathCertificateDetails | OtherServiceDetails;
-  documents: PanCardDocs | PanCardCorrectionDocs | MinorPanCardDocs | VoterIdCorrectionDocs | VoterIdDocs | EShramDocs | FarmerSubsidyDocs | CastCertificateDocs | IncomeCertificateDocs | AyushmanCardDocs | AabhaCardDocs | UdhyamAadharDocs | ManavKalyanDocs | KuvarBaiMameruDocs | NewBirthCertificateDocs | BirthCertificateCorrectionDocs | DeathCertificateDocs | OtherServiceDocs;
+  details: PanCardDetails | PanCardCorrectionDetails | MinorPanCardDetails | VoterIdCorrectionDetails | VoterIdDetails | EShramDetails | FarmerSubsidyDetails | CastCertificateDetails | IncomeCertificateDetails | AyushmanCardDetails | AabhaCardDetails | UdhyamAadharDetails | ManavKalyanDetails | KuvarBaiMameruDetails | NewBirthCertificateDetails | BirthCertificateCorrectionDetails | DeathCertificateDetails | OtherServiceDetails | RationCardAddNameDetails | RationCardRemoveNameDetails | RationCardCorrectionDetails;
+  documents: PanCardDocs | PanCardCorrectionDocs | MinorPanCardDocs | VoterIdCorrectionDocs | VoterIdDocs | EShramDocs | FarmerSubsidyDocs | CastCertificateDocs | IncomeCertificateDocs | AyushmanCardDocs | AabhaCardDocs | UdhyamAadharDocs | ManavKalyanDocs | KuvarBaiMameruDocs | NewBirthCertificateDocs | BirthCertificateCorrectionDocs | DeathCertificateDocs | OtherServiceDocs | RationCardAddNameDocs | RationCardRemoveNameDocs | RationCardCorrectionDocs;
   status: 'DRAFT' | 'COMPLETED' | 'CORRECTION_REQUIRED' | 'APPROVED' | 'REJECTED';
   createdAt: string;
   updatedAt: string;

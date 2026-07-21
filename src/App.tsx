@@ -4,12 +4,12 @@ import { FormType, ApplicationEntry, OfflineForm } from './types';
 import { Header } from './components/Header';
 import { ApplicationTracker } from './components/ApplicationTracker';
 import { FormRenderer } from './components/FormRenderer';
-import { LogIn, Lock, ArrowLeft, Sparkles, ShieldCheck, User, Phone, Key, UserPlus, Eye, EyeOff, ArrowRight, Shield, Info, FileText, Calendar, Users, FileDown, Download, Plus, Trash2, QrCode, CheckCircle, Monitor, Smartphone, MessageSquare, Folder, Wifi, X, Minimize2, Maximize2, Activity, Clock, LogOut, Palette, Mail } from 'lucide-react';
+import { LogIn, Lock, ArrowLeft, Sparkles, ShieldCheck, User, Phone, Key, UserPlus, Eye, EyeOff, ArrowRight, Shield, Info, FileText, Calendar, Users, FileDown, Download, Plus, Trash2, QrCode, CheckCircle, Monitor, Smartphone, MessageSquare, Folder, Wifi, X, Minimize2, Maximize2, Activity, Clock, LogOut, Palette, Mail, AlertTriangle } from 'lucide-react';
 import { auth, logout, db } from './utils/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Logo } from './components/Logo';
-import { getLoggedInUser, logoutCustomUser, signUpCustomUser, loginCustomUser, createForgotPasswordRequest, getAccountsByMobile, getAccountsByMobileAndDob, isOwner, subscribeToMaintenanceStatus, saveMaintenanceStatus, incrementVisitorCount, subscribeToVisitorCount, updateUserOnlineStatus, setUserOffline, resetAdminPassword, subscribeToOfflineForms, saveOfflineForm, deleteOfflineForm, incrementOfflineFormDownloads, getGreetingsMessage, changeCustomPassword, changeCustomUsername, getCustomUserByUsername } from './utils/db';
+import { getLoggedInUser, logoutCustomUser, signUpCustomUser, loginCustomUser, createForgotPasswordRequest, getAccountsByMobile, getAccountsByMobileAndDob, isOwner, subscribeToMaintenanceStatus, saveMaintenanceStatus, incrementVisitorCount, subscribeToVisitorCount, updateUserOnlineStatus, setUserOffline, resetAdminPassword, subscribeToOfflineForms, saveOfflineForm, deleteOfflineForm, incrementOfflineFormDownloads, getGreetingsMessage, changeCustomPassword, changeCustomUsername, getCustomUserByUsername, getApkConfig, subscribeToApkConfig } from './utils/db';
 import { MaintenanceView } from './components/MaintenanceView';
 import { THEMES } from './utils/theme';
 import { AboutDayInfotech } from './components/AboutDayInfotech';
@@ -61,7 +61,7 @@ export default function App() {
   };
 
   const [activeView, setActiveView] = useState<AppView>('TRACKER');
-  const [activeTrackerTab, setActiveTrackerTab] = useState<'DASHBOARD' | 'APPLICATIONS' | 'USERS' | 'SERVICES' | 'OFFICIAL_WEBSITES' | 'SEND_MESSAGE' | 'APPLY_SERVICE' | 'YOUR_APPLICATIONS' | 'ABOUT_DAY_INFOTECH' | 'WALLET' | undefined>(undefined);
+  const [activeTrackerTab, setActiveTrackerTab] = useState<'DASHBOARD' | 'APPLICATIONS' | 'USERS' | 'SERVICES' | 'OFFICIAL_WEBSITES' | 'SEND_MESSAGE' | 'APPLY_SERVICE' | 'YOUR_APPLICATIONS' | 'ABOUT_DAY_INFOTECH' | 'WALLET' | 'PROFILE' | undefined>(undefined);
   const [showSplash, setShowSplash] = useState(true);
   const [chatTargetUser, setChatTargetUser] = useState<any>(null);
   const [activeFormType, setActiveFormType] = useState<FormType | null>(null);
@@ -142,6 +142,92 @@ export default function App() {
   const [changeUsernameOtpNotification, setChangeUsernameOtpNotification] = useState<string | null>(null);
   const [isChangingUsername, setIsChangingUsername] = useState(false);
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+  const [apkConfig, setApkConfig] = useState<{ version: string; downloadUrl: string; fileName?: string; updatedAt?: string } | null>(null);
+
+  const isApkClient = () => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('platform') === 'apk' || params.get('apk') === 'true') {
+      return true;
+    }
+    try {
+      if (localStorage.getItem('is_apk_client') === 'true') {
+        return true;
+      }
+    } catch (e) {}
+    if ((window as any).isApk === true || (window as any).isApkClient === true) {
+      return true;
+    }
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes('wv') || ua.includes('webview') || ua.includes('crosswalk') || ua.includes('apk_app')) {
+      return true;
+    }
+    return false;
+  };
+
+  const isRealApkClient = () => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('platform') === 'apk' || params.get('apk') === 'true') {
+      return true;
+    }
+    if ((window as any).isApk === true || (window as any).isApkClient === true) {
+      return true;
+    }
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes('wv') || ua.includes('webview') || ua.includes('crosswalk') || ua.includes('apk_app')) {
+      return true;
+    }
+    return false;
+  };
+
+  const isOutdatedApk = () => {
+    const CURRENT_APK_VERSION = "1.0.0";
+    if (!isApkClient()) return false;
+    if (!apkConfig?.version) return false;
+    return apkConfig.version !== CURRENT_APK_VERSION;
+  };
+
+  const downloadApkFile = () => {
+    if (!apkConfig || !apkConfig.downloadUrl) {
+      alert(language === 'gu' ? 'ડાઉનલોડ લિંક ઉપલબ્ધ નથી!' : 'Download link not available!');
+      return;
+    }
+    
+    let url = apkConfig.downloadUrl;
+    if (url.startsWith('/uploads/')) {
+      url = window.location.origin + url;
+    } else if (url.includes('/uploads/')) {
+      const idx = url.indexOf('/uploads/');
+      const relativePath = url.substring(idx);
+      url = window.location.origin + relativePath;
+    } else if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0')) {
+      // If localhost is present but we need external
+      const parts = url.split('/');
+      const lastPart = parts[parts.length - 1];
+      url = `${window.location.origin}/uploads/${lastPart}`;
+    }
+
+    if (url.startsWith('data:')) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = apkConfig.fileName || 'day_infotech.apk';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      window.open(url, '_blank');
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = subscribeToApkConfig((config) => {
+      if (config) {
+        setApkConfig(config);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const [greetingsMsg, setGreetingsMsg] = useState('');
   const [isGreetingsActive, setIsGreetingsActive] = useState(false);
@@ -788,69 +874,22 @@ export default function App() {
             <Logo size={120} showText={false} />
             <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-1.5">
               <p className="text-slate-800 font-extrabold text-sm leading-normal">
-                {t("Digital Service Point & Online Form Assistant", "ડિજિટલ સર્વિસ સેન્ટર અને ઓનલાઇન ફોર્મ સહાયક")}
+                {t("Digital Service Point & Online Form Assistant", "ડિજિટલ સર્વિસ સેન્ટર અને ઓનલાઇન ફોર્મ આસિસ્ટન્ટ")}
               </p>
-              <div className="flex items-center gap-1.5 mt-0.5 px-3 py-1 rounded-full border bg-slate-900/40 border-slate-700/50 text-slate-100">
-                <Users className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-xs font-bold tracking-wide">{t(`Visitors: ${visitorCount}`, `મુલાકાતીઓ (Visitors): ${visitorCount}`)}</span>
-              </div>
-
-              {/* Language Switcher */}
-              <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 p-1 rounded-xl shadow-xs w-fit mt-1">
-                <button
-                  type="button"
-                  onClick={() => setLanguage('en')}
-                  className={`px-3 py-1 rounded-lg text-xs font-black tracking-wider transition-all cursor-pointer ${
-                    language === 'en'
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-                  }`}
-                >
-                  English
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLanguage('gu')}
-                  className={`px-3 py-1 rounded-lg text-xs font-black tracking-wider transition-all cursor-pointer ${
-                    language === 'gu'
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-                  }`}
-                >
-                  ગુજરાતી
-                </button>
-              </div>
+              <p className="text-slate-500 font-bold text-xs">
+                {t("Complete all your online work in one place", "આપનું તમામ ઓનલાઇન કામ એક જ જગ્યાએ પૂર્ણ કરો")}
+              </p>
             </div>
           </div>
 
-          {/* Login Gate Action Card */}
-          <div className={`md:col-span-7 ${activeTheme.cardBg} rounded-2xl md:rounded-3xl border ${activeTheme.cardBorder} shadow-lg overflow-hidden flex flex-col justify-center`}>
-            
-            <div className="p-3 sm:p-6 md:p-8 space-y-3 md:space-y-6">
-              
-              {/* Mobile-only Compact Header */}
-              <div className="md:hidden flex flex-col items-center text-center space-y-1 pb-2 border-b border-slate-100/60">
-                <Logo size={70} showText={false} className="mx-auto" />
-                <p className="text-slate-850 font-black text-[11px] leading-tight px-1 max-w-[280px]">
-                  {t("Digital Service Point & Online Form Assistant", "ડિજિટલ સર્વિસ સેન્ટર અને ઓનલાઇન ફોર્મ સહાયક")}
-                </p>
-                <div className="flex items-center justify-between w-full pt-1">
-                  <div className="flex items-center gap-1 bg-slate-100 border border-slate-200/60 p-0.5 rounded-lg">
-                    <button 
-                      type="button" 
-                      onClick={() => setLanguage(language === 'en' ? 'gu' : 'en')}
-                      className="text-[9px] font-black text-indigo-600 hover:text-indigo-850 px-1.5 py-0.5 transition-all"
-                    >
-                      {language === 'en' ? 'ગુજરાતી' : 'English'}
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-1 text-[9px] font-black text-slate-500 font-mono">
-                    <Users className="h-3 w-3 text-emerald-500" />
-                    <span>V: {visitorCount}</span>
-                  </div>
+          {/* Right Column Card (Login/Signup Form) */}
+          <div className={`md:col-span-7 ${activeTheme.cardBg} p-6 md:p-10 rounded-3xl border ${activeTheme.cardBorder} shadow-xl flex flex-col justify-between relative`}>
+            <div>
+              <div className="text-center space-y-1.5 border-b border-slate-100 pb-4 mb-4">
+                {/* Mobile-Only Header Brand Logo */}
+                <div className="flex md:hidden justify-center pb-2">
+                  <Logo size={70} showText={true} />
                 </div>
-              </div>
-              <div className="text-center space-y-1.5">
                 <h2 className="text-lg md:text-xl font-black text-slate-950 font-sans tracking-wide uppercase">
                   {authMode === 'LOGIN' 
                     ? (language === 'gu' ? 'પોતાના એકાઉન્ટમાં લોગિન કરો' : 'Log In to Your Account') 
@@ -2214,15 +2253,28 @@ export default function App() {
                 <p className="text-[11px] text-slate-400 font-bold">
                   {language === 'gu' ? 'કોઈ પ્રશ્ન કે સમસ્યા હોય તો સીધો સંપર્ક કરો:' : 'Need help? Chat with us directly:'}
                 </p>
-                <a
-                  href="https://wa.me/917600361873"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer w-full"
-                >
-                  <WhatsAppIcon />
-                  <span>{language === 'gu' ? 'WhatsApp ચેટ કરો (7600361873)' : 'WhatsApp Chat (7600361873)'}</span>
-                </a>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <a
+                    href="https://wa.me/917600361873"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex-1"
+                  >
+                    <WhatsAppIcon />
+                    <span>{language === 'gu' ? 'WhatsApp ચેટ કરો (7600361873)' : 'WhatsApp Chat (7600361873)'}</span>
+                  </a>
+                  
+                  {!isApkClient() && (
+                    <button
+                      type="button"
+                      onClick={downloadApkFile}
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex-1"
+                    >
+                      <Download className="h-4 w-4 text-white shrink-0" />
+                      <span>{language === 'gu' ? `એન્ડ્રોઇડ એપ ડાઉનલોડ (APK v${apkConfig?.version || '1.0.0'})` : `Download Android App (APK v${apkConfig?.version || '1.0.0'})`}</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="pt-2 flex items-center justify-center gap-4 text-[10px] text-slate-400 font-sans">
@@ -2284,6 +2336,7 @@ export default function App() {
             activeView={activeView} 
             visitorCount={visitorCount}
             setActiveView={setActiveView}
+            setActiveTrackerTab={setActiveTrackerTab}
           />
 
           {/* Main Views Container */}
@@ -2303,6 +2356,9 @@ export default function App() {
                     refreshTrigger={refreshTrigger}
                     themeId={themeId}
                     activeTrackerTab={activeTrackerTab}
+                    onUpdateUser={(updated) => {
+                      setCurrentUser(updated);
+                    }}
                   />
                 </motion.div>
               )}

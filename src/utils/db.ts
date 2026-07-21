@@ -950,6 +950,9 @@ export async function getServiceStatuses(): Promise<Record<string, boolean>> {
     MANAV_KALYAN: true,
     KUVAR_BAI_MAMERU: true,
     OTHER_SERVICE: true,
+    RATION_CARD_ADD_NAME: true,
+    RATION_CARD_REMOVE_NAME: true,
+    RATION_CARD_CORRECTION: true,
   };
 
   try {
@@ -1014,6 +1017,9 @@ export async function getServicePrices(): Promise<Record<string, number>> {
     BIRTH_CERTIFICATE_CORRECTION: 150,
     DEATH_CERTIFICATE: 180,
     OTHER_SERVICE: 0,
+    RATION_CARD_ADD_NAME: 500,
+    RATION_CARD_REMOVE_NAME: 400,
+    RATION_CARD_CORRECTION: 0,
   };
 
   try {
@@ -1174,6 +1180,9 @@ export function subscribeToServicePrices(callback: (prices: Record<string, numbe
     BIRTH_CERTIFICATE_CORRECTION: 150,
     DEATH_CERTIFICATE: 180,
     OTHER_SERVICE: 0,
+    RATION_CARD_ADD_NAME: 500,
+    RATION_CARD_REMOVE_NAME: 400,
+    RATION_CARD_CORRECTION: 0,
   };
 
   let active = true;
@@ -1286,6 +1295,9 @@ export function subscribeToServiceStatuses(callback: (statuses: Record<string, b
     MANAV_KALYAN: true,
     KUVAR_BAI_MAMERU: true,
     OTHER_SERVICE: true,
+    RATION_CARD_ADD_NAME: true,
+    RATION_CARD_REMOVE_NAME: true,
+    RATION_CARD_CORRECTION: true,
   };
 
   let active = true;
@@ -2220,6 +2232,91 @@ export async function deleteCustomUser(username: string): Promise<void> {
     console.error('Error clearing chat threads during user deletion:', e);
   }
 }
+
+// Fetch APK update settings from Firestore
+export async function getApkConfig(): Promise<{ version: string; downloadUrl: string; fileName?: string; updatedAt: string } | null> {
+  try {
+    const docRef = doc(db, 'settings', 'apk_update');
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      const data = snapshot.data();
+      if (data) {
+        safeSetLocalStorage('apk_update_config_fallback', JSON.stringify(data));
+        return {
+          version: data.version || '1.0.0',
+          downloadUrl: data.downloadUrl || '',
+          fileName: data.fileName || '',
+          updatedAt: data.updatedAt || new Date().toISOString()
+        };
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch APK config:', error);
+  }
+  
+  try {
+    const cached = safeGetLocalStorage('apk_update_config_fallback');
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch (e) {}
+  
+  return null;
+}
+
+// Subscribe to APK update settings in real-time
+export function subscribeToApkConfig(callback: (config: { version: string; downloadUrl: string; fileName?: string; updatedAt?: string } | null) => void) {
+  const docRef = doc(db, 'settings', 'apk_update');
+  return onSnapshot(docRef, (snapshot) => {
+    try {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data) {
+          const config = {
+            version: data.version || '1.0.0',
+            downloadUrl: data.downloadUrl || '',
+            fileName: data.fileName || '',
+            updatedAt: data.updatedAt || new Date().toISOString()
+          };
+          safeSetLocalStorage('apk_update_config_fallback', JSON.stringify(config));
+          callback(config);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Error in APK update listener:', e);
+    }
+    
+    // Fallback if document doesn't exist
+    try {
+      const cached = safeGetLocalStorage('apk_update_config_fallback');
+      if (cached) {
+        callback(JSON.parse(cached));
+        return;
+      }
+    } catch (e) {}
+    callback(null);
+  }, (error) => {
+    console.error('Failed to subscribe to APK config:', error);
+  });
+}
+
+// Save APK update settings to Firestore
+export async function saveApkConfig(config: { version: string; downloadUrl: string; fileName?: string }): Promise<void> {
+  const data = {
+    ...config,
+    updatedAt: new Date().toISOString()
+  };
+  safeSetLocalStorage('apk_update_config_fallback', JSON.stringify(data));
+  try {
+    const docRef = doc(db, 'settings', 'apk_update');
+    await setDoc(docRef, data);
+  } catch (error) {
+    console.error('Failed to save APK config:', error);
+    throw error;
+  }
+}
+
 
 
 

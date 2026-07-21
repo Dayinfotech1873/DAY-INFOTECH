@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 
-// Minimalist text-only logo with rainbow gradient
+// Crystal clear modern geometric "DAY INFOTECH" logo content
 const svgContent = `
 <svg
   width="1024"
@@ -12,62 +12,111 @@ const svgContent = `
   xmlns="http://www.w3.org/2000/svg"
 >
   <defs>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="12" />
-      <feOffset dx="0" dy="6" result="offsetblur" />
-      <feComponentTransfer>
-        <feFuncA type="linear" slope="0.6" />
-      </feComponentTransfer>
+    <!-- Deep Navy/Space Premium Background Gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#311042" />
+    </linearGradient>
+
+    <!-- Warm Sun/Day Rose-to-Orange Gradient -->
+    <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e" />
+      <stop offset="60%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#eab308" />
+    </linearGradient>
+
+    <!-- Digital Info Tech Cyan-to-Blue Gradient -->
+    <linearGradient id="techGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </linearGradient>
+
+    <!-- Outer Ring Gold Gradient -->
+    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+
+    <!-- Futuristic Neon Glow Filter -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="blur" />
       <feMerge>
-        <feMergeNode />
+        <feMergeNode in="blur" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
   </defs>
 
-  <!-- Professional rounded white background -->
-  <rect width="1024" height="1024" fill="white" rx="160" />
-  
+  <!-- Squircle container with premium gradient background -->
+  <rect width="1024" height="1024" rx="240" fill="url(#bgGradient)" />
+
+  <!-- Tech decorative concentric pattern -->
+  <circle cx="512" cy="512" r="410" stroke="url(#ringGradient)" stroke-width="6" stroke-dasharray="24 16" opacity="0.25" />
+  <circle cx="512" cy="512" r="360" stroke="#ffffff" stroke-width="2" opacity="0.1" />
+
+  <!-- Ambient glow in the center -->
+  <circle cx="512" cy="512" r="160" fill="url(#sunGradient)" opacity="0.15" filter="url(#neonGlow)" />
+
   <g transform="translate(512, 512)">
-    <text 
-      text-anchor="middle" 
-      dominant-baseline="middle"
-      font-family="system-ui, -apple-system, sans-serif" 
-      font-weight="950" 
-      font-size="280" 
-      stroke="#1e1b4b"
-      stroke-width="3"
-      y="-90"
-      textLength="580"
-      lengthAdjust="spacingAndGlyphs"
-      filter="url(#shadow)"
-    >
-      <tspan fill="#ef4444">D</tspan>
-      <tspan fill="#f59e0b">A</tspan>
-      <tspan fill="#10b981">Y</tspan>
-    </text>
-    <text 
-      text-anchor="middle" 
-      dominant-baseline="middle"
-      font-family="system-ui, -apple-system, sans-serif" 
-      font-weight="950" 
-      font-size="120" 
-      stroke="#1e1b4b"
-      stroke-width="1.5"
-      y="150"
-      textLength="600"
-      lengthAdjust="spacingAndGlyphs"
-      filter="url(#shadow)"
-    >
-      <tspan fill="#3b82f6">I</tspan>
-      <tspan fill="#6366f1">N</tspan>
-      <tspan fill="#8b5cf6">F</tspan>
-      <tspan fill="#ec4899">O</tspan>
-      <tspan fill="#06b6d4">T</tspan>
-      <tspan fill="#14b8a6">E</tspan>
-      <tspan fill="#f43f5e">C</tspan>
-      <tspan fill="#f97316">H</tspan>
-    </text>
+    <!-- Tech Digital Orbit Path -->
+    <path 
+      d="M -280,0 A 280,280 0 1,1 280,0" 
+      fill="none" 
+      stroke="url(#techGradient)" 
+      stroke-width="14" 
+      stroke-linecap="round" 
+      stroke-dasharray="40 25" 
+      opacity="0.8"
+    />
+    <path 
+      d="M 280,0 A 280,280 0 0,1 -280,0" 
+      fill="none" 
+      stroke="url(#sunGradient)" 
+      stroke-width="14" 
+      stroke-linecap="round" 
+      stroke-dasharray="60 30" 
+      opacity="0.8"
+    />
+
+    <!-- Interlocking "D" and "I" Monogram Geometric Shapes -->
+    <!-- Left Vertical Pillar for "I" -->
+    <rect 
+      x="-160" 
+      y="-180" 
+      width="64" 
+      height="360" 
+      rx="32" 
+      fill="url(#techGradient)" 
+      filter="url(#neonGlow)"
+    />
+    
+    <!-- Digital Dot Node above "I" -->
+    <circle 
+      cx="-128" 
+      cy="-240" 
+      r="36" 
+      fill="url(#techGradient)" 
+      filter="url(#neonGlow)"
+    />
+    
+    <!-- Glowing Golden "D" Arc intersecting the "I" -->
+    <path 
+      d="M -110,-140 C -10,-140 140,-90 140,0 C 140,90 -10,140 -110,140" 
+      fill="none" 
+      stroke="url(#sunGradient)" 
+      stroke-width="64" 
+      stroke-linecap="round" 
+      stroke-linejoin="round"
+      filter="url(#neonGlow)"
+    />
+
+    <!-- Additional decorative digital nodes to represent data flow -->
+    <circle cx="0" cy="-140" r="14" fill="#ffffff" opacity="0.9" />
+    <circle cx="140" cy="0" r="16" fill="#ffffff" opacity="0.9" />
+    <circle cx="0" cy="140" r="14" fill="#ffffff" opacity="0.9" />
   </g>
 </svg>
 `;
@@ -78,6 +127,10 @@ async function main() {
   
   if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
   if (!fs.existsSync(publicAssetsDir)) fs.mkdirSync(publicAssetsDir, { recursive: true });
+
+  // Save the SVG file
+  fs.writeFileSync(path.join(assetsDir, 'logo.svg'), svgContent);
+  fs.writeFileSync(path.join(publicAssetsDir, 'logo.svg'), svgContent);
 
   // 1. Generate primary logo.png
   await sharp(Buffer.from(svgContent))
@@ -138,7 +191,7 @@ async function main() {
   fs.copyFileSync(path.join(assetsDir, 'splash.png'), path.join(assetsDir, 'splash-only.png'));
   fs.copyFileSync(path.join(assetsDir, 'splash.png'), path.join(publicAssetsDir, 'splash-only.png'));
 
-  console.log('Text-only assets generated successfully!');
+  console.log('Premium vector-crisp assets generated successfully!');
 }
 
 main().catch(console.error);

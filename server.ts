@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import fs from "fs";
 
 dotenv.config();
 
@@ -11,8 +12,16 @@ const PORT = 3000;
 async function startServer() {
   const app = express();
 
-  // Parse JSON payloads up to 15mb to handle base64 images
-  app.use(express.json({ limit: "15mb" }));
+  // Parse JSON payloads up to 50mb to handle base64 images and APK uploads
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Custom static uploads serving
+  const uploadsDir = path.join(process.cwd(), "uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  app.use("/uploads", express.static(uploadsDir));
 
   // Initialize Gemini AI client
   const ai = new GoogleGenAI({
@@ -21,6 +30,33 @@ async function startServer() {
       headers: {
         'User-Agent': 'aistudio-build',
       }
+    }
+  });
+
+  // API Route for instantly uploading APK files to server filesystem
+  app.post("/api/upload-apk", (req, res) => {
+    try {
+      const { fileData, fileName } = req.body;
+      if (!fileData) {
+        return res.status(400).json({ error: "File data is required" });
+      }
+
+      // Format base64 apk data
+      const base64Data = fileData.replace(/^data:application\/vnd\.android\.package-archive;base64,/, "").replace(/^data:.*?;base64,/, "");
+      const buffer = Buffer.from(base64Data, "base64");
+      
+      const cleanFileName = fileName ? fileName.replace(/[^a-zA-Z0-9._-]/g, "_") : "day_infotech.apk";
+      const filePath = path.join(uploadsDir, cleanFileName);
+      
+      fs.writeFileSync(filePath, buffer);
+      
+      // Use relative URL to make it independent of server host/protocol and highly robust
+      const downloadUrl = `/uploads/${cleanFileName}`;
+      
+      res.json({ success: true, downloadUrl, fileName: cleanFileName });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      res.status(500).json({ error: error.message || "Failed to upload file" });
     }
   });
 

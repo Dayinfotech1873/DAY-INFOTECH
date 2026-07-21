@@ -16,9 +16,10 @@ interface HeaderProps {
   visitorCount: number;
   setActiveView: (view: any) => void;
   onUpdateUser?: (updated: any) => void;
+  setActiveTrackerTab?: (tab: any) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThemeId, currentUser, onLogout, activeView, setActiveView, visitorCount, onUpdateUser }) => {
+export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThemeId, currentUser, onLogout, activeView, setActiveView, visitorCount, onUpdateUser, setActiveTrackerTab }) => {
   const { language, setLanguage, t } = useLanguage();
   const [stats, setStats] = useState({
     total: 0,
@@ -583,11 +584,25 @@ export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThem
 
                   {currentUser && currentUser.isCustom && (
                     <button
-                      onClick={() => setIsProfileModalOpen(true)}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-indigo-300 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-[10px] font-black text-indigo-700 transition-all cursor-pointer shadow-xs"
+                      onClick={() => {
+                        setActiveView('TRACKER');
+                        if (setActiveTrackerTab) {
+                          setActiveTrackerTab('PROFILE');
+                        }
+                      }}
+                      className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-indigo-300 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-[10px] font-black text-indigo-700 transition-all cursor-pointer shadow-xs"
                     >
-                      <UserCheck className="h-3 w-3 shrink-0 text-indigo-600" />
-                      <span>{language === 'gu' ? 'પ્રોફાઇલ સેટિંગ્સ' : 'Profile Settings'}</span>
+                      {currentUser.profilePic ? (
+                        <img 
+                          src={currentUser.profilePic} 
+                          alt="DP" 
+                          className="h-4 w-4 rounded-full object-cover border border-indigo-200 shrink-0"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <User className="h-3 w-3 shrink-0 text-indigo-600" />
+                      )}
+                      <span>{language === 'gu' ? 'મારી પ્રોફાઇલ' : 'My Profile'}</span>
                     </button>
                   )}
                   
@@ -639,7 +654,6 @@ export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThem
             )}
           </div>
         </div>
-
       </div>
 
       {/* Statistics Cards Grid (Bento Grid Style) - Shown only for owner/admin */}

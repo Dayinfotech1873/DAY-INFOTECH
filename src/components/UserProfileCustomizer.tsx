@@ -129,8 +129,21 @@ export const UserProfileCustomizer: React.FC<UserProfileCustomizerProps> = ({
   return (
     <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden" id="user-profile-customizer">
       {/* Visual Banner Header */}
-      <div className="relative bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-850 h-32 md:h-40 flex items-end p-4 md:p-6">
-        <div className="absolute top-3 right-3 bg-white/10 backdrop-blur-md rounded-full px-3 py-1 text-[10px] font-black tracking-wider text-white uppercase flex items-center gap-1">
+      <div className="relative h-32 md:h-40 flex items-end p-4 md:p-6 overflow-hidden bg-indigo-950">
+        {profilePic ? (
+          <>
+            <img 
+              src={profilePic} 
+              alt="Banner BG" 
+              className="absolute inset-0 w-full h-full object-cover blur-md brightness-50 opacity-80 scale-105" 
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-950/70 via-indigo-900/40 to-indigo-950/70"></div>
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-850"></div>
+        )}
+        <div className="absolute top-3 right-3 z-10 bg-white/15 backdrop-blur-md rounded-full px-3 py-1 text-[10px] font-black tracking-wider text-white uppercase flex items-center gap-1 border border-white/10">
           <Sparkles className="h-3 w-3 text-amber-300 animate-spin" />
           અરજદાર પ્રોફાઇલ કાર્ડ
         </div>
@@ -190,14 +203,6 @@ export const UserProfileCustomizer: React.FC<UserProfileCustomizerProps> = ({
               <span className="font-mono text-slate-700 font-black">{currentUser?.mobile}</span>
             </div>
           </div>
-        </div>
-
-        {/* Informative Tip Box */}
-        <div className="flex gap-2.5 p-3 bg-indigo-50/50 border border-indigo-100/50 rounded-xl text-[11px] text-slate-600 font-medium">
-          <AlertCircle className="h-4 w-4 text-indigo-600 shrink-0 mt-0.5" />
-          <p className="leading-relaxed">
-            તમારું પ્રોફાઇલ પિક્ચર અને જન્મ સ્થળ વગેરે જેવી વિગતો ઉમેરો જેથી તમારું એકાઉન્ટ સોશિયલ મીડિયા પ્રોફાઇલ જેવું આકર્ષક લાગે અને એડમિન તમારી વિગતો વધુ સારી રીતે સમજી શકે! (Add custom picture, birth place and social links to make your profile rich like Facebook!)
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5.5 pt-2">

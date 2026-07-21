@@ -34,7 +34,13 @@ import {
   BirthCertificateCorrectionDetails,
   BirthCertificateCorrectionDocs,
   DeathCertificateDetails,
-  DeathCertificateDocs
+  DeathCertificateDocs,
+  RationCardAddNameDetails,
+  RationCardAddNameDocs,
+  RationCardRemoveNameDetails,
+  RationCardRemoveNameDocs,
+  RationCardCorrectionDetails,
+  RationCardCorrectionDocs
 } from '../types';
 export const initialPanDetails: PanCardDetails = {
   firstName: '',
@@ -587,5 +593,71 @@ export const initialDeathCertificateDocs: DeathCertificateDocs = {
   nomineeAadharFront: null,
   nomineeAadharBack: null,
   nomineeSignature: null
+};
+
+export const initialRationCardAddNameDetails: RationCardAddNameDetails = {
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  dob: '',
+  gender: '',
+  fatherFirstName: '',
+  fatherMiddleName: '',
+  fatherLastName: '',
+  motherFirstName: '',
+  motherMiddleName: '',
+  motherLastName: '',
+  address: '',
+  rationCardNumber: '',
+  relationshipWithHead: '',
+  rationCategory: '',
+  caste: '',
+  mobile: ''
+};
+
+export const initialRationCardAddNameDocs: RationCardAddNameDocs = {
+  aadharCardFront: null,
+  aadharCardBack: null,
+  rationCardFront: null,
+  rationCardBack: null,
+  deletionCertificate: null,
+  birthCertificate: null,
+  headAadharFront: null,
+  headAadharBack: null,
+  headVoterFront: null,
+  headVoterBack: null
+};
+
+export const initialRationCardRemoveNameDetails: RationCardRemoveNameDetails = {
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  gender: '',
+  rationCardNumber: '',
+  address: '',
+  removeReason: '',
+  mobile: ''
+};
+
+export const initialRationCardRemoveNameDocs: RationCardRemoveNameDocs = {
+  aadharCardFront: null,
+  aadharCardBack: null,
+  rationCardFront: null,
+  rationCardBack: null,
+  deathCertificate: null,
+  addressProof: null,
+  marriageCertificate: null
+};
+
+export const initialRationCardCorrectionDetails: RationCardCorrectionDetails = {
+  contactAdminMessage: 'Please contact admin and visit DAY INFOTECH',
+  firstName: '',
+  rationCardNumber: '',
+  contactNumber: '',
+  correctionEnquiry: ''
+};
+
+export const initialRationCardCorrectionDocs: RationCardCorrectionDocs = {
+  supportingDoc: null
 };
 
