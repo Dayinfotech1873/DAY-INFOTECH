@@ -13,21 +13,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const { language } = useLanguage();
 
   useEffect(() => {
-    // Progress bar animation reaches 100% in ~500ms
+    // Progress bar animation reaches 100% in ~250ms
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
           return 100;
         }
-        return prev + 8; // 100 / 8 = 12.5 intervals of 40ms = 500ms
+        return prev + 20;
       });
-    }, 40);
+    }, 30);
 
-    // Call onComplete after 600ms
+    // Call onComplete after 300ms for ultra fast & smooth loading
     const timeout = setTimeout(() => {
       onComplete();
-    }, 600);
+    }, 300);
 
     return () => {
       clearInterval(interval);

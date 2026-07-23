@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Clock, FileText, CheckCircle, Save, LogIn, LogOut, UserCheck, Palette, ShieldAlert, MessageSquare, Users, Smartphone, Monitor, Globe, Key, User, Mail, Phone, Calendar } from 'lucide-react';
+import { Award, Clock, FileText, CheckCircle, Save, LogIn, LogOut, UserCheck, Palette, ShieldAlert, MessageSquare, Users, Smartphone, Monitor, Globe, Key, User, Mail, Phone, Calendar, RotateCw, Menu, ChevronLeft, ChevronRight, Search, Bell, Sparkles } from 'lucide-react';
 import { getAllApplications, isOwner, getLoggedInUser, getMaintenanceStatus, saveMaintenanceStatus, subscribeToMaintenanceStatus, changeCustomUsername, changeCustomPassword, getCustomUserByUsername, updateUserProfile } from '../utils/db';
 import { auth, loginWithGoogle, logout } from '../utils/firebase';
 import { Logo } from './Logo';
@@ -17,9 +17,11 @@ interface HeaderProps {
   setActiveView: (view: any) => void;
   onUpdateUser?: (updated: any) => void;
   setActiveTrackerTab?: (tab: any) => void;
+  onToggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThemeId, currentUser, onLogout, activeView, setActiveView, visitorCount, onUpdateUser, setActiveTrackerTab }) => {
+export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThemeId, currentUser, onLogout, activeView, setActiveView, visitorCount, onUpdateUser, setActiveTrackerTab, onToggleSidebar, isSidebarOpen }) => {
   const { language, setLanguage, t } = useLanguage();
   const [stats, setStats] = useState({
     total: 0,
@@ -54,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThem
       setFacebookUrl(currentUser.facebookUrl || '');
       setInstagramUrl(currentUser.instagramUrl || '');
     }
-  }, [currentUser]);
+  }, [currentUser?.username, currentUser?.uid, currentUser?.profilePic, currentUser?.bio, currentUser?.location]);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -357,7 +359,7 @@ export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThem
       });
     }
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser?.username, currentUser?.uid, currentUser?.role]);
 
   const handleToggleMaintenance = async () => {
     if (isTogglingMaintenance) return;
@@ -425,197 +427,226 @@ export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThem
 
   const activeTheme = THEMES[themeId] || THEMES.light;
 
+  if (!currentUser) {
+    return null;
+  }
+
   return (
-    <header className="space-y-1.5 md:space-y-2.5 no-print">
-      {/* Top Brand Bar */}
-      <div className={activeTheme.brandBarClass}>
-        
-        <div className="flex items-center space-x-2">
-          <Logo size={44} showText={false} className="shrink-0" />
-          <div>
-            <div className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse"></span>
-              <span className="text-[8px] md:text-[9px] font-black text-orange-300 tracking-wider font-sans uppercase">digital point</span>
-              <span className="text-[8px] text-white/40">|</span>
-              <div className="flex items-center gap-0.5 text-[8px] md:text-[9px] text-emerald-300 font-bold bg-slate-950/40 px-1 py-0.2 rounded-xs border border-emerald-500/10">
-                <Users className="h-2.5 w-2.5 text-emerald-400" />
-                <span>{t('visitors', 'common')}: {visitorCount}</span>
-              </div>
+    <header className="space-y-2 no-print">
+      {/* 2026 Modern Fintech Top Navbar */}
+      <div className="bg-gradient-to-r from-[#0A192F] via-[#0D47A1] to-[#0F4CFF] p-3.5 sm:p-5 rounded-3xl shadow-xl border border-white/20 relative overflow-hidden space-y-4">
+        {/* Subtle Ambient Background Highlight Glows */}
+        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-40 h-40 bg-[#FF7A00]/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        {/* Row 1: Brand Logo, Portal Title & Live Clock pill */}
+        <div className="relative z-10 w-full flex items-center justify-between gap-3 pb-3 border-b border-white/15 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/10 p-1.5 rounded-2xl border border-white/20 backdrop-blur-md shadow-inner">
+              <Logo size={42} showText={false} className="shrink-0" />
             </div>
-            <h1 className="text-base md:text-lg font-black font-display tracking-tight uppercase bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent leading-none mt-0.5">
-              DAY INFOTECH
-            </h1>
-            <p className={`${activeTheme.brandSubtext} text-[10px] leading-tight font-medium opacity-90 mt-0.5`}>{t('brand_subtitle', 'common')}</p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-black font-sans tracking-wide text-white drop-shadow-xs">
+                  DAY INFOTECH
+                </h1>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[9px] font-black text-emerald-300 uppercase tracking-widest font-mono">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  2026 LIVE
+                </span>
+              </div>
+              <p className="text-[10px] sm:text-xs font-semibold text-blue-100/80 tracking-wider uppercase">
+                {t('brand_subtitle', 'common')}
+              </p>
+            </div>
+          </div>
+
+          {/* Right Status Controls: Clock & Visitors */}
+          <div className="flex items-center gap-2 flex-wrap shrink-0">
+            {/* Visitors Pill */}
+            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-amber-300 font-extrabold bg-black/40 px-3 py-1.5 rounded-2xl border border-amber-400/20 font-mono shadow-inner">
+              <Users className="h-3.5 w-3.5 text-amber-400" />
+              <span>{t('visitors', 'common')}: {visitorCount}</span>
+            </div>
+
+            {/* Real-time Clock */}
+            <div className="flex items-center gap-2 font-sans text-xs text-white bg-black/40 px-3 py-1.5 rounded-2xl border border-white/15 shrink-0 font-mono">
+              <div className="flex items-center space-x-1.5 text-blue-300 font-black">
+                <Clock className="h-3.5 w-3.5 animate-spin-slow text-blue-400" />
+                <span>{formatTime(time)}</span>
+              </div>
+              <span className="text-white/30">|</span>
+              <span className="text-[10px] sm:text-xs font-medium opacity-90">{formatDate(time)}</span>
+            </div>
           </div>
         </div>
 
-        {/* Live system clock */}
-        <div className={`mt-1 sm:mt-0 flex flex-col items-start sm:items-end font-sans text-[11px] ${activeTheme.brandSubtext} space-y-0.5`}>
-          <div className="flex items-center gap-1.5">
-            <div className="flex items-center space-x-1 text-yellow-400 font-bold font-mono text-[11px]">
-              <Clock className="h-3 w-3 animate-spin-slow" />
-              <span>{formatTime(time)}</span>
-            </div>
-            <span className="text-[9px] font-mono opacity-80">{formatDate(time)}</span>
+        {/* Row 2: Action Controls (Language, Theme, Quick Refresh) */}
+        <div className="relative z-10 w-full flex items-center justify-between gap-2 bg-black/30 p-2 rounded-2xl border border-white/15 backdrop-blur-md flex-wrap">
+          {/* Language Selector */}
+          <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-xl border border-white/15 text-xs">
+            <Globe className="h-3.5 w-3.5 text-blue-300" />
+            <span className="text-[10px] font-black text-blue-100 uppercase hidden sm:inline">ભાષા / Lang:</span>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as any)}
+              className="bg-transparent border-none text-white text-xs font-black outline-hidden cursor-pointer"
+            >
+              <option value="en" className="bg-[#0A192F] text-white">English</option>
+              <option value="gu" className="bg-[#0A192F] text-white">ગુજરાતી</option>
+            </select>
           </div>
-          
-          {/* Theme & Language Selectors container */}
-          <div className="flex flex-wrap items-center justify-end gap-1 mt-0.5">
-            {/* Theme Selector Pill */}
-            <div className="flex items-center gap-1 bg-black/30 px-1 py-0.5 rounded border border-white/10 text-[9px]">
-              <Palette className="h-3 w-3 text-white" />
-              <select
-                value={themeId}
-                onChange={(e) => {
-                  setThemeId(e.target.value);
-                  try {
-                    localStorage.setItem('dashboard_theme', e.target.value);
-                  } catch (err) {}
-                }}
-                className="bg-transparent border-none text-white text-[9px] font-bold outline-hidden cursor-pointer"
-              >
-                {Object.values(THEMES).map(t => (
-                  <option key={t.id} value={t.id} className="bg-slate-900 text-white text-[9px]">
-                    {t.name.split(' (')[0]}
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            {/* Language Selector Pill */}
-            <div className="flex items-center gap-1 bg-black/30 px-1 py-0.5 rounded border border-white/10 text-[9px]">
-              <Globe className="h-3 w-3 text-white" />
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as any)}
-                className="bg-transparent border-none text-white text-[9px] font-bold outline-hidden cursor-pointer"
-              >
-                <option value="en" className="bg-slate-900 text-white">EN</option>
-                <option value="gu" className="bg-slate-900 text-white">ગુજરાતી</option>
-              </select>
-            </div>
+          {/* Refresh App Button */}
+          <button
+            onClick={() => {
+              if (window.confirm(language === 'gu' ? 'એપ રિફ્રેશ કરી નવીનતમ અપડેટ્સ લોડ કરવી છે?' : 'Reload app to fetch latest updates?')) {
+                window.location.reload();
+              }
+            }}
+            title={language === 'gu' ? 'એપ રિફ્રેશ કરો' : 'Refresh App'}
+            className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white px-3.5 py-1.5 rounded-xl border border-emerald-300/40 text-xs font-black shadow-md transition-all active:scale-95 cursor-pointer"
+          >
+            <RotateCw className="h-3.5 w-3.5 animate-spin-slow" />
+            <span className="text-[11px] font-black uppercase tracking-wider">
+              {language === 'gu' ? 'રિફ્રેશ' : 'Refresh'}
+            </span>
+          </button>
+
+          {/* Theme Selector */}
+          <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-xl border border-white/15 text-xs">
+            <Palette className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-[10px] font-black text-amber-200 uppercase hidden sm:inline">થિમ / Theme:</span>
+            <select
+              value={themeId}
+              onChange={(e) => {
+                setThemeId(e.target.value);
+                try {
+                  localStorage.setItem('dashboard_theme', e.target.value);
+                } catch (err) {}
+              }}
+              className="bg-transparent border-none text-white text-xs font-black outline-hidden cursor-pointer"
+            >
+              {Object.values(THEMES).map(t => (
+                <option key={t.id} value={t.id} className="bg-[#0A192F] text-white text-xs">
+                  {t.name.split(' (')[0]}
+                </option>
+              ))}
+            </select>
           </div>
-          
-          <div className={`pt-1.5 border-t ${activeTheme.brandBarBorder} w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5`}>
-            {currentUser ? (
-              <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
-                {/* Left side: Profile Info */}
-                <div className="flex items-center gap-2">
-                  {!isOwner() && (
-                    currentUser.profilePic ? (
-                      <img 
-                        src={currentUser.profilePic} 
-                        alt="Profile" 
-                        className="h-7 w-7 rounded-full border border-indigo-400 object-cover shrink-0 select-none" 
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <div 
-                        className="h-7 w-7 rounded-full bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700 select-none"
-                      >
-                        <User className="h-3.5 w-3.5 text-slate-400" />
-                      </div>
-                    )
-                  )}
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-white font-extrabold text-xs leading-none">{currentUser.displayName || currentUser.email}</span>
-                      <span className="text-[8px] font-bold bg-emerald-500/20 text-emerald-300 px-1 py-0.2 rounded uppercase tracking-wider">
-                        {isOwner() ? t('role_admin', 'dashboard') : t('role_user', 'dashboard')}
-                      </span>
-                    </div>
-                    {currentUser.mobile && <span className="text-[9px] text-slate-300 font-bold mt-0.5">{t('mobile', 'common')}: {currentUser.mobile}</span>}
+        </div>
+
+        {/* Row 3: Logged In User Row or Guest Login Buttons */}
+        {currentUser ? (
+          <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-1">
+            {/* User Name Only (No Registered Applicant / Admin badge) */}
+            <div className="flex items-center gap-2.5">
+              {!isOwner() && (
+                currentUser.profilePic ? (
+                  <img 
+                    src={currentUser.profilePic} 
+                    alt="Profile" 
+                    className="h-8 w-8 rounded-full border-2 border-indigo-400 object-cover shrink-0 select-none shadow-xs" 
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700 select-none">
+                    <User className="h-4 w-4 text-slate-300" />
                   </div>
-                </div>
+                )
+              )}
+              <div className="flex flex-col">
+                <span className="text-white font-black text-sm leading-tight tracking-wide">
+                  {currentUser.displayName || currentUser.email}
+                </span>
+                {currentUser.mobile && (
+                  <span className="text-[10px] text-slate-300 font-bold">
+                    {t('mobile', 'common')}: {currentUser.mobile}
+                  </span>
+                )}
+              </div>
+            </div>
 
-                {/* Right side: Action Pill Buttons */}
-                <div className="flex flex-wrap items-center gap-1.5 no-print">
-                  {isOwner() ? (
-                    <>
-                      <button
-                        onClick={() => setActiveView('TRACKER')}
-                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black transition-all cursor-pointer shadow-xs ${
-                          activeView === 'TRACKER'
-                            ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold scale-102'
-                            : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
-                        }`}
-                      >
-                        <CheckCircle className="h-3 w-3 shrink-0 text-amber-600" />
-                        <span>{t('tracker', 'nav')}</span>
-                      </button>
-                      
-                      <button
-                        onClick={() => setActiveView('MESSAGES')}
-                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black transition-all cursor-pointer shadow-xs ${
-                          activeView === 'MESSAGES'
-                            ? 'bg-indigo-600 text-white border-indigo-500 font-bold scale-102'
-                            : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
-                        }`}
-                      >
-                        <MessageSquare className="h-3 w-3 shrink-0 text-indigo-600" />
-                        <span>{t('chats', 'nav')}</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveView("ONLINE_USERS")}
-                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black transition-all cursor-pointer shadow-xs ${
-                          activeView === "ONLINE_USERS"
-                            ? "bg-blue-600 text-white border-blue-500 font-bold scale-102"
-                            : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
-                        }`}
-                      >
-                        <UserCheck className="h-3 w-3 shrink-0 text-blue-600" />
-                        <span>{t('online_users', 'nav')}</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveView('OFFLINE_FORMS')}
-                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black transition-all cursor-pointer shadow-xs ${
-                          activeView === 'OFFLINE_FORMS'
-                            ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold scale-102'
-                            : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
-                        }`}
-                      >
-                        <FileText className="h-3 w-3 shrink-0 text-amber-600" />
-                        <span>{t('offline_forms', 'nav')}</span>
-                      </button>
-                    </>
-                  ) : null}
-
-                  {currentUser && currentUser.isCustom && (
-                    <button
-                      onClick={() => {
-                        setActiveView('TRACKER');
-                        if (setActiveTrackerTab) {
-                          setActiveTrackerTab('PROFILE');
-                        }
-                      }}
-                      className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border border-indigo-300 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-[10px] font-black text-indigo-700 transition-all cursor-pointer shadow-xs"
-                    >
-                      {currentUser.profilePic ? (
-                        <img 
-                          src={currentUser.profilePic} 
-                          alt="DP" 
-                          className="h-4 w-4 rounded-full object-cover border border-indigo-200 shrink-0"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <User className="h-3 w-3 shrink-0 text-indigo-600" />
-                      )}
-                      <span>{language === 'gu' ? 'મારી પ્રોફાઇલ' : 'My Profile'}</span>
-                    </button>
-                  )}
+            {/* Actions Bar: Spaced out left and right touching edges */}
+            <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2">
+              {/* Admin Navigation Pills */}
+              {isOwner() ? (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    onClick={() => setActiveView('TRACKER')}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black transition-all cursor-pointer shadow-xs ${
+                      activeView === 'TRACKER'
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold scale-102'
+                        : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    <CheckCircle className="h-3 w-3 shrink-0 text-amber-600" />
+                    <span>{t('tracker', 'nav')}</span>
+                  </button>
                   
                   <button
-                    onClick={onLogout}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-300 bg-rose-50 hover:bg-rose-600 hover:text-white text-[10px] font-black text-rose-700 transition-all cursor-pointer shadow-xs"
+                    onClick={() => setActiveView('MESSAGES')}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black transition-all cursor-pointer shadow-xs ${
+                      activeView === 'MESSAGES'
+                        ? 'bg-indigo-600 text-white border-indigo-500 font-bold scale-102'
+                        : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
+                    }`}
                   >
-                    <LogOut className="h-3 w-3 shrink-0 text-rose-600" />
-                    <span>{t('logout', 'common')}</span>
+                    <MessageSquare className="h-3 w-3 shrink-0 text-indigo-600" />
+                    <span>{t('chats', 'nav')}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveView("ONLINE_USERS")}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black transition-all cursor-pointer shadow-xs ${
+                      activeView === "ONLINE_USERS"
+                        ? "bg-blue-600 text-white border-blue-500 font-bold scale-102"
+                        : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    <UserCheck className="h-3 w-3 shrink-0 text-blue-600" />
+                    <span>{t('online_users', 'nav')}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveView('OFFLINE_FORMS')}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-black transition-all cursor-pointer shadow-xs ${
+                      activeView === 'OFFLINE_FORMS'
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold scale-102'
+                        : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    <FileText className="h-3 w-3 shrink-0 text-amber-600" />
+                    <span>{t('offline_forms', 'nav')}</span>
                   </button>
                 </div>
-              </div>
-            ) : (
+              ) : (
+                /* Applicant ONLY My Profile button (Left side of action area) */
+                <button
+                  onClick={() => {
+                    setActiveView('TRACKER');
+                    if (setActiveTrackerTab) {
+                      setActiveTrackerTab('PROFILE');
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-300 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-xs font-black text-indigo-800 transition-all cursor-pointer shadow-sm active:scale-95"
+                >
+                  <User className="h-3.5 w-3.5 shrink-0 text-indigo-600" />
+                  <span>{language === 'gu' ? 'મારી પ્રોફાઇલ' : 'My Profile'}</span>
+                </button>
+              )}
+
+              {/* Log Out button (Right side of action area) */}
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-600 hover:text-white text-xs font-black text-rose-800 transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <LogOut className="h-3.5 w-3.5 shrink-0 text-rose-600" />
+                <span>{t('logout', 'common')}</span>
+              </button>
+            </div>
+          </div>
+        ) : (
               <div className="w-full flex flex-col sm:flex-row gap-2 justify-start sm:justify-end items-stretch sm:items-center">
                 {/* 1. Applicant Login */}
                 <div className={`flex items-center gap-1.5 ${activeTheme.badgeBg} p-1 px-2 rounded-lg border ${activeTheme.badgeBorder} text-[10px]`}>
@@ -653,8 +684,6 @@ export const Header: React.FC<HeaderProps> = ({ refreshTrigger, themeId, setThem
               </div>
             )}
           </div>
-        </div>
-      </div>
 
       {/* Statistics Cards Grid (Bento Grid Style) - Shown only for owner/admin */}
       {currentUser && isOwner() && (

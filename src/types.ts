@@ -1,4 +1,4 @@
-export type FormType = 'PAN_CARD' | 'PAN_CARD_CORRECTION' | 'MINOR_PAN_CARD'  | 'VOTER_ID' | 'VOTER_ID_CORRECTION' | 'E_SHRAM' | 'FARMER_SUBSIDY' | 'CAST_CERTIFICATE' | 'INCOME_CERTIFICATE' | 'AYUSHYMAN_CARD' | 'AABHA_CARD' | 'UDHYAM_AADHAR' | 'MANAV_KALYAN' | 'KUVAR_BAI_MAMERU' | 'NEW_BIRTH_CERTIFICATE' | 'BIRTH_CERTIFICATE_CORRECTION' | 'DEATH_CERTIFICATE' | 'OTHER_SERVICE' | 'RATION_CARD_ADD_NAME' | 'RATION_CARD_REMOVE_NAME' | 'RATION_CARD_CORRECTION';
+export type FormType = 'PAN_CARD' | 'PAN_CARD_CORRECTION' | 'MINOR_PAN_CARD'  | 'VOTER_ID' | 'VOTER_ID_CORRECTION' | 'E_SHRAM' | 'FARMER_SUBSIDY' | 'CAST_CERTIFICATE' | 'INCOME_CERTIFICATE' | 'AYUSHYMAN_CARD' | 'AABHA_CARD' | 'UDHYAM_AADHAR' | 'MANAV_KALYAN' | 'KUVAR_BAI_MAMERU' | 'NEW_BIRTH_CERTIFICATE' | 'BIRTH_CERTIFICATE_CORRECTION' | 'DEATH_CERTIFICATE' | 'OTHER_SERVICE' | 'RATION_CARD_ADD_NAME' | 'RATION_CARD_REMOVE_NAME' | 'RATION_CARD_CORRECTION' | 'PASSPORT';
 
 export interface RationCardAddNameDetails {
   firstName: string;
@@ -626,11 +626,61 @@ export interface DeathCertificateDocs {
   nomineeSignature: DocumentUpload | null;
 }
 
+export interface PassportDetails {
+  passportCategory: 'NEW' | 'RENEW' | '';
+  // Applicant Name (Aadhar card મુજબ - mandatory)
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | '';
+  caste: 'OBC' | 'SC' | 'ST' | 'GENERAL' | 'OTHER' | '';
+  dob: string;
+  address: string; // Aadhar/Voter ID મુજબ
+  mobile: string;
+  email: string;
+
+  // New Passport fields
+  maritalStatus?: 'MARRIED' | 'UNMARRIED' | 'DIVORCED' | '';
+  spouseName?: string;
+  passportType?: 'NORMAL' | 'TATKAAL' | '';
+
+  // Renew Passport fields
+  passportIssueDate?: string;
+  passportExpiryDate?: string;
+  passportNumber?: string;
+
+  // Parents Name
+  fatherFirstName: string;
+  fatherMiddleName: string;
+  fatherLastName: string;
+  motherFirstName: string;
+  motherMiddleName: string;
+  motherLastName: string;
+}
+
+export interface PassportDocs {
+  passportPhoto: DocumentUpload | null;
+  signature: DocumentUpload | null;
+  aadharCardFront: DocumentUpload | null;
+  aadharCardBack: DocumentUpload | null;
+  schoolLeaving: DocumentUpload | null;
+  birthCertificate: DocumentUpload | null;
+  // New Passport specific
+  rationCardFront?: DocumentUpload | null;
+  rationCardBack?: DocumentUpload | null;
+  studyResult?: DocumentUpload | null;
+  // Renew Passport specific
+  voterIdFront?: DocumentUpload | null;
+  voterIdBack?: DocumentUpload | null;
+  oldPassportFront?: DocumentUpload | null;
+  oldPassportBack?: DocumentUpload | null;
+}
+
 export interface ApplicationEntry {
   id: string;
   formType: FormType;
-  details: PanCardDetails | PanCardCorrectionDetails | MinorPanCardDetails | VoterIdCorrectionDetails | VoterIdDetails | EShramDetails | FarmerSubsidyDetails | CastCertificateDetails | IncomeCertificateDetails | AyushmanCardDetails | AabhaCardDetails | UdhyamAadharDetails | ManavKalyanDetails | KuvarBaiMameruDetails | NewBirthCertificateDetails | BirthCertificateCorrectionDetails | DeathCertificateDetails | OtherServiceDetails | RationCardAddNameDetails | RationCardRemoveNameDetails | RationCardCorrectionDetails;
-  documents: PanCardDocs | PanCardCorrectionDocs | MinorPanCardDocs | VoterIdCorrectionDocs | VoterIdDocs | EShramDocs | FarmerSubsidyDocs | CastCertificateDocs | IncomeCertificateDocs | AyushmanCardDocs | AabhaCardDocs | UdhyamAadharDocs | ManavKalyanDocs | KuvarBaiMameruDocs | NewBirthCertificateDocs | BirthCertificateCorrectionDocs | DeathCertificateDocs | OtherServiceDocs | RationCardAddNameDocs | RationCardRemoveNameDocs | RationCardCorrectionDocs;
+  details: PanCardDetails | PanCardCorrectionDetails | MinorPanCardDetails | VoterIdCorrectionDetails | VoterIdDetails | EShramDetails | FarmerSubsidyDetails | CastCertificateDetails | IncomeCertificateDetails | AyushmanCardDetails | AabhaCardDetails | UdhyamAadharDetails | ManavKalyanDetails | KuvarBaiMameruDetails | NewBirthCertificateDetails | BirthCertificateCorrectionDetails | DeathCertificateDetails | OtherServiceDetails | RationCardAddNameDetails | RationCardRemoveNameDetails | RationCardCorrectionDetails | PassportDetails;
+  documents: PanCardDocs | PanCardCorrectionDocs | MinorPanCardDocs | VoterIdCorrectionDocs | VoterIdDocs | EShramDocs | FarmerSubsidyDocs | CastCertificateDocs | IncomeCertificateDocs | AyushmanCardDocs | AabhaCardDocs | UdhyamAadharDocs | ManavKalyanDocs | KuvarBaiMameruDocs | NewBirthCertificateDocs | BirthCertificateCorrectionDocs | DeathCertificateDocs | OtherServiceDocs | RationCardAddNameDocs | RationCardRemoveNameDocs | RationCardCorrectionDocs | PassportDocs;
   status: 'DRAFT' | 'COMPLETED' | 'CORRECTION_REQUIRED' | 'APPROVED' | 'REJECTED';
   createdAt: string;
   updatedAt: string;

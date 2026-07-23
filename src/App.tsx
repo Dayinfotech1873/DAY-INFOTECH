@@ -4,7 +4,7 @@ import { FormType, ApplicationEntry, OfflineForm } from './types';
 import { Header } from './components/Header';
 import { ApplicationTracker } from './components/ApplicationTracker';
 import { FormRenderer } from './components/FormRenderer';
-import { LogIn, Lock, ArrowLeft, Sparkles, ShieldCheck, User, Phone, Key, UserPlus, Eye, EyeOff, ArrowRight, Shield, Info, FileText, Calendar, Users, FileDown, Download, Plus, Trash2, QrCode, CheckCircle, Monitor, Smartphone, MessageSquare, Folder, Wifi, X, Minimize2, Maximize2, Activity, Clock, LogOut, Palette, Mail, AlertTriangle } from 'lucide-react';
+import { LogIn, Lock, ArrowLeft, Sparkles, ShieldCheck, User, Phone, Key, UserPlus, Eye, EyeOff, ArrowRight, Shield, Info, FileText, Calendar, Users, FileDown, Download, Plus, Trash2, QrCode, CheckCircle, Monitor, Smartphone, MessageSquare, Folder, Wifi, X, Minimize2, Maximize2, Activity, Clock, LogOut, Palette, Mail, AlertTriangle, RotateCw, ChevronLeft, ChevronRight, Home, Layers, Wallet, Settings, FileCode, Globe, Bell } from 'lucide-react';
 import { auth, logout, db } from './utils/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -42,6 +42,7 @@ export default function App() {
   });
   const activeTheme = THEMES[themeId] || THEMES.light;
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'DESKTOP' | 'MOBILE'>(() => {
     try {
       return (localStorage.getItem('dashboard_viewmode') as 'DESKTOP' | 'MOBILE') || 'DESKTOP';
@@ -61,7 +62,7 @@ export default function App() {
   };
 
   const [activeView, setActiveView] = useState<AppView>('TRACKER');
-  const [activeTrackerTab, setActiveTrackerTab] = useState<'DASHBOARD' | 'APPLICATIONS' | 'USERS' | 'SERVICES' | 'OFFICIAL_WEBSITES' | 'SEND_MESSAGE' | 'APPLY_SERVICE' | 'YOUR_APPLICATIONS' | 'ABOUT_DAY_INFOTECH' | 'WALLET' | 'PROFILE' | undefined>(undefined);
+  const [activeTrackerTab, setActiveTrackerTab] = useState<'DASHBOARD' | 'APPLICATIONS' | 'USERS' | 'SERVICES' | 'OFFICIAL_WEBSITES' | 'SEND_MESSAGE' | 'APPLY_SERVICE' | 'YOUR_APPLICATIONS' | 'ABOUT_DAY_INFOTECH' | 'WALLET' | 'PROFILE'>('DASHBOARD');
   const [showSplash, setShowSplash] = useState(true);
   const [chatTargetUser, setChatTargetUser] = useState<any>(null);
   const [activeFormType, setActiveFormType] = useState<FormType | null>(null);
@@ -209,6 +210,58 @@ export default function App() {
     return apkConfig.version !== runningVersion;
   };
 
+  // Pull-To-Refresh Touch Gesture Handler for Mobile & APK
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const touchStartY = React.useRef(0);
+  const pullDistanceRef = React.useRef(0);
+
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      if (window.scrollY === 0 || document.documentElement.scrollTop === 0) {
+        touchStartY.current = e.touches[0].clientY;
+        setIsPulling(true);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartY.current || (window.scrollY > 0 && document.documentElement.scrollTop > 0)) return;
+      const currentY = e.touches[0].clientY;
+      const distance = currentY - touchStartY.current;
+      if (distance > 0) {
+        const dist = Math.min(distance * 0.5, 120);
+        pullDistanceRef.current = dist;
+        setPullDistance(dist);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (pullDistanceRef.current >= 60) {
+        setIsRefreshing(true);
+        setPullDistance(70);
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      } else {
+        setPullDistance(0);
+        pullDistanceRef.current = 0;
+      }
+      setIsPulling(false);
+      touchStartY.current = 0;
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
+
   const downloadApkFile = () => {
     if (!apkConfig || !apkConfig.downloadUrl) {
       alert(language === 'gu' ? 'ડાઉનલોડ લિંક ઉપલબ્ધ નથી!' : 'Download link not available!');
@@ -283,19 +336,33 @@ export default function App() {
 
     console.log("Downloading APK from:", url);
 
-    // Dynamic direct browser download trigger
+    // If base64 data URL
+    if (url.startsWith('data:')) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = apkConfig.fileName || 'day_infotech.apk';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
+    // Direct browser download trigger
     const link = document.createElement('a');
     link.href = url;
     link.download = apkConfig.fileName || 'day_infotech.apk';
-    link.target = '_self'; // download in the current context (extremely important for Android WebViews!)
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    // WebView compatibility fallback
-    setTimeout(() => {
-      window.location.href = url;
-    }, 150);
+    // Android WebView / External system browser download trigger
+    try {
+      window.open(url, '_system') || window.open(url, '_blank');
+    } catch (e) {
+      console.error('Error opening download URL:', e);
+    }
   };
 
   useEffect(() => {
@@ -386,7 +453,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser?.username || currentUser?.uid) {
       updateUserOnlineStatus(currentUser);
       const handleBeforeUnload = () => {
         setUserOffline(currentUser);
@@ -394,10 +461,9 @@ export default function App() {
       window.addEventListener("beforeunload", handleBeforeUnload);
       return () => {
         window.removeEventListener("beforeunload", handleBeforeUnload);
-        setUserOffline(currentUser);
       };
     }
-  }, [currentUser]);
+  }, [currentUser?.username || currentUser?.uid]);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(getLoggedInUser());
@@ -440,7 +506,7 @@ export default function App() {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser?.username, currentUser?.uid, currentUser?.isBlocked]);
 
 
 
@@ -452,6 +518,7 @@ export default function App() {
     }
     setCurrentUser(null);
     setActiveView('TRACKER');
+    setActiveTrackerTab('DASHBOARD');
   };
 
   // Inactivity Auto-Logout: 5 min for standard users, 10 min for owner/admin
@@ -499,6 +566,8 @@ export default function App() {
     try {
       const session = await loginCustomUser(loginUsername, loginPassword, authMode === 'ADMIN');
       setCurrentUser(session);
+      setActiveView('TRACKER');
+      setActiveTrackerTab('DASHBOARD');
       setRefreshTrigger(prev => prev + 1);
     } catch (err: any) {
       setLoginError(err.message || 'લૉગ ઇન કરવામાં અસમર્થ. (Unable to log in.)');
@@ -959,8 +1028,12 @@ export default function App() {
             </div>
           </motion.div>
         )}
-        <div className={`${activeTheme.bgClass} min-h-screen flex flex-col px-4 md:px-8 relative z-10 py-6 md:py-12 justify-center`} style={activeTheme.bgStyle}>
-        <div className="max-w-xl mx-auto w-full gap-6 min-h-fit flex flex-col items-stretch justify-center">
+        <div className={`${activeTheme.bgClass} min-h-screen flex flex-col px-4 md:px-8 relative z-10 py-6 md:py-12 justify-center overflow-hidden`} style={activeTheme.bgStyle}>
+          {/* Ambient Background Glow Shapes */}
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#0F4CFF]/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#FF7A00]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="max-w-5xl mx-auto w-full gap-6 min-h-fit flex flex-col relative z-10">
           
           {/* Admin Greetings Banner (GIF Style Flashing) */}
           {isGreetingsActive && greetingsMsg && (
@@ -1014,15 +1087,62 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* Centered Card (Login/Signup Form) */}
-          <div className={`${activeTheme.cardBg} p-6 md:p-10 rounded-3xl border ${activeTheme.cardBorder} shadow-xl flex flex-col justify-between relative`}>
-            <div>
-              <div className="text-center space-y-1.5 border-b border-slate-100 pb-4 mb-4">
-                {/* Universal Header Brand Logo - Prominently visible on all devices */}
-                <div className="flex justify-center pb-3">
-                  <Logo size={85} showText={true} />
+          {/* Split Screen 2026 Modern SaaS Login Portal Container */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            
+            {/* Left Hero Side Panel (Logo, DAY INFOTECH, Digital Point, Visitors count & Language Selector) */}
+            <div className="lg:col-span-4 bg-gradient-to-br from-[#0D47A1] via-[#0F4CFF] to-[#0A192F] text-white p-5 md:p-6 rounded-3xl border border-white/20 shadow-xl flex flex-col justify-center items-center text-center relative overflow-hidden group">
+              <div className="absolute top-0 right-0 -mt-10 -mr-10 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-36 h-36 bg-[#FF7A00]/20 rounded-full blur-2xl pointer-events-none"></div>
+
+              <div className="relative z-10 flex flex-col items-center justify-center space-y-3 w-full my-auto">
+                {/* Logo */}
+                <div className="bg-white/10 p-3 rounded-2xl border border-white/20 backdrop-blur-md shadow-lg">
+                  <Logo size={75} showText={false} />
                 </div>
-                <h2 className="text-lg md:text-xl font-black text-slate-950 font-sans tracking-wide uppercase">
+
+                {/* Brand Name & Digital Point */}
+                <div className="text-center">
+                  <h1 className="text-2xl md:text-3xl font-black font-sans leading-tight tracking-wide text-white drop-shadow-xs">
+                    DAY INFOTECH
+                  </h1>
+                  <p className="text-xs sm:text-sm font-extrabold text-blue-200 uppercase tracking-widest mt-1 font-mono">
+                    Digital Point
+                  </p>
+                </div>
+
+                {/* Visitors Count Badge & Language Selector */}
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                  {/* Visitors Pill */}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 border border-amber-400/30 text-xs font-extrabold text-amber-300 font-mono shadow-inner">
+                    <Users className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                    <span>{language === 'gu' ? 'મુલાકાતીઓ' : 'Visitors'}: {(visitorCount || 1024).toLocaleString()}</span>
+                  </div>
+
+                  {/* Language Selector */}
+                  <div className="inline-flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-xl border border-white/20 text-xs font-bold shadow-inner">
+                    <Globe className="h-3.5 w-3.5 text-blue-300 shrink-0" />
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value as any)}
+                      className="bg-transparent border-none text-white text-xs font-black outline-none cursor-pointer"
+                    >
+                      <option value="gu" className="bg-[#0A192F] text-white">ગુજરાતી</option>
+                      <option value="en" className="bg-[#0A192F] text-white">English</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Form Card */}
+            <div className="lg:col-span-8 bg-white/95 backdrop-blur-xl p-5 md:p-7 rounded-3xl border border-slate-200/90 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+              {/* Top SaaS Accent Gradient Line */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0D47A1] via-[#0F4CFF] to-[#FF7A00]"></div>
+
+              {/* Login Form Header */}
+              <div className="text-center space-y-1 border-b border-slate-100 pb-4 mb-4">
+                <h2 className="text-base md:text-xl font-black text-[#111827] font-sans tracking-wide uppercase">
                   {authMode === 'LOGIN' 
                     ? (language === 'gu' ? 'પોતાના એકાઉન્ટમાં લોગિન કરો' : 'Log In to Your Account') 
                     : authMode === 'SIGNUP'
@@ -1035,7 +1155,7 @@ export default function App() {
                     ? (language === 'gu' ? 'એડમિન પાસવર્ડ રીસેટ' : 'Admin Password Reset')
                     : (language === 'gu' ? 'પાસવર્ડ ભૂલી ગયા છો?' : 'Forgot Password?')}
                 </h2>
-                <p className="text-xs md:text-sm text-slate-850 leading-relaxed font-extrabold max-w-md mx-auto">
+                <p className="text-xs text-slate-500 leading-relaxed font-bold max-w-md mx-auto">
                   {authMode === 'LOGIN'
                     ? t('enter_details', 'auth')
                     : authMode === 'SIGNUP'
@@ -1051,13 +1171,13 @@ export default function App() {
               </div>
 
               {loginError && (
-                <div className="bg-rose-50 border-2 border-rose-200 text-rose-800 text-xs font-bold p-3.5 rounded-xl leading-relaxed">
+                <div className="bg-rose-50 border-2 border-rose-200 text-rose-800 text-xs font-bold p-3.5 rounded-2xl leading-relaxed shadow-xs mb-4">
                   {loginError}
                 </div>
               )}
 
               {signUpSuccessMessage && (
-                <div className="bg-emerald-50 border-2 border-emerald-200 text-emerald-800 text-xs font-bold p-3.5 rounded-xl leading-relaxed">
+                <div className="bg-emerald-50 border-2 border-emerald-200 text-emerald-800 text-xs font-bold p-3.5 rounded-2xl leading-relaxed shadow-xs mb-4">
                   {signUpSuccessMessage}
                 </div>
               )}
@@ -1080,8 +1200,8 @@ export default function App() {
                         {language === 'gu' ? 'યુઝરનેમ' : 'Username'}
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
-                          <User className="h-4 w-4" />
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                          <User className="h-4.5 w-4.5" />
                         </span>
                         <input
                           type="text"
@@ -1089,7 +1209,7 @@ export default function App() {
                           value={loginUsername}
                           onChange={e => setLoginUsername(e.target.value)}
                           placeholder={language === 'gu' ? 'તમારું યુઝરનેમ લખો' : 'Enter Username'}
-                          className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-black text-slate-950 placeholder-slate-500 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-hidden transition-all"
+                          className="w-full pl-10 pr-4 py-3.5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl text-sm font-black text-[#111827] placeholder-slate-400 focus:bg-white focus:border-[#0F4CFF] focus:ring-4 focus:ring-[#0F4CFF]/15 outline-hidden transition-all shadow-xs"
                         />
                       </div>
                     </div>
@@ -1103,14 +1223,14 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => { setAuthMode('FORGOT'); setLoginError(null); }}
-                          className="text-xs font-black text-indigo-600 hover:text-indigo-700 cursor-pointer"
+                          className="text-xs font-black text-[#0F4CFF] hover:text-[#0D47A1] transition-colors cursor-pointer"
                         >
                           {language === 'gu' ? 'પાસવર્ડ ભૂલી ગયા છો?' : 'Forgot Password?'}
                         </button>
                       </div>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
-                          <Lock className="h-4 w-4" />
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                          <Lock className="h-4.5 w-4.5" />
                         </span>
                         <input
                           type={showLoginPassword ? 'text' : 'password'}
@@ -1118,14 +1238,14 @@ export default function App() {
                           value={loginPassword}
                           onChange={e => setLoginPassword(e.target.value)}
                           placeholder={language === 'gu' ? 'તમારો પાસવર્ડ લખો' : 'Enter Password'}
-                          className="w-full pl-10 pr-10 py-3 bg-white border-2 border-slate-300 rounded-xl text-sm font-black text-slate-950 placeholder-slate-500 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-hidden transition-all"
+                          className="w-full pl-10 pr-10 py-3.5 bg-slate-50/70 border-2 border-slate-200 rounded-2xl text-sm font-black text-[#111827] placeholder-slate-400 focus:bg-white focus:border-[#0F4CFF] focus:ring-4 focus:ring-[#0F4CFF]/15 outline-hidden transition-all shadow-xs"
                         />
                         <button
                           type="button"
                           onClick={() => setShowLoginPassword(!showLoginPassword)}
-                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800 transition-colors cursor-pointer"
                         >
-                          {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showLoginPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
                         </button>
                       </div>
                     </div>
@@ -1133,13 +1253,13 @@ export default function App() {
                     <button
                       type="submit"
                       disabled={isLoggingIn}
-                      className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-black text-sm rounded-xl border border-indigo-500/20 shadow-md transition-all cursor-pointer disabled:opacity-50 mt-2"
+                      className="w-full flex items-center justify-center gap-2.5 px-6 py-4 bg-gradient-to-r from-[#0D47A1] to-[#0F4CFF] hover:from-[#0A2540] hover:to-[#0D47A1] active:scale-[0.99] text-white font-black text-sm rounded-2xl border border-white/20 shadow-lg shadow-[#0F4CFF]/25 hover:shadow-xl hover:shadow-[#0F4CFF]/35 transition-all cursor-pointer disabled:opacity-50 mt-3"
                     >
-                      <LogIn className="h-4 w-4" />
+                      <LogIn className="h-5 w-5 text-white shrink-0" />
                       <span>{isLoggingIn ? (language === 'gu' ? 'કનેક્ટ થઈ રહ્યું છે...' : 'Connecting...') : (language === 'gu' ? 'સુરક્ષિત લૉગ ઇન કરો' : 'Secure Sign In')}</span>
                     </button>
 
-                    <div className="text-center pt-4 border-t border-slate-100 space-y-3.5 font-sans">
+                    <div className="text-center pt-5 border-t border-slate-100 space-y-3.5 font-sans">
                       <div>
                         <span className="text-xs text-slate-500 font-extrabold">
                           {language === 'gu' ? 'એકાઉન્ટ નથી?: ' : "Don't have an account?: "}
@@ -1151,13 +1271,13 @@ export default function App() {
                             setLoginError(null);
                             setSignUpSuccessMessage(null);
                           }}
-                          className="text-xs font-black text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer"
+                          className="text-xs font-black text-[#0F4CFF] hover:text-[#0D47A1] hover:underline cursor-pointer"
                         >
                           {language === 'gu' ? 'નવું રજીસ્ટ્રેશન કરો' : 'Register Now (Sign Up)'}
                         </button>
                       </div>
 
-                      <div className="flex justify-center gap-4 text-xs font-black">
+                      <div className="flex justify-center items-center gap-3 text-xs font-black">
                         <button
                           type="button"
                           onClick={() => {
@@ -1166,9 +1286,9 @@ export default function App() {
                             setSignUpSuccessMessage(null);
                             setChangePasswordStep('VERIFY');
                           }}
-                          className="text-indigo-600 hover:text-indigo-750 hover:underline cursor-pointer flex items-center gap-1"
+                          className="text-[#0F4CFF] hover:text-[#0D47A1] hover:underline cursor-pointer flex items-center gap-1 bg-blue-50/80 px-2.5 py-1 rounded-lg border border-blue-100"
                         >
-                          <Key className="h-3 w-3" />
+                          <Key className="h-3.5 w-3.5 text-[#0F4CFF]" />
                           <span>{language === 'gu' ? 'પાસવર્ડ બદલો' : 'Change Password'}</span>
                         </button>
                         <span className="text-slate-300">|</span>
@@ -1180,14 +1300,14 @@ export default function App() {
                             setSignUpSuccessMessage(null);
                             setChangeUsernameStep('VERIFY');
                           }}
-                          className="text-indigo-600 hover:text-indigo-750 hover:underline cursor-pointer flex items-center gap-1"
+                          className="text-[#0F4CFF] hover:text-[#0D47A1] hover:underline cursor-pointer flex items-center gap-1 bg-blue-50/80 px-2.5 py-1 rounded-lg border border-blue-100"
                         >
-                          <User className="h-3 w-3" />
+                          <User className="h-3.5 w-3.5 text-[#0F4CFF]" />
                           <span>{language === 'gu' ? 'યુઝરનેમ બદલો' : 'Change Username'}</span>
                         </button>
                       </div>
 
-                      <div className="flex justify-between items-center pt-1 text-xs font-extrabold">
+                      <div className="flex justify-between items-center pt-2 text-xs font-extrabold">
                         <button
                           type="button"
                           onClick={() => {
@@ -1195,9 +1315,9 @@ export default function App() {
                             setLoginError(null);
                             setSignUpSuccessMessage(null);
                           }}
-                          className="text-slate-500 hover:text-indigo-600 hover:underline cursor-pointer flex items-center gap-1.5"
+                          className="text-slate-600 hover:text-[#0F4CFF] cursor-pointer flex items-center gap-1.5 bg-slate-100/80 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-blue-300 transition-all"
                         >
-                          <FileDown className="h-4 w-4 text-slate-400 hover:text-indigo-600" />
+                          <FileDown className="h-4 w-4 text-slate-500 hover:text-[#0F4CFF]" />
                           <span>{language === 'gu' ? 'ઓફલાઇન ફોર્મ્સ' : 'Offline Forms'}</span>
                         </button>
                         <button
@@ -1207,9 +1327,9 @@ export default function App() {
                             setLoginError(null);
                             setSignUpSuccessMessage(null);
                           }}
-                          className="text-slate-500 hover:text-indigo-600 hover:underline cursor-pointer flex items-center gap-1.5"
+                          className="text-slate-600 hover:text-[#0F4CFF] cursor-pointer flex items-center gap-1.5 bg-slate-100/80 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-blue-300 transition-all"
                         >
-                          <Shield className="h-4 w-4 text-slate-400 hover:text-indigo-600" />
+                          <Shield className="h-4 w-4 text-slate-500 hover:text-[#0F4CFF]" />
                           <span>{language === 'gu' ? 'એડમિન લૉગઇન' : 'Admin Login'}</span>
                         </button>
                       </div>
@@ -2447,7 +2567,7 @@ export default function App() {
 
   return (
     <>
-      <div className={activeTheme.bgClass} style={activeTheme.bgStyle}>
+      <div className={`min-h-screen flex ${activeTheme.bgClass}`} style={activeTheme.bgStyle}>
       
       {/* Floating WhatsApp Action Button */}
       <a
@@ -2455,41 +2575,244 @@ export default function App() {
         target="_blank"
         rel="noopener noreferrer"
         title="WhatsApp Support"
-        className="no-print fixed bottom-6 right-6 z-50 flex items-center justify-center w-10 h-10 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer border border-emerald-400/20"
+        className="no-print fixed bottom-6 right-6 z-50 flex items-center justify-center w-11 h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95 cursor-pointer border border-emerald-400/30"
       >
         <WhatsAppIcon className="h-5 w-5" />
       </a>
 
-      {/* Regular Responsive Dashboard Layout */}
-      <div className="w-full flex flex-col z-10 no-print font-sans relative">
-        <div className="w-full max-w-full mx-auto flex-1 flex flex-col gap-1.5 md:gap-3 px-1 md:px-6 py-0.5 md:py-2">
-          
-          {/* Header */}
-          <Header 
-            refreshTrigger={refreshTrigger} 
-            themeId={themeId} 
-            setThemeId={setThemeId} 
-            currentUser={currentUser}
-            onUpdateUser={(updated) => {
-              setCurrentUser(updated);
-            }}
-            onLogout={handleLogout}
-            activeView={activeView} 
-            visitorCount={visitorCount}
-            setActiveView={setActiveView}
-            setActiveTrackerTab={setActiveTrackerTab}
-          />
+      {/* Dark Overlay Backdrop for Mobile when sidebar is open (Applicants only) */}
+      {!isOwner() && isSidebarOpen && (
+        <div 
+          onClick={() => setIsSidebarOpen(false)} 
+          className="no-print lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 transition-opacity duration-300 cursor-pointer"
+        />
+      )}
 
-          {/* Main Views Container */}
-          <main className="flex-1 min-h-0 px-2 md:px-0">
+      {/* Modern Left Sidebar Navigation (Applicants only) */}
+      {!isOwner() && (
+        <aside 
+          className={`no-print fixed lg:sticky top-0 left-0 z-50 lg:z-30 h-screen bg-gradient-to-b from-[#0A192F] via-[#0D47A1] to-[#0A192F] text-white transition-all duration-300 ease-in-out flex flex-col justify-between border-r border-white/10 shadow-2xl shrink-0 ${
+            isSidebarOpen 
+              ? 'translate-x-0 w-72 lg:w-64' 
+              : '-translate-x-full lg:translate-x-0 lg:w-20'
+          }`}
+        >
+          {/* Sidebar Brand Logo Header */}
+          <div className="p-4 flex items-center justify-between border-b border-white/10 bg-black/20">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="bg-white/10 p-2 rounded-2xl border border-white/20 backdrop-blur-md shrink-0 shadow-inner">
+                <Logo size={32} showText={false} />
+              </div>
+              {isSidebarOpen && (
+                <div className="truncate">
+                  <h1 className="text-sm font-black tracking-wide text-white font-sans">DAY INFOTECH</h1>
+                  <p className="text-[9px] text-blue-200 font-bold uppercase tracking-widest font-mono">Digital Point</p>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 hover:bg-white/10 rounded-xl text-white/70 hover:text-white transition-colors cursor-pointer"
+              title="મેનુ કન્ટ્રોલ (Toggle Sidebar)"
+            >
+              {isSidebarOpen ? <X className="h-5 w-5 text-white" /> : <ChevronRight className="h-5 w-5 text-white" />}
+            </button>
+          </div>
+
+          {/* Sidebar Nav Links */}
+          <div className="flex-1 overflow-y-auto py-4 px-2.5 space-y-1.5">
+            {[
+              { 
+                id: 'DASHBOARD', 
+                labelGu: 'ડેશબોર્ડ', 
+                labelEn: 'Dashboard', 
+                icon: Home, 
+                onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab('DASHBOARD'); } 
+              },
+              { 
+                id: 'APPLY_SERVICE', 
+                labelGu: 'બધી સેવાઓ', 
+                labelEn: 'All Services', 
+                icon: FileText, 
+                onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab('APPLY_SERVICE'); } 
+              },
+              { 
+                id: isOwner() ? 'APPLICATIONS' : 'YOUR_APPLICATIONS', 
+                labelGu: 'અરજીઓની યાદી', 
+                labelEn: 'Applications', 
+                icon: Layers, 
+                onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab(isOwner() ? 'APPLICATIONS' : 'YOUR_APPLICATIONS'); } 
+              },
+              { 
+                id: 'WALLET', 
+                labelGu: 'વોલેટ સિસ્ટમ', 
+                labelEn: 'Wallet System', 
+                icon: Wallet, 
+                onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab('WALLET'); } 
+              },
+              ...(isOwner() ? [
+                { 
+                  id: 'OFFICIAL_WEBSITES', 
+                  labelGu: 'ઓફલાઇન લિંક્સ', 
+                  labelEn: 'Govt Websites', 
+                  icon: Globe, 
+                  onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab('OFFICIAL_WEBSITES'); } 
+                },
+                { 
+                  id: 'SEND_MESSAGE', 
+                  labelGu: 'સંદેશા અને જાહેરાત', 
+                  labelEn: 'Announcements', 
+                  icon: Bell, 
+                  onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab('SEND_MESSAGE'); } 
+                },
+                { 
+                  id: 'USERS', 
+                  labelGu: 'યુઝર્સ સંચાલન', 
+                  labelEn: 'User Management', 
+                  icon: Users, 
+                  onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab('USERS'); } 
+                },
+                { 
+                  id: 'SERVICES', 
+                  labelGu: 'સેવા સંચાલન', 
+                  labelEn: 'Services Admin', 
+                  icon: Settings, 
+                  onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab('SERVICES'); } 
+                },
+                { 
+                  id: 'OFFLINE_FORMS', 
+                  labelGu: 'ઓફલાઇન ફોર્મ્સ', 
+                  labelEn: 'Offline Forms', 
+                  icon: FileCode, 
+                  onClick: () => { setActiveView('OFFLINE_FORMS'); } 
+                }
+              ] : []),
+              { 
+                id: 'ABOUT_DAY_INFOTECH', 
+                labelGu: 'DAY INFOTECH વિશે', 
+                labelEn: 'About DAY INFOTECH', 
+                icon: Info, 
+                onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab('ABOUT_DAY_INFOTECH'); } 
+              },
+              { 
+                id: 'PROFILE', 
+                labelGu: 'મારી પ્રોફાઇલ', 
+                labelEn: 'My Profile', 
+                icon: User, 
+                onClick: () => { setActiveView('TRACKER'); setActiveTrackerTab('PROFILE'); } 
+              },
+            ].map((item) => {
+              const IconComp = item.icon;
+              const isActive = (activeView === 'TRACKER' && activeTrackerTab === item.id) || (activeView === item.id);
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    item.onClick();
+                    // On mobile screens, auto-close the drawer so selected content goes full screen
+                    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
+                  className={`w-full flex items-center ${isSidebarOpen ? 'gap-3.5 px-4 justify-start' : 'justify-center px-2'} py-3.5 rounded-2xl text-xs font-black transition-all cursor-pointer group ${
+                    isActive
+                      ? 'bg-gradient-to-r from-[#0F4CFF] to-[#0D47A1] text-white shadow-lg shadow-[#0F4CFF]/30 border border-white/20'
+                      : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
+                  }`}
+                  title={item.labelGu}
+                >
+                  <IconComp className={`h-5 w-5 shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-blue-300'}`} />
+                  {isSidebarOpen && (
+                    <div className="text-left truncate">
+                      <p className="leading-tight text-sm">{item.labelGu}</p>
+                      <p className="text-[10px] text-blue-200/60 font-mono font-normal uppercase">{item.labelEn}</p>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Sidebar Footer User Card */}
+          <div className="p-3 border-t border-white/10 bg-black/30">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 overflow-hidden">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FF7A00] to-amber-300 text-slate-900 font-black text-xs flex items-center justify-center shrink-0 shadow-md">
+                  {currentUser?.displayName?.[0]?.toUpperCase() || 'U'}
+                </div>
+                {isSidebarOpen && (
+                  <div className="truncate">
+                    <p className="text-xs font-black text-white truncate">{currentUser?.displayName || 'User'}</p>
+                    <p className="text-[9px] text-emerald-300 font-mono font-bold">₹{currentUser?.walletBalance || 0}</p>
+                  </div>
+                )}
+              </div>
+              {isSidebarOpen && (
+                <button
+                  onClick={handleLogout}
+                  className="p-1.5 bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white rounded-xl transition-all cursor-pointer shrink-0"
+                  title="Log Out"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+        </aside>
+      )}
+
+      {/* Main Content View Right Section */}
+      <div className="flex-1 flex flex-col min-w-0 z-10 no-print font-sans">
+        {/* Pull Down Refresh Banner */}
+        {(pullDistance > 10 || isRefreshing) && (
+          <div 
+            style={{ height: `${isRefreshing ? 55 : Math.min(pullDistance, 75)}px` }}
+            className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 text-white flex items-center justify-center gap-2 overflow-hidden transition-all duration-150 shadow-inner z-50 border-b border-emerald-400/30 shrink-0"
+          >
+            <RotateCw className={`h-4.5 w-4.5 text-yellow-300 shrink-0 ${isRefreshing || pullDistance >= 60 ? 'animate-spin' : ''}`} />
+            <span className="text-xs font-black uppercase tracking-wider">
+              {isRefreshing 
+                ? (language === 'gu' ? 'એપ અપડેટ થઈ રહી છે...' : 'Updating App...') 
+                : pullDistance >= 60 
+                  ? (language === 'gu' ? 'છોડી દો - રીફ્રેશ થશે!' : 'Release to Refresh!') 
+                  : (language === 'gu' ? 'નીચે ખેંચીને રીફ્રેશ કરો...' : 'Pull down to refresh...')}
+            </span>
+          </div>
+        )}
+
+        <div className="w-full max-w-full mx-auto flex-1 flex flex-col gap-3 px-2 md:px-6 py-2">
+          
+          {/* Top Header - Shown on Dashboard for Applicants or for Owners */}
+          {(isOwner() || (activeView === 'TRACKER' && activeTrackerTab === 'DASHBOARD')) && (
+            <Header 
+              refreshTrigger={refreshTrigger} 
+              themeId={themeId} 
+              setThemeId={setThemeId} 
+              currentUser={currentUser}
+              onUpdateUser={(updated) => {
+                setCurrentUser(updated);
+              }}
+              onLogout={handleLogout}
+              activeView={activeView} 
+              visitorCount={visitorCount}
+              setActiveView={setActiveView}
+              setActiveTrackerTab={setActiveTrackerTab}
+              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+              isSidebarOpen={isSidebarOpen}
+            />
+          )}
+
+          {/* Main Content Area */}
+          <main className="flex-1 min-h-0">
             <AnimatePresence mode="wait">
               {activeView === 'TRACKER' && (
                 <motion.div
                   key="tracker"
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.25 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <ApplicationTracker
                     onEdit={handleEdit}
@@ -2497,9 +2820,12 @@ export default function App() {
                     refreshTrigger={refreshTrigger}
                     themeId={themeId}
                     activeTrackerTab={activeTrackerTab}
+                    setActiveTrackerTab={setActiveTrackerTab}
+                    currentUser={currentUser}
                     onUpdateUser={(updated) => {
                       setCurrentUser(updated);
                     }}
+                    onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
                   />
                 </motion.div>
               )}
@@ -2511,10 +2837,10 @@ export default function App() {
               {activeView === 'FORM' && activeFormType && (
                 <motion.div
                   key={`form_${activeFormType}`}
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.25 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <FormRenderer
                     formType={activeFormType}
@@ -2528,10 +2854,10 @@ export default function App() {
               {activeView === 'ONLINE_USERS' && isOwner() && (
                 <motion.div
                   key="online_users"
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.25 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <OnlineUsersView currentUser={currentUser} theme={activeTheme} onMessageUser={(user) => { setChatTargetUser(user); setActiveView("MESSAGES"); }} />
                 </motion.div>
@@ -2540,10 +2866,10 @@ export default function App() {
               {activeView === 'MESSAGES' && isOwner() && (
                 <motion.div
                   key="messages"
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.25 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <MessagesView currentUser={currentUser} theme={activeTheme} targetUser={chatTargetUser} />
                 </motion.div>
@@ -2552,10 +2878,10 @@ export default function App() {
               {activeView === 'OFFLINE_FORMS' && isOwner() && (
                 <motion.div
                   key="offline_forms"
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.25 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <OfflineFormsManager forms={offlineForms} theme={activeTheme} />
                 </motion.div>
@@ -2564,17 +2890,12 @@ export default function App() {
           </main>
 
           {/* Footer */}
-          <footer className="no-print border-t border-slate-200/50 pt-2 pb-1 text-center text-[10px] md:text-xs text-slate-400 font-sans space-y-0.5 md:space-y-1.5">
+          <footer className="no-print border-t border-slate-200/50 pt-3 pb-2 text-center text-[10px] md:text-xs text-slate-400 font-sans space-y-1">
             <p className="font-extrabold tracking-wider uppercase text-slate-500 text-[9px] md:text-xs">
               POWERED BY DAY INFOTECH PORTAL ENGINE
             </p>
             <p className="hidden md:block">© 2026 DAY INFOTECH - ડિજિટલ પોઇન્ટ (Digital Point Gujarat Portal).</p>
             <p className="md:hidden">© 2026 DAY INFOTECH</p>
-            <p className="text-[9px] md:text-[10px] text-slate-500 max-w-md mx-auto leading-normal">
-              {language === 'gu' 
-                ? 'અરજીઓ ફાયરસ્ટોર (Firestore) સાથે સુરક્ષિત રીતે સિંક થાય છે.'
-                : 'Applications are securely synchronized with Google Cloud Firestore.'}
-            </p>
           </footer>
 
         </div>

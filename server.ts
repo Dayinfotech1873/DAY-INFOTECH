@@ -16,12 +16,36 @@ async function startServer() {
   app.use(express.json({ limit: "100mb" }));
   app.use(express.urlencoded({ limit: "100mb", extended: true }));
 
-  // Custom static uploads serving
+  // Custom static uploads serving with proper headers for APK files
   const uploadsDir = path.join(process.cwd(), "uploads");
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
-  app.use("/uploads", express.static(uploadsDir));
+
+  // Force download headers for APK files
+  app.get("/uploads/:filename", (req, res, next) => {
+    const filename = req.params.filename;
+    if (filename.toLowerCase().endsWith(".apk")) {
+      const filePath = path.join(uploadsDir, filename);
+      if (fs.existsSync(filePath)) {
+        res.setHeader("Content-Type", "application/vnd.android.package-archive");
+        res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        return res.sendFile(filePath);
+      }
+    }
+    next();
+  });
+
+  app.use("/uploads", express.static(uploadsDir, {
+    setHeaders: (res, filePath) => {
+      if (filePath.toLowerCase().endsWith('.apk')) {
+        res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+        res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+    }
+  }));
 
   // Initialize Gemini AI client
   const ai = new GoogleGenAI({

@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   User, Calendar, Phone, Mail, FileText, ArrowRight, Save, CheckCircle, 
   RefreshCw, Award, ArrowLeft, Landmark, Sprout, CreditCard, AlertTriangle, HelpCircle,
-  UserCheck, X, Wallet, QrCode, Plus, PlusCircle, Edit3
+  UserCheck, X, Wallet, QrCode, Plus, PlusCircle, Edit3, Globe, Users,
+  IdCard, Vote, UserPlus, UserMinus, FileEdit, Utensils, Baby
 } from 'lucide-react';
 import { 
   FormType, 
@@ -49,6 +50,8 @@ import {
   RationCardRemoveNameDocs,
   RationCardCorrectionDetails,
   RationCardCorrectionDocs,
+  PassportDetails,
+  PassportDocs,
   ApplicationEntry, 
   DocumentUpload 
 } from '../types';
@@ -96,7 +99,9 @@ import {
   initialRationCardRemoveNameDetails,
   initialRationCardRemoveNameDocs,
   initialRationCardCorrectionDetails,
-  initialRationCardCorrectionDocs
+  initialRationCardCorrectionDocs,
+  initialPassportDetails,
+  initialPassportDocs
 } from '../utils/formDefaults';
 import { saveApplication, getServiceStatuses, isOwner, getWallet, updateWalletBalance, createWalletTransaction, getLoggedInUser, getServicePrices, subscribeToServicePrices, subscribeToServiceDiscounts, ServiceDiscounts } from '../utils/db';
 import { Wallet as WalletType } from '../types';
@@ -130,6 +135,7 @@ export let SERVICE_PRICES: Record<FormType, number> = {
   RATION_CARD_ADD_NAME: 500,
   RATION_CARD_REMOVE_NAME: 400,
   RATION_CARD_CORRECTION: 0,
+  PASSPORT: 1500,
 };
 
 export let SERVICE_DISCOUNTS = {
@@ -138,11 +144,21 @@ export let SERVICE_DISCOUNTS = {
 };
 
 export const FormRenderer: React.FC<FormRendererProps> = ({
-  formType,
+  formType: initialFormType,
   editingEntry = null,
   onSuccess,
   onCancel,
 }) => {
+  const [formType, setFormType] = useState<FormType>(initialFormType);
+
+  useEffect(() => {
+    if (editingEntry) {
+      setFormType(editingEntry.formType);
+    } else {
+      setFormType(initialFormType);
+    }
+  }, [initialFormType, editingEntry]);
+
   // States for all Form fields
   const [panDetails, setPanDetails] = useState<PanCardDetails>({ ...initialPanDetails });
   const [panDocs, setPanDocs] = useState<PanCardDocs>({ ...initialPanDocs });
@@ -207,6 +223,20 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
   const [rationCardCorrectionDetails, setRationCardCorrectionDetails] = useState<RationCardCorrectionDetails>({ ...initialRationCardCorrectionDetails });
   const [rationCardCorrectionDocs, setRationCardCorrectionDocs] = useState<RationCardCorrectionDocs>({ ...initialRationCardCorrectionDocs });
 
+  const [passportDetails, setPassportDetails] = useState<PassportDetails>({ ...initialPassportDetails });
+  const [passportDocs, setPassportDocs] = useState<PassportDocs>({ ...initialPassportDocs });
+
+  const handlePassportDetailsChange = (field: keyof PassportDetails, value: any) => {
+    setPassportDetails(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => {
+        const copy = { ...prev };
+        delete copy[field];
+        return copy;
+      });
+    }
+  };
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -235,6 +265,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
       case 'RATION_CARD_ADD_NAME': return 'RATION CARD ADD NAME (રેશન કાર્ડ નામ ઉમેરવું)';
       case 'RATION_CARD_REMOVE_NAME': return 'RATION CARD REMOVE NAME (રેશન કાર્ડ નામ કમી કરવું)';
       case 'RATION_CARD_CORRECTION': return 'RATION CARD CORRECTION (રેશન કાર્ડ સુધારો)';
+      case 'PASSPORT': return 'PASSPORT SERVICE (પાસપોર્ટ સેવા)';
       default: return String(type);
     }
   };
@@ -503,10 +534,15 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
       } else if (editingEntry.formType === 'RATION_CARD_CORRECTION') {
         setRationCardCorrectionDetails(editingEntry.details as RationCardCorrectionDetails);
         setRationCardCorrectionDocs(editingEntry.documents as RationCardCorrectionDocs);
+      } else if (editingEntry.formType === 'PASSPORT') {
+        setPassportDetails(editingEntry.details as PassportDetails);
+        setPassportDocs(editingEntry.documents as PassportDocs);
       }
     } else {
       // Reset to defaults
-            setPanDetails({ ...initialPanDetails });
+      setPassportDetails({ ...initialPassportDetails });
+      setPassportDocs({ ...initialPassportDocs });
+      setPanDetails({ ...initialPanDetails });
       setPanDocs({ ...initialPanDocs });
       setPanCorrectionDetails({ ...initialPanCorrectionDetails });
       setPanCorrectionDocs({ ...initialPanCorrectionDocs });
@@ -1080,41 +1116,6 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
         if (!deathDetails.informerLastNameGu.trim()) newErrors.informerLastNameGu = 'માહિતી આપનારની અટક ગુજરાતીમાં જરૂરી છે';
         if (!deathDetails.informerFirstNameEn.trim()) newErrors.informerFirstNameEn = 'માહિતી આપનારનું પ્રથમ નામ English માં જરૂરી છે';
         if (!deathDetails.informerLastNameEn.trim()) newErrors.informerLastNameEn = 'માહિતી આપનારની અટક English માં જરૂરી છે';
-        if (!deathDetails.informerRelationship.trim()) newErrors.informerRelationship = 'મૃતક સાથેનો સંબંધ જરૂરી છે';
-        if (!deathDetails.informerMobile.trim()) {
-          newErrors.informerMobile = 'મોબાઇલ નંબર જરૂરી છે';
-        } else if (!/^[0-9]{10}$/.test(deathDetails.informerMobile.trim())) {
-          newErrors.informerMobile = '૧૦ આંકડાનો મોબાઇલ નંબર લખો';
-        }
-        if (!deathDetails.informerAadhar.trim()) {
-          newErrors.informerAadhar = 'માહિતી આપનારનો આધાર નંબર જરૂરી છે';
-        } else if (!/^[0-9]{12}$/.test(deathDetails.informerAadhar.trim())) {
-          newErrors.informerAadhar = '૧૨ આંકડાનો સાચો આધાર નંબર લખો';
-        }
-
-        // Deceased Details
-        if (!deathDetails.deathPersonFirstNameGu.trim()) newErrors.deathPersonFirstNameGu = 'મૃતકનું પ્રથમ નામ ગુજરાતીમાં જરૂરી છે';
-        if (!deathDetails.deathPersonLastNameGu.trim()) newErrors.deathPersonLastNameGu = 'મૃતકની અટક ગુજરાતીમાં જરૂરી છે';
-        if (!deathDetails.deathPersonFirstNameEn.trim()) newErrors.deathPersonFirstNameEn = 'મૃતકનું પ્રથમ નામ English માં જરૂરી છે';
-        if (!deathDetails.deathPersonLastNameEn.trim()) newErrors.deathPersonLastNameEn = 'મૃતકની અટક English માં જરૂરી છે';
-        if (!deathDetails.gender) newErrors.gender = 'જાતિ પસંદ કરવી જરૂરી છે';
-        if (!deathDetails.deathDate.trim()) newErrors.deathDate = 'મરણ તારીખ જરૂરી છે';
-        if (!deathDetails.deathPlace) {
-          newErrors.deathPlace = 'મરણ સ્થળ પસંદ કરવું જરૂરી છે';
-        } else {
-          if (deathDetails.deathPlace === 'HOSPITAL') {
-            if (!deathDetails.hospitalName.trim()) newErrors.hospitalName = 'હોસ્પિટલનું નામ જરૂરી છે';
-            if (!deathDetails.hospitalAddress.trim()) newErrors.hospitalAddress = 'હોસ્પિટલનું સરનામું જરૂરી છે';
-            if (!deathDocs.hospitalReceipt) newErrors.hospitalReceipt = 'હોસ્પિટલ/પોલીસ/PM રિપોર્ટ અપલોડ કરો';
-          } else if (deathDetails.deathPlace === 'HOME') {
-            if (!deathDetails.deathTimeAddress.trim()) newErrors.deathTimeAddress = 'મરણ સમયનું સરનામું જરૂરી છે';
-            if (!deathDocs.crematoriumReceipt) newErrors.crematoriumReceipt = 'સ્મશાન/કબ્રસ્તાનની પહોંચ અપલોડ કરો';
-          }
-        }
-        if (!deathDetails.permanentAddress.trim()) newErrors.permanentAddress = 'મૃતકનું કાયમી સરનામું જરૂરી છે';
-        if (!deathDetails.rationCardNumber.trim()) newErrors.rationCardNumber = 'રેશન કાર્ડ નંબર જરૂરી છે';
-
-        // Nominee Details
         if (!deathDetails.nomineeFirstNameGu.trim()) newErrors.nomineeFirstNameGu = 'વારસદારનું પ્રથમ નામ ગુજરાતીમાં જરૂરી છે';
         if (!deathDetails.nomineeLastNameGu.trim()) newErrors.nomineeLastNameGu = 'વારસદારની અટક ગુજરાતીમાં જરૂરી છે';
         if (!deathDetails.nomineeFirstNameEn.trim()) newErrors.nomineeFirstNameEn = 'વારસદારનું પ્રથમ નામ English માં જરૂરી છે';
@@ -1262,31 +1263,23 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
         if (!kuvarDocs.yuvakPitaAadharCardFront) newErrors.yuvakPitaAadharCardFront = 'યુવકના પિતાનું આધાર કાર્ડ આગળનો ભાગ';
         if (!kuvarDocs.yuvakPitaAadharCardBack) newErrors.yuvakPitaAadharCardBack = 'યુવકના પિતાનું આધાર કાર્ડ પાછળનો ભાગ';
         if (!kuvarDocs.kanyaSchoolLeaving) newErrors.kanyaSchoolLeaving = 'કન્યાનું શાળા છોડ્યાનું પ્રમાણપત્ર અપલોડ કરો';
-        if (!kuvarDocs.kanyaPitaIncomeCertificate) newErrors.kanyaPitaIncomeCertificate = 'કન્યાના પિતાનું આવકનું પ્રમાણપત્ર';
-        if (!kuvarDocs.kanyaBankPassbook) newErrors.kanyaBankPassbook = 'કન્યાની બેંક પાસબુક અપલોડ કરો';
-        if (!kuvarDocs.marriageCertificate) newErrors.marriageCertificate = 'લગ્નનું પ્રમાણપત્ર અપલોડ કરો';
+        if (!kuvarDocs.yuvakSchoolLeaving) newErrors.yuvakSchoolLeaving = 'યુવકનું શાળા છોડ્યાનું પ્રમાણપત્ર અપલોડ કરો';
+        if (!kuvarDocs.kanyaBankPassbook) newErrors.kanyaBankPassbook = 'કન્યાના બેંક પાસબુકનો પ્રથમ પાનું અપલોડ કરો';
+        if (!kuvarDocs.kankarotri) newErrors.kankarotri = 'કંકોતરી અપલોડ કરો';
       } else if (formType === 'RATION_CARD_ADD_NAME') {
         if (!rationCardAddDetails.firstName.trim()) newErrors.firstName = 'પ્રથમ નામ જરૂરી છે';
         if (!rationCardAddDetails.lastName.trim()) newErrors.lastName = 'અટક જરૂરી છે';
-        if (!rationCardAddDetails.dob) newErrors.dob = 'જન્મ તારીખ જરૂરી છે';
         if (!rationCardAddDetails.gender) newErrors.gender = 'લિંગ જરૂરી છે';
-        if (!rationCardAddDetails.fatherFirstName.trim()) newErrors.fatherFirstName = 'પિતાનું નામ જરૂરી છે';
-        if (!rationCardAddDetails.fatherLastName.trim()) newErrors.fatherLastName = 'પિતાની અટક જરૂરી છે';
-        if (!rationCardAddDetails.motherFirstName.trim()) newErrors.motherFirstName = 'માતાનું નામ જરૂરી છે';
-        if (!rationCardAddDetails.motherLastName.trim()) newErrors.motherLastName = 'માતાની અટક જરૂરી છે';
-        if (!rationCardAddDetails.address.trim()) newErrors.address = 'સરનામું જરૂરી છે';
+        if (!rationCardAddDetails.dob) newErrors.dob = 'જન્મ તારીખ જરૂરી છે';
         if (!rationCardAddDetails.rationCardNumber.trim()) newErrors.rationCardNumber = 'રેશન કાર્ડ નંબર જરૂરી છે';
-        if (!rationCardAddDetails.relationshipWithHead) newErrors.relationshipWithHead = 'મુખ્ય સભ્ય સાથેનો સંબંધ જરૂરી છે';
-        if (!rationCardAddDetails.rationCategory) newErrors.rationCategory = 'રેશન કેટેગરી જરૂરી છે';
-        if (!rationCardAddDetails.caste.trim()) newErrors.caste = 'જ્ઞાતિ જરૂરી છે';
+        if (!rationCardAddDetails.headName.trim()) newErrors.headName = 'મુખીનું નામ જરૂરી છે';
+        if (!rationCardAddDetails.relationWithHead) newErrors.relationWithHead = 'મુખી સાથે સંબંધ જરૂરી છે';
 
-        // Documents
         if (!rationCardAddDocs.aadharCardFront) newErrors.aadharCardFront = 'આધાર કાર્ડ આગળનો ભાગ જરૂરી છે';
         if (!rationCardAddDocs.aadharCardBack) newErrors.aadharCardBack = 'આધાર કાર્ડ પાછળનો ભાગ જરૂરી છે';
+        if (!rationCardAddDocs.birthCertificate) newErrors.birthCertificate = 'જન્મ પ્રમાણપત્ર જરૂરી છે';
         if (!rationCardAddDocs.rationCardFront) newErrors.rationCardFront = 'રેશન કાર્ડ આગળનો ભાગ જરૂરી છે';
         if (!rationCardAddDocs.rationCardBack) newErrors.rationCardBack = 'રેશન કાર્ડ પાછળનો ભાગ જરૂરી છે';
-        if (!rationCardAddDocs.headAadharFront) newErrors.headAadharFront = 'રેશનકાર્ડના મુખ્ય સભ્યનું આધાર કાર્ડ (આગળ) જરૂરી છે';
-        if (!rationCardAddDocs.headAadharBack) newErrors.headAadharBack = 'રેશનકાર્ડના મુખ્ય સભ્યનું આધાર કાર્ડ (પાછળ) જરૂરી છે';
       } else if (formType === 'RATION_CARD_REMOVE_NAME') {
         if (!rationCardRemoveDetails.firstName.trim()) newErrors.firstName = 'પ્રથમ નામ જરૂરી છે';
         if (!rationCardRemoveDetails.lastName.trim()) newErrors.lastName = 'અટક જરૂરી છે';
@@ -1310,6 +1303,63 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
         }
         if (rationCardRemoveDetails.removeReason === 'MARRIAGE' && !rationCardRemoveDocs.marriageCertificate) {
           newErrors.marriageCertificate = 'લગ્ન કંકોતરી/પ્રમાણપત્ર જરૂરી છે';
+        }
+      } else if (formType === 'PASSPORT') {
+        if (!passportDetails.passportCategory) {
+          newErrors.passportCategory = 'કૃપા કરીને નવો પાસપોર્ટ અથવા પાસપોર્ટ રિન્યુ પસંદ કરો.';
+          setErrors(newErrors);
+          return newErrors;
+        }
+
+        if (!passportDetails.firstName.trim()) newErrors.firstName = 'પ્રથમ નામ જરૂરી છે (આધાર કાર્ડ મુજબ).';
+        if (!passportDetails.middleName.trim()) newErrors.middleName = 'પિતા/પતિનું નામ જરૂરી છે (આધાર કાર્ડ મુજબ).';
+        if (!passportDetails.lastName.trim()) newErrors.lastName = 'અટક (સરનેમ) જરૂરી છે (આધાર કાર્ડ મુજબ).';
+        if (!passportDetails.gender) newErrors.gender = 'જાતિ પસંદ કરવી ફરજિયાત છે.';
+        if (!passportDetails.caste) newErrors.caste = 'જ્ઞાતિ/વર્ગ પસંદ કરવો ફરજિયાત છે.';
+        if (!passportDetails.dob) newErrors.dob = 'જન્મ તારીખ ફરજિયાત છે.';
+        if (!passportDetails.address.trim()) newErrors.address = 'સરનામું જરૂરી છે (આધાર/વોટર આઈડી મુજબ).';
+        if (!passportDetails.mobile.trim() || passportDetails.mobile.length < 10) newErrors.mobile = 'સાચો 10 આંકડાનો મોબાઈલ નંબર લખો.';
+        if (!passportDetails.email.trim()) newErrors.email = 'ઈમેઈલ ID ફરજિયાત છે.';
+
+        if (!passportDetails.fatherFirstName.trim()) newErrors.fatherFirstName = 'પિતાનું પ્રથમ નામ જરૂરી છે.';
+        if (!passportDetails.fatherMiddleName.trim()) newErrors.fatherMiddleName = 'પિતાનું મિડલ નામ જરૂરી છે.';
+        if (!passportDetails.fatherLastName.trim()) newErrors.fatherLastName = 'પિતાની અટક જરૂરી છે.';
+
+        if (!passportDetails.motherFirstName.trim()) newErrors.motherFirstName = 'માતાનું પ્રથમ નામ જરૂરી છે.';
+        if (!passportDetails.motherMiddleName.trim()) newErrors.motherMiddleName = 'માતાનું મિડલ નામ જરૂરી છે.';
+        if (!passportDetails.motherLastName.trim()) newErrors.motherLastName = 'માતાની અટક જરૂરી છે.';
+
+        if (passportDetails.passportCategory === 'NEW') {
+          if (!passportDetails.maritalStatus) newErrors.maritalStatus = 'વૈવાહિક સ્થિતિ પસંદ કરો.';
+          if (passportDetails.maritalStatus === 'MARRIED' && !passportDetails.spouseName?.trim()) {
+            newErrors.spouseName = 'પતિ/પત્નીનું પૂરું નામ લખો.';
+          }
+          if (!passportDetails.passportType) newErrors.passportType = 'પાસપોર્ટ ટાઈપ (નોર્મલ/તત્કાલ) પસંદ કરો.';
+
+          if (!passportDocs.passportPhoto) newErrors.passportPhoto = 'પાસપોર્ટ સાઇઝ ફોટો અપલોડ કરવો ફરજિયાત છે.';
+          if (!passportDocs.signature) newErrors.signature = 'અરજદારની સહી અપલોડ કરવી ફરજિયાત છે.';
+          if (!passportDocs.aadharCardFront) newErrors.aadharCardFront = 'આધાર કાર્ડ આગળનો ભાગ અપલોડ કરવો ફરજિયાત છે.';
+          if (!passportDocs.aadharCardBack) newErrors.aadharCardBack = 'આધાર કાર્ડ પાછળનો ભાગ અપલોડ કરવો ફરજિયાત છે.';
+          if (!passportDocs.schoolLeaving) newErrors.schoolLeaving = 'શાળા છોડ્યાનું પ્રમાણપત્ર (LC) અપલોડ કરો.';
+          if (!passportDocs.birthCertificate) newErrors.birthCertificate = 'જન્મનું પ્રમાણપત્ર અપલોડ કરો.';
+          if (!passportDocs.rationCardFront) newErrors.rationCardFront = 'રેશનકાર્ડ આગળનો ભાગ અપલોડ કરો.';
+          if (!passportDocs.rationCardBack) newErrors.rationCardBack = 'રેશનકાર્ડ પાછળનો ભાગ અપલોડ કરો.';
+          if (!passportDocs.studyResult) newErrors.studyResult = 'અભ્યાસનું પરિણામ (Study Result) અપલોડ કરો.';
+        } else if (passportDetails.passportCategory === 'RENEW') {
+          if (!passportDetails.passportNumber?.trim()) newErrors.passportNumber = 'જૂનો પાસપોર્ટ નંબર લખો.';
+          if (!passportDetails.passportIssueDate) newErrors.passportIssueDate = 'પાસપોર્ટ ઈશ્યુ તારીખ પસંદ કરો.';
+          if (!passportDetails.passportExpiryDate) newErrors.passportExpiryDate = 'પાસપોર્ટ એક્સપાયરી તારીખ પસંદ કરો.';
+
+          if (!passportDocs.passportPhoto) newErrors.passportPhoto = 'પાસપોર્ટ સાઇઝ ફોટો અપલોડ કરવો ફરજિયાત છે.';
+          if (!passportDocs.signature) newErrors.signature = 'અરજદારની સહી અપલોડ કરવી ફરજિયાત છે.';
+          if (!passportDocs.aadharCardFront) newErrors.aadharCardFront = 'આધાર કાર્ડ આગળનો ભાગ અપલોડ કરવો ફરજિયાત છે.';
+          if (!passportDocs.aadharCardBack) newErrors.aadharCardBack = 'આધાર કાર્ડ પાછળનો ભાગ અપલોડ કરવો ફરજિયાત છે.';
+          if (!passportDocs.voterIdFront) newErrors.voterIdFront = 'વોટર આઈડી આગળનો ભાગ અપલોડ કરો.';
+          if (!passportDocs.voterIdBack) newErrors.voterIdBack = 'વોટર આઈડી પાછળનો ભાગ અપલોડ કરો.';
+          if (!passportDocs.oldPassportFront) newErrors.oldPassportFront = 'જૂનો પાસપોર્ટ આગળનો ભાગ અપલોડ કરો.';
+          if (!passportDocs.oldPassportBack) newErrors.oldPassportBack = 'જૂનો પાસપોર્ટ પાછળનો ભાગ અપલોડ કરો.';
+          if (!passportDocs.schoolLeaving) newErrors.schoolLeaving = 'શાળા છોડ્યાનું પ્રમાણપત્ર (LC) અપલોડ કરો.';
+          if (!passportDocs.birthCertificate) newErrors.birthCertificate = 'જન્મનું પ્રમાણપત્ર અપલોડ કરો.';
         }
       }
     } else {
@@ -1429,6 +1479,9 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
       } else if (formType === 'RATION_CARD_CORRECTION') {
         activeDetails = rationCardCorrectionDetails;
         activeDocs = rationCardCorrectionDocs;
+      } else if (formType === 'PASSPORT') {
+        activeDetails = passportDetails;
+        activeDocs = passportDocs;
       }
 
       const newEntry: ApplicationEntry = {
@@ -1559,6 +1612,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                formType === 'RATION_CARD_ADD_NAME' ? 'RATION CARD - ADD NAME' :
                formType === 'RATION_CARD_REMOVE_NAME' ? 'RATION CARD - REMOVE NAME' :
                formType === 'RATION_CARD_CORRECTION' ? 'RATION CARD - CORRECTION' :
+               formType === 'PASSPORT' ? 'PASSPORT SERVICE' :
 
                'OTHER SERVICES'}
             </span>
@@ -1582,6 +1636,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                formType === 'RATION_CARD_ADD_NAME' ? 'રેશન કાર્ડમાં નવું નામ ઉમેરવા માટેનું અરજી ફોર્મ' :
                formType === 'RATION_CARD_REMOVE_NAME' ? 'રેશન કાર્ડમાંથી નામ કમી કરવા માટેનું અરજી ફોર્મ' :
                formType === 'RATION_CARD_CORRECTION' ? 'રેશન કાર્ડમાં સુધારો કરવા માટેનું અરજી ફોર્મ' :
+               formType === 'PASSPORT' ? 'પાસપોર્ટ સેવા (નવો / રિન્યુ) અરજી ફોર્મ' :
 
                'અન્ય સરકારી સેવાઓ પૂછપરછ ફોર્મ'}
             </h1>
@@ -1601,6 +1656,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                formType === 'RATION_CARD_ADD_NAME' ? 'Application Form to Add Name in Ration Card' :
                formType === 'RATION_CARD_REMOVE_NAME' ? 'Application Form to Remove Name from Ration Card' :
                formType === 'RATION_CARD_CORRECTION' ? 'Application Form for Ration Card Correction Entry' :
+               formType === 'PASSPORT' ? 'Application Form for Passport Services (New / Renew)' :
 
                'Inquiry and Application Form for Other Government Services'}
             </p>
@@ -1613,6 +1669,327 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Dynamic sub-service switcher if not editing */}
+      {!editingEntry && (
+        <>
+          {/* PAN Card sub-services */}
+          {(formType === 'PAN_CARD' || formType === 'PAN_CARD_CORRECTION' || formType === 'MINOR_PAN_CARD') && (
+            <div className="bg-indigo-50/30 border-b border-indigo-100/80 p-4 md:p-6 flex flex-col gap-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-indigo-950 flex items-center gap-1.5">
+                  <span className="w-1.5 h-3 bg-indigo-600 rounded-sm"></span>
+                  પાન કૉર્ડ સેવા પ્રકાર (PAN Card Service Type)
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium">તમારી જરૂરિયાત મુજબ યોગ્ય પેન કાર્ડ સેવાનો પ્રકાર પસંદ કરો (Select PAN Card Service Type)</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 w-full">
+                {[
+                  { 
+                    type: 'PAN_CARD', 
+                    labelGu: 'નવું પેન કાર્ડ', 
+                    labelEn: 'New PAN Card',
+                    icon: IdCard,
+                    bgClass: 'bg-gradient-to-r from-blue-600 to-indigo-700',
+                    colorClass: 'text-indigo-600 border-indigo-200 bg-indigo-50 hover:bg-indigo-100'
+                  },
+                  { 
+                    type: 'PAN_CARD_CORRECTION', 
+                    labelGu: 'પેન કાર્ડ સુધારો', 
+                    labelEn: 'PAN Card Correction',
+                    icon: FileEdit,
+                    bgClass: 'bg-gradient-to-r from-indigo-600 to-blue-700',
+                    colorClass: 'text-indigo-600 border-indigo-200 bg-indigo-50 hover:bg-indigo-100'
+                  },
+                  { 
+                    type: 'MINOR_PAN_CARD', 
+                    labelGu: 'સગીર પેન કાર્ડ', 
+                    labelEn: 'Minor PAN Card',
+                    icon: Baby,
+                    bgClass: 'bg-gradient-to-r from-violet-600 to-purple-700',
+                    colorClass: 'text-violet-600 border-violet-200 bg-violet-50 hover:bg-violet-100'
+                  },
+                ].map((tab) => {
+                  const basePrice = currentPrices[tab.type] ?? SERVICE_PRICES[tab.type as FormType] ?? 0;
+                  const computedWalletPrice = Math.round(basePrice * (100 - currentDiscounts.walletDiscount) / 100);
+                  const computedUpiPrice = Math.round(basePrice * (100 - currentDiscounts.upiDiscount) / 100);
+                  const isSelected = formType === tab.type;
+
+                  return (
+                    <button
+                      key={tab.type}
+                      type="button"
+                      onClick={() => setFormType(tab.type as FormType)}
+                      className={`p-4 rounded-3xl border text-left transition-all duration-200 flex flex-col justify-between gap-4 group relative overflow-hidden active:scale-95 cursor-pointer ${
+                        isSelected
+                          ? 'bg-white border-indigo-600 shadow-md shadow-indigo-100'
+                          : 'bg-white border-slate-200 hover:bg-slate-50/50 hover:border-indigo-300'
+                      }`}
+                    >
+                      {/* Service Header: Icon & Title */}
+                      <div className="flex items-center gap-3 w-full">
+                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-all duration-200 shrink-0 ${
+                          isSelected ? tab.bgClass : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          <tab.icon className="h-5 w-5" />
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-indigo-600 leading-tight">
+                            {tab.labelGu}
+                          </h4>
+                          <p className="text-[10px] font-bold text-slate-400 font-sans tracking-wide mt-0.5 uppercase">
+                            {tab.labelEn}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Pricing Options */}
+                      <div className="pt-3 border-t border-slate-100 w-full space-y-1.5">
+                        {/* Cash */}
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100/80">
+                          <span className="flex items-center gap-1 font-medium">💵 Cash (રોકડા):</span>
+                          <span className="font-sans font-black text-slate-900 text-xs">₹{basePrice}</span>
+                        </div>
+
+                        {/* Wallet */}
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-emerald-800 bg-emerald-50/80 px-2.5 py-1.5 rounded-xl border border-emerald-100">
+                          <span className="flex items-center gap-1 font-medium">
+                            👛 Wallet:
+                            <span className="text-[8px] font-black bg-emerald-200 text-emerald-900 px-1 rounded">
+                              {currentDiscounts.walletDiscount}% OFF
+                            </span>
+                          </span>
+                          <span className="font-sans font-black text-emerald-900 text-xs">₹{computedWalletPrice}</span>
+                        </div>
+
+                        {/* UPI */}
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-indigo-800 bg-indigo-50/80 px-2.5 py-1.5 rounded-xl border border-indigo-100">
+                          <span className="flex items-center gap-1 font-medium">
+                            📲 UPI:
+                            <span className="text-[8px] font-black bg-indigo-200 text-indigo-950 px-1 rounded">
+                              {currentDiscounts.upiDiscount}% OFF
+                            </span>
+                          </span>
+                          <span className="font-sans font-black text-indigo-900 text-xs">₹{computedUpiPrice}</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Voter ID sub-services */}
+          {(formType === 'VOTER_ID' || formType === 'VOTER_ID_CORRECTION') && (
+            <div className="bg-emerald-50/30 border-b border-emerald-100/80 p-4 md:p-6 flex flex-col gap-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-emerald-950 flex items-center gap-1.5">
+                  <span className="w-1.5 h-3 bg-emerald-600 rounded-sm"></span>
+                  મતદાર આઈડી સેવા પ્રકાર (Voter ID Service Type)
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium">તમારી જરૂરિયાત મુજબ યોગ્ય મતદાર આઈડી સેવાનો પ્રકાર પસંદ કરો (Select Voter ID Service Type)</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full">
+                {[
+                  { 
+                    type: 'VOTER_ID', 
+                    labelGu: 'નવું મતદાર આઈડી', 
+                    labelEn: 'New Voter ID',
+                    icon: Vote,
+                    bgClass: 'bg-gradient-to-r from-emerald-600 to-teal-700',
+                    colorClass: 'text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
+                  },
+                  { 
+                    type: 'VOTER_ID_CORRECTION', 
+                    labelGu: 'મતદાર આઈડી સુધારો', 
+                    labelEn: 'Voter ID Correction',
+                    icon: UserCheck,
+                    bgClass: 'bg-gradient-to-r from-teal-600 to-emerald-700',
+                    colorClass: 'text-teal-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
+                  },
+                ].map((tab) => {
+                  const basePrice = currentPrices[tab.type] ?? SERVICE_PRICES[tab.type as FormType] ?? 0;
+                  const computedWalletPrice = Math.round(basePrice * (100 - currentDiscounts.walletDiscount) / 100);
+                  const computedUpiPrice = Math.round(basePrice * (100 - currentDiscounts.upiDiscount) / 100);
+                  const isSelected = formType === tab.type;
+
+                  return (
+                    <button
+                      key={tab.type}
+                      type="button"
+                      onClick={() => setFormType(tab.type as FormType)}
+                      className={`p-4 rounded-3xl border text-left transition-all duration-200 flex flex-col justify-between gap-4 group relative overflow-hidden active:scale-95 cursor-pointer ${
+                        isSelected
+                          ? 'bg-white border-emerald-600 shadow-md shadow-emerald-100'
+                          : 'bg-white border-slate-200 hover:bg-slate-50/50 hover:border-emerald-300'
+                      }`}
+                    >
+                      {/* Service Header: Icon & Title */}
+                      <div className="flex items-center gap-3 w-full">
+                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-all duration-200 shrink-0 ${
+                          isSelected ? tab.bgClass : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          <tab.icon className="h-5 w-5" />
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-emerald-600 leading-tight">
+                            {tab.labelGu}
+                          </h4>
+                          <p className="text-[10px] font-bold text-slate-400 font-sans tracking-wide mt-0.5 uppercase">
+                            {tab.labelEn}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Pricing Options */}
+                      <div className="pt-3 border-t border-slate-100 w-full space-y-1.5">
+                        {/* Cash */}
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100/80">
+                          <span className="flex items-center gap-1 font-medium">💵 Cash (રોકડા):</span>
+                          <span className="font-sans font-black text-slate-900 text-xs">₹{basePrice}</span>
+                        </div>
+
+                        {/* Wallet */}
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-emerald-800 bg-emerald-50/80 px-2.5 py-1.5 rounded-xl border border-emerald-100">
+                          <span className="flex items-center gap-1 font-medium">
+                            👛 Wallet:
+                            <span className="text-[8px] font-black bg-emerald-200 text-emerald-900 px-1 rounded">
+                              {currentDiscounts.walletDiscount}% OFF
+                            </span>
+                          </span>
+                          <span className="font-sans font-black text-emerald-900 text-xs">₹{computedWalletPrice}</span>
+                        </div>
+
+                        {/* UPI */}
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-indigo-800 bg-indigo-50/80 px-2.5 py-1.5 rounded-xl border border-indigo-100">
+                          <span className="flex items-center gap-1 font-medium">
+                            📲 UPI:
+                            <span className="text-[8px] font-black bg-indigo-200 text-indigo-950 px-1 rounded">
+                              {currentDiscounts.upiDiscount}% OFF
+                            </span>
+                          </span>
+                          <span className="font-sans font-black text-indigo-900 text-xs">₹{computedUpiPrice}</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Ration Card sub-services */}
+          {(formType === 'RATION_CARD_ADD_NAME' || formType === 'RATION_CARD_REMOVE_NAME' || formType === 'RATION_CARD_CORRECTION') && (
+            <div className="bg-amber-50/30 border-b border-amber-100/80 p-4 md:p-6 flex flex-col gap-4">
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-amber-950 flex items-center gap-1.5">
+                  <span className="w-1.5 h-3 bg-amber-500 rounded-sm"></span>
+                  રેશન કાર્ડ સેવા પ્રકાર (Ration Card Service Type)
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium">તમારી જરૂરિયાત મુજબ યોગ્ય રેશન કાર્ડ સેવાનો પ્રકાર પસંદ કરો (Select Ration Card Service Type)</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 w-full">
+                {[
+                  { 
+                    type: 'RATION_CARD_ADD_NAME', 
+                    labelGu: 'નામ ઉમેરવું', 
+                    labelEn: 'Add Name',
+                    icon: UserPlus,
+                    bgClass: 'bg-gradient-to-r from-emerald-600 to-green-700',
+                    colorClass: 'text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-indigo-100'
+                  },
+                  { 
+                    type: 'RATION_CARD_REMOVE_NAME', 
+                    labelGu: 'નામ કમી કરવું', 
+                    labelEn: 'Remove Name',
+                    icon: UserMinus,
+                    bgClass: 'bg-gradient-to-r from-rose-600 to-red-700',
+                    colorClass: 'text-rose-600 border-rose-200 bg-rose-50 hover:bg-rose-100'
+                  },
+                  { 
+                    type: 'RATION_CARD_CORRECTION', 
+                    labelGu: 'રેશન કાર્ડ સુધારો', 
+                    labelEn: 'Ration Card Correction',
+                    icon: Utensils,
+                    bgClass: 'bg-gradient-to-r from-amber-600 to-yellow-600',
+                    colorClass: 'text-amber-600 border-amber-200 bg-amber-50 hover:bg-amber-100'
+                  },
+                ].map((tab) => {
+                  const basePrice = currentPrices[tab.type] ?? SERVICE_PRICES[tab.type as FormType] ?? 0;
+                  const computedWalletPrice = Math.round(basePrice * (100 - currentDiscounts.walletDiscount) / 100);
+                  const computedUpiPrice = Math.round(basePrice * (100 - currentDiscounts.upiDiscount) / 100);
+                  const isSelected = formType === tab.type;
+
+                  return (
+                    <button
+                      key={tab.type}
+                      type="button"
+                      onClick={() => setFormType(tab.type as FormType)}
+                      className={`p-4 rounded-3xl border text-left transition-all duration-200 flex flex-col justify-between gap-4 group relative overflow-hidden active:scale-95 cursor-pointer ${
+                        isSelected
+                          ? 'bg-white border-amber-500 shadow-md shadow-amber-100'
+                          : 'bg-white border-slate-200 hover:bg-slate-50/50 hover:border-amber-300'
+                      }`}
+                    >
+                      {/* Service Header: Icon & Title */}
+                      <div className="flex items-center gap-3 w-full">
+                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-all duration-200 shrink-0 ${
+                          isSelected ? tab.bgClass : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          <tab.icon className="h-5 w-5" />
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-amber-600 leading-tight">
+                            {tab.labelGu}
+                          </h4>
+                          <p className="text-[10px] font-bold text-slate-400 font-sans tracking-wide mt-0.5 uppercase">
+                            {tab.labelEn}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Pricing Options */}
+                      <div className="pt-3 border-t border-slate-100 w-full space-y-1.5">
+                        {/* Cash */}
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100/80">
+                          <span className="flex items-center gap-1 font-medium">💵 Cash (રોકડા):</span>
+                          <span className="font-sans font-black text-slate-900 text-xs">₹{basePrice}</span>
+                        </div>
+
+                        {/* Wallet */}
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-emerald-800 bg-emerald-50/80 px-2.5 py-1.5 rounded-xl border border-emerald-100">
+                          <span className="flex items-center gap-1 font-medium">
+                            👛 Wallet:
+                            <span className="text-[8px] font-black bg-emerald-200 text-emerald-900 px-1 rounded">
+                              {currentDiscounts.walletDiscount}% OFF
+                            </span>
+                          </span>
+                          <span className="font-sans font-black text-emerald-900 text-xs">₹{computedWalletPrice}</span>
+                        </div>
+
+                        {/* UPI */}
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-indigo-800 bg-indigo-50/80 px-2.5 py-1.5 rounded-xl border border-indigo-100">
+                          <span className="flex items-center gap-1 font-medium">
+                            📲 UPI:
+                            <span className="text-[8px] font-black bg-indigo-200 text-indigo-950 px-1 rounded">
+                              {currentDiscounts.upiDiscount}% OFF
+                            </span>
+                          </span>
+                          <span className="font-sans font-black text-indigo-900 text-xs">₹{computedUpiPrice}</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Main Form Fields */}
       <div className="p-4 md:p-8 space-y-8">
@@ -7187,6 +7564,534 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
                 <DocumentUploader label="સાચું નામ ધરાવતું કોઈ પણ પ્રમાણપત્ર (આધાર/LC)" gujaratiLabel="Supporting Proof (Aadhaar or LC)" document={rationCardCorrectionDocs.supportingDoc} onUpload={(doc) => setRationCardCorrectionDocs({...rationCardCorrectionDocs, supportingDoc: doc})} />
               </div>
             </section>
+          </div>
+        )}
+
+        {formType === 'PASSPORT' && (
+          <div className="space-y-8 animate-fade-in">
+            {/* 1. Category Selection */}
+            <section className="space-y-4">
+              <div className="border-b border-slate-100 pb-2 flex justify-between items-baseline">
+                <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                  <Globe className="h-4.5 w-4.5 text-indigo-600" /> ૧. પાસપોર્ટ કેટેગરી પસંદ કરો (1. Passport Category)
+                </h3>
+                <span className="text-xs text-rose-500">* દર્શાવેલ વિગતો ફરજિયાત છે</span>
+              </div>
+
+              <div id="passportCategory" className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-3">
+                <p className="text-xs font-bold text-slate-800">અરજીનો પ્રકાર (Application Type) <span className="text-red-500">*</span></p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <label
+                    onClick={() => handlePassportDetailsChange('passportCategory', 'NEW')}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                      passportDetails.passportCategory === 'NEW'
+                        ? 'bg-indigo-50/80 border-indigo-500 text-indigo-950 font-bold shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="passportCategory"
+                      checked={passportDetails.passportCategory === 'NEW'}
+                      onChange={() => handlePassportDetailsChange('passportCategory', 'NEW')}
+                      className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <div>
+                      <p className="text-sm font-bold">નવો પાસપોર્ટ (New Passport)</p>
+                      <p className="text-[11px] text-slate-500">પ્રથમ વખત પાસપોર્ટ કઢાવવા માટે</p>
+                    </div>
+                  </label>
+
+                  <label
+                    onClick={() => handlePassportDetailsChange('passportCategory', 'RENEW')}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                      passportDetails.passportCategory === 'RENEW'
+                        ? 'bg-indigo-50/80 border-indigo-500 text-indigo-950 font-bold shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="passportCategory"
+                      checked={passportDetails.passportCategory === 'RENEW'}
+                      onChange={() => handlePassportDetailsChange('passportCategory', 'RENEW')}
+                      className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <div>
+                      <p className="text-sm font-bold">પાસપોર્ટ રિન્યુ (Renew Passport)</p>
+                      <p className="text-[11px] text-slate-500">જૂના પાસપોર્ટને રિન્યુ કરવા માટે</p>
+                    </div>
+                  </label>
+                </div>
+                {errors.passportCategory && <p className="text-xs text-red-500 font-semibold mt-1">{errors.passportCategory}</p>}
+              </div>
+            </section>
+
+            {passportDetails.passportCategory && (
+              <>
+                {/* 2. Personal Information */}
+                <section className="space-y-4">
+                  <div className="border-b border-slate-100 pb-2">
+                    <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                      <User className="h-4.5 w-4.5 text-indigo-600" /> ૨. અરજદારની અંગત વિગતો (2. Personal Details)
+                    </h3>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                    <p className="text-xs font-bold text-slate-800 border-b border-slate-200/60 pb-1">નામ ની વિગતો (આધાર કાર્ડ મુજબ)</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div id="firstName" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">પ્રથમ નામ (First Name) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={passportDetails.firstName}
+                          onChange={e => handlePassportDetailsChange('firstName', e.target.value.toUpperCase())}
+                          placeholder="e.g. RAMESHBHAI"
+                          className={`w-full bg-white border ${errors.firstName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                        />
+                        {errors.firstName && <p className="text-xs text-red-500 mt-0.5">{errors.firstName}</p>}
+                      </div>
+
+                      <div id="middleName" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">પિતા/પતિનું નામ (Middle Name) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={passportDetails.middleName}
+                          onChange={e => handlePassportDetailsChange('middleName', e.target.value.toUpperCase())}
+                          placeholder="e.g. AMBALAL"
+                          className={`w-full bg-white border ${errors.middleName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                        />
+                        {errors.middleName && <p className="text-xs text-red-500 mt-0.5">{errors.middleName}</p>}
+                      </div>
+
+                      <div id="lastName" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">અટક (Last Name / Surname) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={passportDetails.lastName}
+                          onChange={e => handlePassportDetailsChange('lastName', e.target.value.toUpperCase())}
+                          placeholder="e.g. PATEL"
+                          className={`w-full bg-white border ${errors.lastName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                        />
+                        {errors.lastName && <p className="text-xs text-red-500 mt-0.5">{errors.lastName}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                      <div id="gender" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">જાતિ (Gender) <span className="text-red-500">*</span></label>
+                        <select
+                          value={passportDetails.gender}
+                          onChange={e => handlePassportDetailsChange('gender', e.target.value)}
+                          className={`w-full bg-white border ${errors.gender ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm`}
+                        >
+                          <option value="">પસંદ કરો (Select)</option>
+                          <option value="MALE">પુરુષ (Male)</option>
+                          <option value="FEMALE">સ્ત્રી (Female)</option>
+                          <option value="OTHER">અન્ય (Other)</option>
+                        </select>
+                        {errors.gender && <p className="text-xs text-red-500 mt-0.5">{errors.gender}</p>}
+                      </div>
+
+                      <div id="caste" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">જ્ઞાતિ/વર્ગ (Category) <span className="text-red-500">*</span></label>
+                        <select
+                          value={passportDetails.caste}
+                          onChange={e => handlePassportDetailsChange('caste', e.target.value)}
+                          className={`w-full bg-white border ${errors.caste ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm`}
+                        >
+                          <option value="">પસંદ કરો (Select)</option>
+                          <option value="GENERAL">સામાન્ય (General)</option>
+                          <option value="OBC">ઓ.બી.સી / સામાજિક શૈક્ષણિક પછાત (OBC)</option>
+                          <option value="SC">અનુસૂચિત જાતિ (SC)</option>
+                          <option value="ST">અનુસૂચિત જનજાતિ (ST)</option>
+                          <option value="OTHER">અન્ય (Other)</option>
+                        </select>
+                        {errors.caste && <p className="text-xs text-red-500 mt-0.5">{errors.caste}</p>}
+                      </div>
+
+                      <div id="dob" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">જન્મ તારીખ (Date of Birth) <span className="text-red-500">*</span></label>
+                        <input
+                          type="date"
+                          value={passportDetails.dob}
+                          onChange={e => handlePassportDetailsChange('dob', e.target.value)}
+                          className={`w-full bg-white border ${errors.dob ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm`}
+                        />
+                        {errors.dob && <p className="text-xs text-red-500 mt-0.5">{errors.dob}</p>}
+                      </div>
+                    </div>
+
+                    {/* Contact & Address */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                      <div id="mobile" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">મોબાઈલ નંબર (Mobile) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          maxLength={10}
+                          value={passportDetails.mobile}
+                          onChange={e => handlePassportDetailsChange('mobile', e.target.value.replace(/\D/g, ''))}
+                          placeholder="e.g. 9876543210"
+                          className={`w-full bg-white border ${errors.mobile ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm font-mono`}
+                        />
+                        {errors.mobile && <p className="text-xs text-red-500 mt-0.5">{errors.mobile}</p>}
+                      </div>
+
+                      <div id="email" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">ઈમેઈલ (Email Address) <span className="text-red-500">*</span></label>
+                        <input
+                          type="email"
+                          value={passportDetails.email}
+                          onChange={e => handlePassportDetailsChange('email', e.target.value)}
+                          placeholder="e.g. example@gmail.com"
+                          className={`w-full bg-white border ${errors.email ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm`}
+                        />
+                        {errors.email && <p className="text-xs text-red-500 mt-0.5">{errors.email}</p>}
+                      </div>
+                    </div>
+
+                    <div id="address" className="space-y-1.5 pt-2">
+                      <label className="text-xs font-semibold text-slate-700">સરનામું (Address - આધાર/વોટર આઈડી મુજબ) <span className="text-red-500">*</span></label>
+                      <textarea
+                        rows={2}
+                        value={passportDetails.address}
+                        onChange={e => handlePassportDetailsChange('address', e.target.value)}
+                        placeholder="ગામ, તાલુકો, જિલ્લો, પિનકોડ સાથે સંપૂર્ણ સરનામું લખો..."
+                        className={`w-full bg-white border ${errors.address ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm`}
+                      />
+                      {errors.address && <p className="text-xs text-red-500 mt-0.5">{errors.address}</p>}
+                    </div>
+
+                    {/* NEW Passport specific fields */}
+                    {passportDetails.passportCategory === 'NEW' && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-slate-200/60">
+                        <div id="maritalStatus" className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">વૈવાહિક સ્થિતિ (Marital Status) <span className="text-red-500">*</span></label>
+                          <select
+                            value={passportDetails.maritalStatus || ''}
+                            onChange={e => handlePassportDetailsChange('maritalStatus', e.target.value)}
+                            className={`w-full bg-white border ${errors.maritalStatus ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm`}
+                          >
+                            <option value="">પસંદ કરો (Select)</option>
+                            <option value="UNMARRIED">અપરિણિત (Unmarried)</option>
+                            <option value="MARRIED">પરિણિત (Married)</option>
+                            <option value="DIVORCED">છૂટાછેડા (Divorced)</option>
+                          </select>
+                          {errors.maritalStatus && <p className="text-xs text-red-500 mt-0.5">{errors.maritalStatus}</p>}
+                        </div>
+
+                        {passportDetails.maritalStatus === 'MARRIED' && (
+                          <div id="spouseName" className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-700">પતિ/પત્નીનું પૂરું નામ (Spouse Full Name) <span className="text-red-500">*</span></label>
+                            <input
+                              type="text"
+                              value={passportDetails.spouseName || ''}
+                              onChange={e => handlePassportDetailsChange('spouseName', e.target.value.toUpperCase())}
+                              placeholder="e.g. SUNITABEN PATEL"
+                              className={`w-full bg-white border ${errors.spouseName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                            />
+                            {errors.spouseName && <p className="text-xs text-red-500 mt-0.5">{errors.spouseName}</p>}
+                          </div>
+                        )}
+
+                        <div id="passportType" className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">પાસપોર્ટ પ્રકાર (Passport Type) <span className="text-red-500">*</span></label>
+                          <select
+                            value={passportDetails.passportType || ''}
+                            onChange={e => handlePassportDetailsChange('passportType', e.target.value)}
+                            className={`w-full bg-white border ${errors.passportType ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm`}
+                          >
+                            <option value="">પસંદ કરો (Select)</option>
+                            <option value="NORMAL">નોર્મલ (Normal Process)</option>
+                            <option value="TATKAAL">તત્કાલ (Tatkaal Process)</option>
+                          </select>
+                          {errors.passportType && <p className="text-xs text-red-500 mt-0.5">{errors.passportType}</p>}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* RENEW Passport specific fields */}
+                    {passportDetails.passportCategory === 'RENEW' && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-slate-200/60">
+                        <div id="passportNumber" className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">જૂનો પાસપોર્ટ નંબર (Old Passport No) <span className="text-red-500">*</span></label>
+                          <input
+                            type="text"
+                            value={passportDetails.passportNumber || ''}
+                            onChange={e => handlePassportDetailsChange('passportNumber', e.target.value.toUpperCase())}
+                            placeholder="e.g. Z1234567"
+                            className={`w-full bg-white border ${errors.passportNumber ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase font-mono`}
+                          />
+                          {errors.passportNumber && <p className="text-xs text-red-500 mt-0.5">{errors.passportNumber}</p>}
+                        </div>
+
+                        <div id="passportIssueDate" className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">ઈશ્યુ તારીખ (Issue Date) <span className="text-red-500">*</span></label>
+                          <input
+                            type="date"
+                            value={passportDetails.passportIssueDate || ''}
+                            onChange={e => handlePassportDetailsChange('passportIssueDate', e.target.value)}
+                            className={`w-full bg-white border ${errors.passportIssueDate ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm`}
+                          />
+                          {errors.passportIssueDate && <p className="text-xs text-red-500 mt-0.5">{errors.passportIssueDate}</p>}
+                        </div>
+
+                        <div id="passportExpiryDate" className="space-y-1.5">
+                          <label className="text-xs font-semibold text-slate-700">એક્સપાયરી તારીખ (Expiry Date) <span className="text-red-500">*</span></label>
+                          <input
+                            type="date"
+                            value={passportDetails.passportExpiryDate || ''}
+                            onChange={e => handlePassportDetailsChange('passportExpiryDate', e.target.value)}
+                            className={`w-full bg-white border ${errors.passportExpiryDate ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm`}
+                          />
+                          {errors.passportExpiryDate && <p className="text-xs text-red-500 mt-0.5">{errors.passportExpiryDate}</p>}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* 3. Parents Name Section */}
+                <section className="space-y-4">
+                  <div className="border-b border-slate-100 pb-2">
+                    <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                      <Users className="h-4.5 w-4.5 text-indigo-600" /> ૩. માતા-પિતાની વિગતો (3. Parents Details)
+                    </h3>
+                  </div>
+
+                  <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                    {/* Father Details */}
+                    <p className="text-xs font-bold text-slate-800 border-b border-slate-200/60 pb-1">પિતાનું પૂરું નામ (Father's Full Name)</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div id="fatherFirstName" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">પિતાનું નામ (First Name) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={passportDetails.fatherFirstName}
+                          onChange={e => handlePassportDetailsChange('fatherFirstName', e.target.value.toUpperCase())}
+                          placeholder="e.g. AMBALAL"
+                          className={`w-full bg-white border ${errors.fatherFirstName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                        />
+                        {errors.fatherFirstName && <p className="text-xs text-red-500 mt-0.5">{errors.fatherFirstName}</p>}
+                      </div>
+
+                      <div id="fatherMiddleName" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">દાદાનું નામ (Middle Name) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={passportDetails.fatherMiddleName}
+                          onChange={e => handlePassportDetailsChange('fatherMiddleName', e.target.value.toUpperCase())}
+                          placeholder="e.g. DEVJIBHAI"
+                          className={`w-full bg-white border ${errors.fatherMiddleName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                        />
+                        {errors.fatherMiddleName && <p className="text-xs text-red-500 mt-0.5">{errors.fatherMiddleName}</p>}
+                      </div>
+
+                      <div id="fatherLastName" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">અટક (Last Name) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={passportDetails.fatherLastName}
+                          onChange={e => handlePassportDetailsChange('fatherLastName', e.target.value.toUpperCase())}
+                          placeholder="e.g. PATEL"
+                          className={`w-full bg-white border ${errors.fatherLastName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                        />
+                        {errors.fatherLastName && <p className="text-xs text-red-500 mt-0.5">{errors.fatherLastName}</p>}
+                      </div>
+                    </div>
+
+                    {/* Mother Details */}
+                    <p className="text-xs font-bold text-slate-800 border-b border-slate-200/60 pb-1 pt-2">માતાનું પૂરું નામ (Mother's Full Name)</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div id="motherFirstName" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">માતાનું નામ (First Name) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={passportDetails.motherFirstName}
+                          onChange={e => handlePassportDetailsChange('motherFirstName', e.target.value.toUpperCase())}
+                          placeholder="e.g. SHARDABEN"
+                          className={`w-full bg-white border ${errors.motherFirstName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                        />
+                        {errors.motherFirstName && <p className="text-xs text-red-500 mt-0.5">{errors.motherFirstName}</p>}
+                      </div>
+
+                      <div id="motherMiddleName" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">પિતા/પતિનું નામ (Middle Name) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={passportDetails.motherMiddleName}
+                          onChange={e => handlePassportDetailsChange('motherMiddleName', e.target.value.toUpperCase())}
+                          placeholder="e.g. AMBALAL"
+                          className={`w-full bg-white border ${errors.motherMiddleName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                        />
+                        {errors.motherMiddleName && <p className="text-xs text-red-500 mt-0.5">{errors.motherMiddleName}</p>}
+                      </div>
+
+                      <div id="motherLastName" className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700">અટક (Last Name) <span className="text-red-500">*</span></label>
+                        <input
+                          type="text"
+                          value={passportDetails.motherLastName}
+                          onChange={e => handlePassportDetailsChange('motherLastName', e.target.value.toUpperCase())}
+                          placeholder="e.g. PATEL"
+                          className={`w-full bg-white border ${errors.motherLastName ? 'border-red-400' : 'border-slate-200'} rounded-xl py-2 px-3.5 text-sm uppercase`}
+                        />
+                        {errors.motherLastName && <p className="text-xs text-red-500 mt-0.5">{errors.motherLastName}</p>}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* 4. Documents Upload Section */}
+                <section className="space-y-4">
+                  <div className="border-b border-slate-100 pb-2">
+                    <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+                      <FileText className="h-4.5 w-4.5 text-indigo-600" /> ૪. જરૂરી દસ્તાવેજો અપલોડ કરો (4. Required Documents Upload)
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="passportPhoto">
+                      <DocumentUploader
+                        label="અરજદારનો પાસપોર્ટ સાઇઝ ફોટો *"
+                        gujaratiLabel="Passport Size Photo (White Background)"
+                        document={passportDocs.passportPhoto}
+                        error={errors.passportPhoto}
+                        onUpload={(doc) => setPassportDocs(prev => ({ ...prev, passportPhoto: doc }))}
+                      />
+                    </div>
+
+                    <div id="signature">
+                      <DocumentUploader
+                        label="અરજદારની સહી (Signature) *"
+                        gujaratiLabel="Applicant Signature on White Paper"
+                        document={passportDocs.signature}
+                        error={errors.signature}
+                        onUpload={(doc) => setPassportDocs(prev => ({ ...prev, signature: doc }))}
+                      />
+                    </div>
+
+                    <div id="aadharCardFront">
+                      <DocumentUploader
+                        label="આધાર કાર્ડ આગળનો ભાગ *"
+                        gujaratiLabel="Aadhaar Card Front Side"
+                        document={passportDocs.aadharCardFront}
+                        error={errors.aadharCardFront}
+                        onUpload={(doc) => setPassportDocs(prev => ({ ...prev, aadharCardFront: doc }))}
+                      />
+                    </div>
+
+                    <div id="aadharCardBack">
+                      <DocumentUploader
+                        label="આધાર કાર્ડ પાછળનો ભાગ *"
+                        gujaratiLabel="Aadhaar Card Back Side"
+                        document={passportDocs.aadharCardBack}
+                        error={errors.aadharCardBack}
+                        onUpload={(doc) => setPassportDocs(prev => ({ ...prev, aadharCardBack: doc }))}
+                      />
+                    </div>
+
+                    <div id="schoolLeaving">
+                      <DocumentUploader
+                        label="શાળા છોડ્યાનું પ્રમાણપત્ર (LC) *"
+                        gujaratiLabel="School Leaving Certificate"
+                        document={passportDocs.schoolLeaving}
+                        error={errors.schoolLeaving}
+                        onUpload={(doc) => setPassportDocs(prev => ({ ...prev, schoolLeaving: doc }))}
+                      />
+                    </div>
+
+                    <div id="birthCertificate">
+                      <DocumentUploader
+                        label="જન્મનું પ્રમાણપત્ર *"
+                        gujaratiLabel="Birth Certificate"
+                        document={passportDocs.birthCertificate}
+                        error={errors.birthCertificate}
+                        onUpload={(doc) => setPassportDocs(prev => ({ ...prev, birthCertificate: doc }))}
+                      />
+                    </div>
+
+                    {passportDetails.passportCategory === 'NEW' && (
+                      <>
+                        <div id="rationCardFront">
+                          <DocumentUploader
+                            label="રેશનકાર્ડ આગળનો ભાગ *"
+                            gujaratiLabel="Ration Card Front Side"
+                            document={passportDocs.rationCardFront || null}
+                            error={errors.rationCardFront}
+                            onUpload={(doc) => setPassportDocs(prev => ({ ...prev, rationCardFront: doc }))}
+                          />
+                        </div>
+
+                        <div id="rationCardBack">
+                          <DocumentUploader
+                            label="રેશનકાર્ડ પાછળનો ભાગ *"
+                            gujaratiLabel="Ration Card Back Side"
+                            document={passportDocs.rationCardBack || null}
+                            error={errors.rationCardBack}
+                            onUpload={(doc) => setPassportDocs(prev => ({ ...prev, rationCardBack: doc }))}
+                          />
+                        </div>
+
+                        <div id="studyResult">
+                          <DocumentUploader
+                            label="અભ્યાસનું પરિણામ (10th/12th Marksheet) *"
+                            gujaratiLabel="Study Result / Educational Qualification Proof"
+                            document={passportDocs.studyResult || null}
+                            error={errors.studyResult}
+                            onUpload={(doc) => setPassportDocs(prev => ({ ...prev, studyResult: doc }))}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {passportDetails.passportCategory === 'RENEW' && (
+                      <>
+                        <div id="voterIdFront">
+                          <DocumentUploader
+                            label="વોટર આઈડી કાર્ડ આગળનો ભાગ *"
+                            gujaratiLabel="Voter ID Card Front Side"
+                            document={passportDocs.voterIdFront || null}
+                            error={errors.voterIdFront}
+                            onUpload={(doc) => setPassportDocs(prev => ({ ...prev, voterIdFront: doc }))}
+                          />
+                        </div>
+
+                        <div id="voterIdBack">
+                          <DocumentUploader
+                            label="વોટર આઈડી કાર્ડ પાછળનો ભાગ *"
+                            gujaratiLabel="Voter ID Card Back Side"
+                            document={passportDocs.voterIdBack || null}
+                            error={errors.voterIdBack}
+                            onUpload={(doc) => setPassportDocs(prev => ({ ...prev, voterIdBack: doc }))}
+                          />
+                        </div>
+
+                        <div id="oldPassportFront">
+                          <DocumentUploader
+                            label="જૂનો પાસપોર્ટ પ્રથમ પેજ (Front Page) *"
+                            gujaratiLabel="Old Passport First Page with Photo"
+                            document={passportDocs.oldPassportFront || null}
+                            error={errors.oldPassportFront}
+                            onUpload={(doc) => setPassportDocs(prev => ({ ...prev, oldPassportFront: doc }))}
+                          />
+                        </div>
+
+                        <div id="oldPassportBack">
+                          <DocumentUploader
+                            label="જૂનો પાસપોર્ટ છેલ્લું પેજ (Back Page) *"
+                            gujaratiLabel="Old Passport Address Page"
+                            document={passportDocs.oldPassportBack || null}
+                            error={errors.oldPassportBack}
+                            onUpload={(doc) => setPassportDocs(prev => ({ ...prev, oldPassportBack: doc }))}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </section>
+              </>
+            )}
           </div>
         )}
       </div>

@@ -40,7 +40,9 @@ import {
   RationCardRemoveNameDetails,
   RationCardRemoveNameDocs,
   RationCardCorrectionDetails,
-  RationCardCorrectionDocs
+  RationCardCorrectionDocs,
+  PassportDetails,
+  PassportDocs
 } from '../types';
 export const initialPanDetails: PanCardDetails = {
   firstName: '',
@@ -660,4 +662,46 @@ export const initialRationCardCorrectionDetails: RationCardCorrectionDetails = {
 export const initialRationCardCorrectionDocs: RationCardCorrectionDocs = {
   supportingDoc: null
 };
+
+export const initialPassportDetails: PassportDetails = {
+  passportCategory: '',
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  gender: '',
+  caste: '',
+  dob: '',
+  address: '',
+  mobile: '',
+  email: '',
+  maritalStatus: '',
+  spouseName: '',
+  passportType: '',
+  passportIssueDate: '',
+  passportExpiryDate: '',
+  passportNumber: '',
+  fatherFirstName: '',
+  fatherMiddleName: '',
+  fatherLastName: '',
+  motherFirstName: '',
+  motherMiddleName: '',
+  motherLastName: '',
+};
+
+export const initialPassportDocs: PassportDocs = {
+  passportPhoto: null,
+  signature: null,
+  aadharCardFront: null,
+  aadharCardBack: null,
+  schoolLeaving: null,
+  birthCertificate: null,
+  rationCardFront: null,
+  rationCardBack: null,
+  studyResult: null,
+  voterIdFront: null,
+  voterIdBack: null,
+  oldPassportFront: null,
+  oldPassportBack: null,
+};
+
 

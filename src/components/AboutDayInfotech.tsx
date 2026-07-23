@@ -2,8 +2,9 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { useLanguage } from '../utils/language';
 import { 
-  Briefcase, Clock, MapPin, CheckCircle, Smartphone, Globe, 
-  BookOpen, Layers, Shield, FileText, Camera, Ticket, Award
+  Clock, MapPin, CheckCircle, Smartphone, Globe, 
+  BookOpen, Layers, Shield, FileText, Camera, Ticket, Award,
+  Sparkles, PhoneCall, Zap
 } from 'lucide-react';
 
 export const AboutDayInfotech: React.FC = () => {
@@ -13,144 +14,155 @@ export const AboutDayInfotech: React.FC = () => {
     { 
       name: 'Xerox Copy', 
       guj: 'ઝેરોક્ષ નકલ', 
-      desc_gu: 'ઉચ્ચ ગુણવત્તાવાળી બ્લેક એન્ડ વ્હાઇટ અને કલર ઝેરોક્ષ નકલ', 
-      desc_en: 'High-quality black & white and color photocopying service',
+      desc_gu: 'કલર અને B&W ઝેરોક્ષ', 
+      desc_en: 'Color & B/W Copies',
       icon: Layers, 
-      color: 'bg-indigo-50 text-indigo-600' 
+      color: 'bg-indigo-50 text-indigo-600 border-indigo-100' 
     },
     { 
-      name: 'Passport Size Photo', 
+      name: 'Passport Photo', 
       guj: 'પાસપોર્ટ સાઇઝ ફોટો', 
-      desc_gu: 'તુરંત સુંદર અને આકર્ષક પાસપોર્ટ સાઇઝ ફોટોગ્રાફ્સ', 
-      desc_en: 'Instant professional passport size photographs',
+      desc_gu: 'તુરંત ઇન્સ્ટન્ટ ફોટોગ્રાફ્સ', 
+      desc_en: 'Instant Photo Printing',
       icon: Camera, 
-      color: 'bg-emerald-50 text-emerald-600' 
+      color: 'bg-emerald-50 text-emerald-600 border-emerald-100' 
     },
     { 
-      name: 'GSRTC Ticket Booking', 
-      guj: 'GSRTC બસ ટિકિટ બુકિંગ', 
-      desc_gu: 'સરકારી એસ.ટી. બસની ટિકિટનું સરળ ઓનલાઇન બુકિંગ', 
-      desc_en: 'Easy online booking for GSRTC government bus tickets',
+      name: 'GSRTC Ticket', 
+      guj: 'GSRTC બસ ટિકિટ', 
+      desc_gu: 'સરકારી એસ.ટી. બુકિંગ', 
+      desc_en: 'GSRTC Bus Booking',
       icon: Ticket, 
-      color: 'bg-amber-50 text-amber-600' 
+      color: 'bg-amber-50 text-amber-600 border-amber-100' 
     },
     { 
       name: 'PASSPORT Apply', 
-      guj: 'નવો પાસપોર્ટ / રિન્યુ એપ્લાય', 
-      desc_gu: 'નવા પાસપોર્ટ અને રિન્યુઅલ માટે ઓનલાઇન ફોર્મ સબમિશન પ્રોસેસ', 
-      desc_en: 'Form submission process for new passports and renewals',
+      guj: 'નવો પાસપોર્ટ રિન્યુ', 
+      desc_gu: 'ઓનલાઇન ફોર્મ સબમિશન', 
+      desc_en: 'Online Application Process',
       icon: Globe, 
-      color: 'bg-blue-50 text-blue-600' 
+      color: 'bg-blue-50 text-blue-600 border-blue-100' 
     },
     { 
-      name: 'Admission & Scholarship Form', 
-      guj: 'એડમિશન અને સ્કોલરશિપ ફોર્મ', 
-      desc_gu: 'શાળા-કોલેજ પ્રવેશ અને સરકારી શિષ્યવૃત્તિ ફોર્મ માટે સંપૂર્ણ સહાય', 
-      desc_en: 'Complete assistance for school/college admissions and government scholarship forms',
+      name: 'Admission & Scholarship', 
+      guj: 'એડમિશન & શિષ્યવૃત્તિ', 
+      desc_gu: 'પ્રવેશ અને સ્કોલરશિપ ફોર્મ', 
+      desc_en: 'Admission & Forms',
       icon: BookOpen, 
-      color: 'bg-purple-50 text-purple-600' 
+      color: 'bg-purple-50 text-purple-600 border-purple-100' 
     },
     { 
       name: '7-12, 8A Land Records', 
-      guj: '૭-૧૨ અને ૮-અ જમીન નકલો', 
-      desc_gu: 'જમીનની ડિજિટલી સાઇન કરેલી નકલો સચોટ રીતે મેળવો', 
-      desc_en: 'Retrieve digitally signed copies of official land records',
+      guj: '૭-૧૨, ૮-અ જમીન નકલો', 
+      desc_gu: 'ડિજિટલ સાઇન જમીન નકલો', 
+      desc_en: 'Digitally Signed Copies',
       icon: FileText, 
-      color: 'bg-lime-50 text-lime-700' 
+      color: 'bg-lime-50 text-lime-700 border-lime-100' 
     },
     { 
-      name: 'Ration Card Services', 
+      name: 'Ration Card', 
       guj: 'રેશન કાર્ડ સેવાઓ', 
-      desc_gu: 'નવું રેશન કાર્ડ બનાવવું, નામ ઉમેરવું અથવા કમી કરવા માટેની સેવાઓ', 
-      desc_en: 'Services for new ration card issuance, name additions, or deletions',
+      desc_gu: 'નવું કાર્ડ, નામ સુધારો/ઉમેરો', 
+      desc_en: 'New & Changes Process',
       icon: Award, 
-      color: 'bg-rose-50 text-rose-600' 
+      color: 'bg-rose-50 text-rose-600 border-rose-100' 
     },
     { 
       name: 'Lamination', 
-      guj: 'લેમિનેશન', 
-      desc_gu: 'દસ્તાવેજોને લાંબા સમય સુધી સુરક્ષિત રાખવા માટે શ્રેષ્ઠ લેમિનેશન', 
-      desc_en: 'Premium lamination services to safeguard your important documents',
+      guj: 'લેમિનેશન સેવાઓ', 
+      desc_gu: 'દસ્તાવેજ સુરક્ષા કવર', 
+      desc_en: 'Document Protection',
       icon: Shield, 
-      color: 'bg-teal-50 text-teal-600' 
+      color: 'bg-teal-50 text-teal-600 border-teal-100' 
     },
   ];
 
   const officeHours = [
-    { days_gu: 'સોમવાર થી શુક્રવાર', days_en: 'Monday to Friday', hours: '8:30 AM to 7:30 PM' },
-    { days_gu: 'શનિવાર', days_en: 'Saturday', hours: '8:30 AM to 4:30 PM' },
-    { days_gu: 'રવિવાર', days_en: 'Sunday', hours: '8:30 AM to 12:30 PM' },
+    { days_gu: 'સોમ - શુક્ર', days_en: 'Mon - Fri', hours: '8:30 AM - 7:30 PM' },
+    { days_gu: 'શનિવાર', days_en: 'Saturday', hours: '8:30 AM - 4:30 PM' },
+    { days_gu: 'રવિવાર', days_en: 'Sunday', hours: '8:30 AM - 12:30 PM' },
   ];
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -15 }}
-      transition={{ duration: 0.25 }}
-      className="space-y-6 font-sans"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-3 font-sans max-w-full"
     >
-      {/* Banner Card */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-700 via-purple-700 to-slate-800 rounded-3xl p-6 md:p-8 text-white shadow-lg">
-        <div className="absolute top-0 right-0 -mt-12 -mr-12 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-0 left-0 -mb-16 -ml-16 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
-        
-        <div className="relative space-y-4 max-w-4xl mx-auto">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-black tracking-wider uppercase text-yellow-300 border border-white/10">
-            <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"></span>
-            {language === 'gu' ? 'ડિજિટલ સેવા કેન્દ્ર' : 'Digital Service Center'}
-          </span>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight font-display bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-            DAY INFOTECH
-          </h2>
-          <p className="text-sm md:text-base text-slate-100 font-medium leading-relaxed">
-            {language === 'gu' 
-              ? 'અમારો ઉદ્દેશ્ય લોકોને તમામ પ્રકારની સરકારી અને ડિજિટલ ઓનલાઇન સેવાઓ ખૂબ જ સરળ અને ઝડપી રીતે પૂરી પાડવાનો છે. અમે તમારા કિંમતી સમયની બચત અને સચોટ માર્ગદર્શનની ખાતરી આપીએ છીએ.' 
-              : 'Our mission is to provide all kinds of government and digital online services in a highly simplified and prompt manner. We guarantee to save your valuable time and provide accurate guidance.'}
-          </p>
+      {/* Ultra-Compact Top Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 rounded-2xl p-3.5 md:p-4 text-white shadow-md border border-indigo-500/20">
+        <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-tr from-amber-400 to-orange-500 text-slate-950 rounded-xl font-black shadow-md shrink-0">
+              <Zap className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xl md:text-2xl font-black tracking-tight font-display bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 bg-clip-text text-transparent">
+                  DAY INFOTECH
+                </h2>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/20 text-[10px] font-black text-amber-300 border border-amber-400/30">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                  {language === 'gu' ? 'ડિજિટલ સેવા કેન્દ્ર' : 'Digital Service Center'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 font-medium leading-snug">
+                {language === 'gu' 
+                  ? 'તમામ પ્રકારની સરકારી અને ડિજિટલ ઓનલાઇન સેવાઓનું વિશ્વાસપાત્ર સેન્ટર' 
+                  : 'Your trusted center for all government and digital online services'}
+              </p>
+            </div>
+          </div>
+
+          <a
+            href="https://wa.me/917600361873"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0 border border-emerald-400/30"
+          >
+            <Smartphone className="h-4 w-4" />
+            <span>{language === 'gu' ? 'વોટ્સએપ સંપર્ક (+91 76003 61873)' : 'WhatsApp (+91 76003 61873)'}</span>
+          </a>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Single Screen Responsive Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
         
-        {/* Left Column: Our Services */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/80 p-5 md:p-6 shadow-xs space-y-5">
-          <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-            <div className="space-y-0.5">
-              <h3 className="text-base font-black text-slate-800 tracking-tight flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-indigo-600" />
-                {language === 'gu' ? 'અમારી સેવાઓ' : 'Our Services'}
-              </h3>
-              <p className="text-xs text-slate-500">
-                {language === 'gu' ? 'અમારા સેન્ટર પર પૂરી પાડવામાં આવતી મુખ્ય સેવાઓ' : 'Key services provided at our center'}
-              </p>
-            </div>
-            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
-              {language === 'gu' ? `${services.length} સેવાઓ કાર્યરત` : `${services.length} Services Active`}
+        {/* Left Section: 8 Main Services in 4x2 / 2x4 Compact Grid */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-2xs space-y-2.5 flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-indigo-600" />
+              <span>{language === 'gu' ? 'મુખ્ય સેવાઓ (Our Key Services)' : 'Key Services'}</span>
+            </h3>
+            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 font-mono">
+              8 SERVICES
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2">
             {services.map((srv, index) => {
               const IconComp = srv.icon;
               return (
                 <div 
                   key={index} 
-                  className="p-3.5 rounded-2xl border border-slate-100 hover:border-indigo-100 hover:shadow-xs transition-all flex items-start gap-3 bg-slate-50/50 hover:bg-white group"
+                  className="p-2 rounded-xl border border-slate-150 hover:border-indigo-300 hover:shadow-xs transition-all bg-slate-50/70 hover:bg-white flex flex-col justify-between space-y-1.5 group"
                 >
-                  <div className={`p-2.5 rounded-xl ${srv.color} group-hover:scale-105 transition-transform shrink-0`}>
-                    <IconComp className="h-5 w-5" />
+                  <div className="flex items-center justify-between">
+                    <div className={`p-1.5 rounded-lg border ${srv.color} shrink-0`}>
+                      <IconComp className="h-4 w-4" />
+                    </div>
+                    <span className="text-[9px] font-extrabold text-slate-300 font-mono">0{index + 1}</span>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-black text-slate-800 leading-tight group-hover:text-indigo-950 transition-colors">
+                  <div>
+                    <p className="text-xs font-black text-slate-800 leading-tight group-hover:text-indigo-900 transition-colors">
                       {language === 'gu' ? srv.guj : srv.name}
                     </p>
-                    {language === 'gu' && (
-                      <p className="text-[10px] font-bold text-slate-400 font-mono tracking-wide">
-                        {srv.name}
-                      </p>
-                    )}
-                    <p className="text-[10px] text-slate-500 leading-normal font-medium">
+                    <p className="text-[10px] text-slate-500 font-semibold leading-tight mt-0.5">
                       {language === 'gu' ? srv.desc_gu : srv.desc_en}
                     </p>
                   </div>
@@ -158,100 +170,77 @@ export const AboutDayInfotech: React.FC = () => {
               );
             })}
           </div>
+
+          {/* Quick Notice Banner inside Services */}
+          <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-2 text-amber-900 flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 text-amber-600 shrink-0" />
+            <p className="text-[10px] md:text-xs font-bold leading-tight">
+              {language === 'gu' 
+                ? 'નોંધ: તમામ સેવાઓ માટે જરૂરી અસલ દસ્તાવેજો (Original Documents) સાથે લાવવા.' 
+                : 'Note: Please carry all necessary original documents for service applications.'}
+            </p>
+          </div>
         </div>
 
-        {/* Right Column: Office Hours & Location */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* Right Section: Office Hours & Address in Compact Layout */}
+        <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
           
           {/* Office Hours */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-5 md:p-6 shadow-xs space-y-4">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-slate-800 tracking-tight flex items-center gap-2">
-                <Clock className="h-5 w-5 text-amber-500" />
-                {language === 'gu' ? 'કચેરીનો સમય' : 'Office Hours'}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-2xs space-y-2.5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Clock className="h-4 w-4 text-amber-500" />
+                <span>{language === 'gu' ? 'કચેરીનો સમય (Office Hours)' : 'Office Hours'}</span>
               </h3>
-              <p className="text-xs text-slate-500">
-                {language === 'gu' ? 'ગ્રાહક સેવા માટેનું સમયપત્રક' : 'Service operational hours'}
-              </p>
+              <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                OPEN TODAY
+              </span>
             </div>
 
-            <div className="space-y-3 pt-1">
+            <div className="grid grid-cols-1 gap-1.5">
               {officeHours.map((oh, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100/80">
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-black text-slate-800 leading-none">
-                      {language === 'gu' ? oh.days_gu : oh.days_en}
-                    </p>
-                    {language === 'gu' && (
-                      <p className="text-[10px] font-bold text-slate-400 font-mono tracking-wide">
-                        {oh.days_en}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <span className="inline-block text-xs font-black text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100 font-mono">
-                      {oh.hours}
-                    </span>
-                  </div>
+                <div key={i} className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
+                  <span className="text-xs font-extrabold text-slate-800">
+                    {language === 'gu' ? oh.days_gu : oh.days_en}
+                  </span>
+                  <span className="text-xs font-black text-indigo-700 font-mono bg-white px-2 py-0.5 rounded border border-slate-200">
+                    {oh.hours}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Location Address */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-5 md:p-6 shadow-xs space-y-4">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-slate-800 tracking-tight flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-rose-500" />
-                {language === 'gu' ? 'અમારું સરનામું' : 'Our Address'}
+          {/* Office Address & Direct Call */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-2xs space-y-2.5 flex flex-col justify-between">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-rose-500" />
+                <span>{language === 'gu' ? 'ઓફિસ સરનામું (Address)' : 'Office Location'}</span>
               </h3>
-              <p className="text-xs text-slate-500">
-                {language === 'gu' ? 'સેન્ટર પર રૂબરૂ મુલાકાત લેવા માટે' : 'Locate us easily'}
-              </p>
             </div>
 
-            <div className="space-y-3.5 pt-1">
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-150 relative overflow-hidden flex items-start gap-3">
-                <div className="p-2 bg-rose-50 text-rose-600 rounded-xl shrink-0 mt-0.5">
-                  <MapPin className="h-5 w-5" />
-                </div>
-                <div className="space-y-1.5 z-10">
-                  <p className="text-xs font-extrabold text-slate-800 leading-relaxed font-sans">
-                    {language === 'gu' 
-                      ? <>મેઈન બજાર રોડ, BAPS સ્વામિનારાયણ મંદિરની સામે,<br />ધૂળકોટ, મોરબી, ગુજરાત - ૩૬૩૬૫૫</>
-                      : <>Main Bazar Road, Opp. BAPS Swaminarayan Temple,<br />Dhulkot, Morbi, Gujarat - 363655</>}
-                  </p>
-                  {language === 'gu' && (
-                    <p className="text-[10px] text-slate-500 font-semibold tracking-wide leading-relaxed font-mono">
-                      Main Bajar Road, Opp. BAPS Swaminarayan Temple, Dhulkot, Morbi, Gujarat - 363655
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Notice Card */}
-              <div className="bg-emerald-50/60 border border-emerald-100 rounded-xl p-3 text-emerald-900 flex items-start gap-2.5">
-                <CheckCircle className="h-4.5 w-4.5 text-emerald-500 shrink-0 mt-0.5" />
-                <p className="text-[11px] leading-relaxed font-medium">
+            <div className="flex items-start gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+              <MapPin className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-black text-slate-800 leading-snug">
                   {language === 'gu' 
-                    ? 'તમામ પ્રકારના ઓનલાઇન ફોર્મ સબમિટ કરવા માટે જરૂરી અસલ દસ્તાવેજો (Original Documents) સાથે લાવવા વિનંતી.' 
-                    : 'Please bring your original documents required for submitting online application forms.'}
+                    ? 'મેઈન બજાર રોડ, BAPS સ્વામિનારાયણ મંદિરની સામે, ધૂળકોટ, મોરબી - ૩૬૩૬૫૫' 
+                    : 'Main Bazar Road, Opp. BAPS Swaminarayan Temple, Dhulkot, Morbi - 363655'}
+                </p>
+                <p className="text-[10px] text-slate-500 font-medium font-mono mt-0.5">
+                  Dhulkot, Morbi, Gujarat - 363655
                 </p>
               </div>
-
-              {/* Contact Button */}
-              <a
-                href="https://wa.me/917600361873"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-black text-xs rounded-xl shadow-md transition-all cursor-pointer border border-emerald-500/20"
-              >
-                <Smartphone className="h-4.5 w-4.5" />
-                <span>
-                  {language === 'gu' ? 'સંપર્ક કરો' : 'Contact Day Infotech'}
-                </span>
-              </a>
             </div>
+
+            <a
+              href="tel:+917600361873"
+              className="w-full inline-flex items-center justify-center gap-2 py-2 bg-indigo-950 hover:bg-slate-900 text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer border border-white/10 active:scale-95"
+            >
+              <PhoneCall className="h-3.5 w-3.5 text-amber-400" />
+              <span>{language === 'gu' ? 'કોલ કરો: +91 76003 61873' : 'Call: +91 76003 61873'}</span>
+            </a>
           </div>
 
         </div>

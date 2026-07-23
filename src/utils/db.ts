@@ -953,6 +953,7 @@ export async function getServiceStatuses(): Promise<Record<string, boolean>> {
     RATION_CARD_ADD_NAME: true,
     RATION_CARD_REMOVE_NAME: true,
     RATION_CARD_CORRECTION: true,
+    PASSPORT: true,
   };
 
   try {
@@ -1020,6 +1021,7 @@ export async function getServicePrices(): Promise<Record<string, number>> {
     RATION_CARD_ADD_NAME: 500,
     RATION_CARD_REMOVE_NAME: 400,
     RATION_CARD_CORRECTION: 0,
+    PASSPORT: 1500,
   };
 
   try {
