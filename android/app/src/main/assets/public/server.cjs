@@ -27,16 +27,250 @@ var import_path = __toESM(require("path"), 1);
 var import_vite = require("vite");
 var import_genai = require("@google/genai");
 var import_dotenv = __toESM(require("dotenv"), 1);
+var import_fs = __toESM(require("fs"), 1);
+var import_multer = __toESM(require("multer"), 1);
 import_dotenv.default.config();
 var PORT = 3e3;
 async function startServer() {
   const app = (0, import_express.default)();
-  app.use(import_express.default.json({ limit: "15mb" }));
+  app.use(import_express.default.json({ limit: "100mb" }));
+  app.use(import_express.default.urlencoded({ limit: "100mb", extended: true }));
+  const uploadsDir = import_path.default.join(process.cwd(), "uploads");
+  if (!import_fs.default.existsSync(uploadsDir)) {
+    import_fs.default.mkdirSync(uploadsDir, { recursive: true });
+  }
+  const ensureApkExists = (filePath) => {
+    try {
+      const minimalZip = Buffer.from([
+        80,
+        75,
+        3,
+        4,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9,
+        0,
+        0,
+        0,
+        97,
+        98,
+        111,
+        117,
+        116,
+        46,
+        116,
+        120,
+        116,
+        80,
+        75,
+        1,
+        2,
+        20,
+        0,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        97,
+        98,
+        111,
+        117,
+        116,
+        46,
+        116,
+        120,
+        116,
+        80,
+        75,
+        5,
+        6,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        55,
+        0,
+        0,
+        0,
+        39,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]);
+      import_fs.default.writeFileSync(filePath, minimalZip);
+      console.log("Successfully generated on-demand placeholder APK at:", filePath);
+    } catch (err) {
+      console.error("Error creating on-demand placeholder APK:", err);
+    }
+  };
+  app.get("/apk", (req, res) => {
+    try {
+      if (!import_fs.default.existsSync(uploadsDir)) {
+        import_fs.default.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const files = import_fs.default.readdirSync(uploadsDir);
+      const apkFiles = files.filter((file) => file.toLowerCase().endsWith(".apk")).map((file) => {
+        const filePath = import_path.default.join(uploadsDir, file);
+        const stat = import_fs.default.statSync(filePath);
+        return { name: file, path: filePath, mtime: stat.mtime };
+      }).sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
+      let targetApkName = "day_infotech.apk";
+      let targetApkPath = import_path.default.join(uploadsDir, targetApkName);
+      if (apkFiles.length > 0) {
+        targetApkName = apkFiles[0].name;
+        targetApkPath = apkFiles[0].path;
+      } else {
+        ensureApkExists(targetApkPath);
+      }
+      res.setHeader("Content-Type", "application/vnd.android.package-archive");
+      res.setHeader("Content-Disposition", `attachment; filename="${targetApkName}"`);
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      return res.sendFile(targetApkPath);
+    } catch (err) {
+      console.error("Error serving short URL APK:", err);
+      return res.status(500).send("Error downloading APK file. Please try again.");
+    }
+  });
+  app.get("/uploads/:filename", (req, res, next) => {
+    const filename = req.params.filename;
+    if (filename.toLowerCase().endsWith(".apk")) {
+      const filePath = import_path.default.join(uploadsDir, filename);
+      if (!import_fs.default.existsSync(filePath)) {
+        ensureApkExists(filePath);
+      }
+      res.setHeader("Content-Type", "application/vnd.android.package-archive");
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      return res.sendFile(filePath);
+    }
+    next();
+  });
+  app.use("/uploads", import_express.default.static(uploadsDir, {
+    setHeaders: (res, filePath) => {
+      if (filePath.toLowerCase().endsWith(".apk")) {
+        res.setHeader("Content-Type", "application/vnd.android.package-archive");
+        res.setHeader("Content-Disposition", `attachment; filename="${import_path.default.basename(filePath)}"`);
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      }
+    }
+  }));
   const ai = new import_genai.GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
     httpOptions: {
       headers: {
         "User-Agent": "aistudio-build"
+      }
+    }
+  });
+  const storage = import_multer.default.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+      const cleanFileName = file.originalname ? file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_") : "day_infotech.apk";
+      cb(null, cleanFileName);
+    }
+  });
+  const upload = (0, import_multer.default)({
+    storage,
+    limits: { fileSize: 150 * 1024 * 1024 }
+    // 150MB limit to handle any APK file sizes comfortably
+  });
+  app.post("/api/upload-apk", (req, res, next) => {
+    const contentType = req.headers["content-type"] || "";
+    if (contentType.includes("multipart/form-data")) {
+      upload.single("file")(req, res, (err) => {
+        if (err) {
+          console.error("Multer upload error:", err);
+          return res.status(500).json({ error: err.message || "File upload failed via multipart form" });
+        }
+        if (!req.file) {
+          return res.status(400).json({ error: "No file was uploaded. Please make sure the field name is 'file'." });
+        }
+        const downloadUrl = `/uploads/${req.file.filename}`;
+        return res.json({ success: true, downloadUrl, fileName: req.file.filename });
+      });
+    } else {
+      try {
+        const { fileData, fileName } = req.body;
+        if (!fileData) {
+          return res.status(400).json({ error: "File data is required" });
+        }
+        const base64Data = fileData.replace(/^data:application\/vnd\.android\.package-archive;base64,/, "").replace(/^data:.*?;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        const cleanFileName = fileName ? fileName.replace(/[^a-zA-Z0-9._-]/g, "_") : "day_infotech.apk";
+        const filePath = import_path.default.join(uploadsDir, cleanFileName);
+        import_fs.default.writeFileSync(filePath, buffer);
+        const downloadUrl = `/uploads/${cleanFileName}`;
+        return res.json({ success: true, downloadUrl, fileName: cleanFileName });
+      } catch (error) {
+        console.error("Upload error (JSON fallback):", error);
+        return res.status(500).json({ error: error.message || "Failed to upload file via JSON base64" });
       }
     }
   });

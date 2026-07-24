@@ -13,7 +13,8 @@ import {
   updateDoc,
   increment
 } from 'firebase/firestore';
-import { db, auth } from './firebase';
+import { db, auth, storage } from './firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 const DB_NAME = 'GujaratFormAssistantDB';
 const DB_VERSION = 1;
@@ -294,6 +295,23 @@ export async function getAllApplications(): Promise<ApplicationEntry[]> {
 
   filtered.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   return filtered;
+}
+
+export function subscribeToApplications(callback: (apps: ApplicationEntry[]) => void): () => void {
+  const currentUserId = getLoggedInUser()?.uid || getGuestId();
+  const colRef = collection(db, 'applications');
+  const q = isOwner() ? query(colRef) : query(colRef, where('userId', '==', currentUserId));
+  
+  return onSnapshot(q, (snapshot) => {
+    const results: ApplicationEntry[] = [];
+    snapshot.forEach((doc) => {
+      results.push(doc.data() as ApplicationEntry);
+    });
+    results.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    callback(results);
+  }, (error) => {
+    console.error("Error in real-time applications subscription:", error);
+  });
 }
 
 export async function getApplicationById(id: string): Promise<ApplicationEntry | null> {
@@ -1958,7 +1976,11 @@ export function subscribeToOfflineForms(callback: (forms: OfflineForm[]) => void
   return onSnapshot(q, (snapshot) => {
     const forms: OfflineForm[] = [];
     snapshot.forEach(doc => {
-      forms.push({ id: doc.id, ...doc.data() } as OfflineForm);
+      const data = doc.data();
+      // Omit the large pdfDataUrl from real-time global state to optimize memory and bandwidth
+      const formItem = { id: doc.id, ...data } as OfflineForm;
+      delete (formItem as any).pdfDataUrl;
+      forms.push(formItem);
     });
     callback(forms);
   }, (error) => {
@@ -1966,24 +1988,64 @@ export function subscribeToOfflineForms(callback: (forms: OfflineForm[]) => void
   });
 }
 
+export async function getOfflineFormPdf(formId: string): Promise<string> {
+  try {
+    // 1. Try to fetch from the optimized dedicated PDF collection
+    const pdfDocRef = doc(db, 'offline_forms_pdf', formId);
+    const pdfSnap = await getDoc(pdfDocRef);
+    if (pdfSnap.exists()) {
+      return pdfSnap.data().pdfDataUrl || '';
+    }
+    
+    // 2. Fallback to main document for backward compatibility with older forms
+    const mainDocRef = doc(db, 'offline_forms', formId);
+    const mainSnap = await getDoc(mainDocRef);
+    if (mainSnap.exists()) {
+      return mainSnap.data().pdfDataUrl || '';
+    }
+  } catch (error) {
+    console.error('Failed to fetch offline form PDF:', error);
+  }
+  return '';
+}
+
 export async function saveOfflineForm(form: Partial<OfflineForm> & { id?: string }): Promise<void> {
   const id = form.id || doc(collection(db, 'offline_forms')).id;
   const docRef = doc(db, 'offline_forms', id);
-  await setDoc(docRef, {
+  
+  // Save lightweight metadata in 'offline_forms'
+  const metadata: any = {
     id,
     title: form.title || '',
     description: form.description || '',
     price: Number(form.price) || 0,
     pdfName: form.pdfName || '',
-    pdfDataUrl: form.pdfDataUrl || '',
     downloadCount: form.downloadCount || 0,
     createdAt: form.createdAt || new Date().toISOString()
-  }, { merge: true });
+  };
+  
+  await setDoc(docRef, metadata, { merge: true });
+
+  // Save heavy PDF data URL in 'offline_forms_pdf' to keep list querying lightning fast
+  if (form.pdfDataUrl) {
+    const pdfDocRef = doc(db, 'offline_forms_pdf', id);
+    await setDoc(pdfDocRef, {
+      id,
+      pdfDataUrl: form.pdfDataUrl
+    }, { merge: true });
+  }
 }
 
 export async function deleteOfflineForm(formId: string): Promise<void> {
   const docRef = doc(db, 'offline_forms', formId);
   await deleteDoc(docRef);
+  
+  try {
+    const pdfDocRef = doc(db, 'offline_forms_pdf', formId);
+    await deleteDoc(pdfDocRef);
+  } catch (e) {
+    console.error("Error deleting PDF file document:", e);
+  }
 }
 
 export async function incrementOfflineFormDownloads(formId: string): Promise<void> {
@@ -2320,6 +2382,39 @@ export async function saveApkConfig(config: { version: string; downloadUrl: stri
     console.error('Failed to save APK config:', error);
     throw error;
   }
+}
+
+// Upload APK file directly to Firebase Storage with progress tracking
+export function uploadApkToStorage(file: File, onProgress: (progress: number) => void): Promise<string> {
+  // Use a unique file name or subfolder to avoid overwriting issues, but keep it clean
+  const timestamp = Date.now();
+  const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const uniqueName = `apks/${timestamp}_${cleanName}`;
+  const fileRef = ref(storage, uniqueName);
+  
+  const uploadTask = uploadBytesResumable(fileRef, file);
+
+  return new Promise((resolve, reject) => {
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        onProgress(progress);
+      },
+      (error) => {
+        console.error('Firebase Storage upload failed:', error);
+        reject(error);
+      },
+      async () => {
+        try {
+          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(downloadUrl);
+        } catch (err) {
+          reject(err);
+        }
+      }
+    );
+  });
 }
 
 

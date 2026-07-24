@@ -11,6 +11,7 @@ service cloud.firestore {
     match /chats/{chatId} { allow read, write: if true; }
     match /site_stats/{docId} { allow read, write: if true; }
     match /offline_forms/{formId} { allow read, write: if true; }
+    match /offline_forms_pdf/{formId} { allow read, write: if true; }
     match /used_usernames/{username} { allow read, write: if true; }
   }
 }

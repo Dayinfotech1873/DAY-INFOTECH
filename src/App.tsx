@@ -347,21 +347,21 @@ export default function App() {
       return;
     }
 
-    // Direct browser download trigger
+    // Direct browser download trigger (same-tab download avoids opening blank window)
     const link = document.createElement('a');
     link.href = url;
     link.download = apkConfig.fileName || 'day_infotech.apk';
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    // Android WebView / External system browser download trigger
-    try {
-      window.open(url, '_system') || window.open(url, '_blank');
-    } catch (e) {
-      console.error('Error opening download URL:', e);
+    // Only run fallback window.open if they are inside a WebView wrapper where normal anchors might fail
+    if (isRealApkClient()) {
+      try {
+        window.open(url, '_system');
+      } catch (e) {
+        console.error('Error opening download URL in WebView:', e);
+      }
     }
   };
 
@@ -2500,40 +2500,73 @@ export default function App() {
                 )}
               </AnimatePresence>
 
-              {/* Direct WhatsApp Support */}
-              <div className="pt-4 border-t border-slate-100 space-y-3">
+              {/* Direct Support & APK Download */}
+              <div className="pt-4 border-t border-slate-100 space-y-3.5">
                 <p className="text-[11px] text-slate-400 font-bold">
                   {language === 'gu' ? 'કોઈ પ્રશ્ન કે સમસ્યા હોય તો સીધો સંપર્ક કરો:' : 'Need help? Chat with us directly:'}
                 </p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <a
-                    href="https://wa.me/917600361873"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex-1"
-                  >
-                    <WhatsAppIcon />
-                    <span>{language === 'gu' ? 'WhatsApp ચેટ કરો (7600361873)' : 'WhatsApp Chat (7600361873)'}</span>
-                  </a>
-                  
-                  {(!isApkClient() || isOutdatedApk()) && (
-                    <button
-                      type="button"
-                      onClick={downloadApkFile}
-                      className={`inline-flex items-center justify-center gap-2 px-5 py-3 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex-1 ${
-                        isOutdatedApk() 
-                          ? 'bg-amber-600 hover:bg-amber-700 animate-pulse' 
-                          : 'bg-indigo-600 hover:bg-indigo-700'
-                      }`}
+                <div className="flex flex-col gap-3">
+                  {/* WhatsApp Support Row */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-emerald-50/50 hover:bg-emerald-50 border border-emerald-100 p-3 rounded-2xl transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-emerald-500 p-2 rounded-xl text-white shadow-xs">
+                        <WhatsAppIcon className="h-4.5 w-4.5" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-black text-slate-800 leading-none">
+                          {language === 'gu' ? 'WhatsApp સપોર્ટ' : 'WhatsApp Support'}
+                        </p>
+                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">
+                          {language === 'gu' ? 'કોઈપણ પ્રશ્ન કે સમસ્યા માટે ચેટ કરો' : 'Chat with us for any questions or issues'}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href="https://wa.me/917600361873"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer text-center whitespace-nowrap"
                     >
-                      <Download className="h-4 w-4 text-white shrink-0" />
-                      <span>
-                        {isOutdatedApk() 
-                          ? (language === 'gu' ? `નવું વર્ઝન અપડેટ કરો (v${apkConfig?.version})` : `Update App (v${apkConfig?.version})`)
-                          : (language === 'gu' ? `એન્ડ્રોઇડ એપ ડાઉનલોડ (APK v${apkConfig?.version || '1.0.0'})` : `Download Android App (APK v${apkConfig?.version || '1.0.0'})`)
-                        }
-                      </span>
-                    </button>
+                      <span>{language === 'gu' ? 'ચેટ કરો (7600361873)' : 'Chat (7600361873)'}</span>
+                    </a>
+                  </div>
+
+                  {/* APK Download Row (Direct download, highly prominent!) */}
+                  {(!isRealApkClient() || isOutdatedApk()) && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-blue-50/60 hover:bg-blue-50 border border-blue-150 p-3 rounded-2xl transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-blue-600 p-2 rounded-xl text-white shadow-xs">
+                          <Download className="h-4.5 w-4.5 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-xs font-black text-slate-800 leading-none">
+                            {language === 'gu' ? 'ઑફિશિયલ એન્ડ્રોઇડ એપ (APK)' : 'Official Android App (APK)'}
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-500 mt-0.5">
+                            {language === 'gu' 
+                              ? 'સીધું જ મોબાઈલ બ્રાઉઝરમાં ડાઉનલોડ કરવા માટે' 
+                              : 'Downloads directly to your mobile device'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={downloadApkFile}
+                        className={`w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer text-center whitespace-nowrap ${
+                          isOutdatedApk() 
+                            ? 'bg-amber-600 hover:bg-amber-700 animate-pulse' 
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
+                      >
+                        <FileDown className="h-4 w-4 text-white shrink-0" />
+                        <span>
+                          {isOutdatedApk() 
+                            ? (language === 'gu' ? `અપડેટ વર્ઝન (v${apkConfig?.version})` : `Update App (v${apkConfig?.version})`)
+                            : (language === 'gu' ? `ડાઉનલોડ (APK v${apkConfig?.version || '1.0.0'})` : `Download (APK v${apkConfig?.version || '1.0.0'})`)
+                          }
+                        </span>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -2569,16 +2602,18 @@ export default function App() {
     <>
       <div className={`min-h-screen flex ${activeTheme.bgClass}`} style={activeTheme.bgStyle}>
       
-      {/* Floating WhatsApp Action Button */}
-      <a
-        href="https://wa.me/917600361873"
-        target="_blank"
-        rel="noopener noreferrer"
-        title="WhatsApp Support"
-        className="no-print fixed bottom-6 right-6 z-50 flex items-center justify-center w-11 h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95 cursor-pointer border border-emerald-400/30"
-      >
-        <WhatsAppIcon className="h-5 w-5" />
-      </a>
+      {/* Floating WhatsApp Action Button - Hidden in applicant mode as requested */}
+      {isOwner() && (
+        <a
+          href="https://wa.me/917600361873"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="WhatsApp Support"
+          className="no-print fixed bottom-6 right-6 z-50 flex items-center justify-center w-11 h-11 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95 cursor-pointer border border-emerald-400/30"
+        >
+          <WhatsAppIcon className="h-5 w-5" />
+        </a>
+      )}
 
       {/* Dark Overlay Backdrop for Mobile when sidebar is open (Applicants only) */}
       {!isOwner() && isSidebarOpen && (
@@ -2783,8 +2818,8 @@ export default function App() {
 
         <div className="w-full max-w-full mx-auto flex-1 flex flex-col gap-3 px-2 md:px-6 py-2">
           
-          {/* Top Header - Shown on Dashboard for Applicants or for Owners */}
-          {(isOwner() || (activeView === 'TRACKER' && activeTrackerTab === 'DASHBOARD')) && (
+          {/* Top Header - Shown on Dashboard for Owners only */}
+          {(isOwner()) && (
             <Header 
               refreshTrigger={refreshTrigger} 
               themeId={themeId} 

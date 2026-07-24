@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { OfflineForm } from '../types';
 import { FileDown, Download, QrCode, CheckCircle, Info, Sparkles } from 'lucide-react';
-import { incrementOfflineFormDownloads } from '../utils/db';
+import { incrementOfflineFormDownloads, getOfflineFormPdf } from '../utils/db';
 
 interface OfflineFormsViewProps {
   forms: OfflineForm[];
@@ -13,14 +13,24 @@ export function OfflineFormsView({ forms, theme }: OfflineFormsViewProps) {
   const [selectedForm, setSelectedForm] = useState<OfflineForm | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'IDLE' | 'VERIFYING' | 'SUCCESS'>('IDLE');
+  const [loadingFormId, setLoadingFormId] = useState<string | null>(null);
 
-  const downloadFile = (form: OfflineForm) => {
+  const downloadFile = async (form: OfflineForm) => {
     try {
+      setLoadingFormId(form.id);
+      
+      // Fetch PDF data on-demand from dedicated storage collection
       let dataUrl = form.pdfDataUrl;
       if (!dataUrl) {
+        dataUrl = await getOfflineFormPdf(form.id);
+      }
+      
+      if (!dataUrl) {
         alert('ફોર્મ ફાઈલ ઉપલબ્ધ નથી. (Form file not available.)');
+        setLoadingFormId(null);
         return;
       }
+      
       if (!dataUrl.startsWith('data:')) {
         dataUrl = `data:application/pdf;base64,${dataUrl}`;
       }
@@ -35,10 +45,13 @@ export function OfflineFormsView({ forms, theme }: OfflineFormsViewProps) {
       incrementOfflineFormDownloads(form.id);
     } catch (e) {
       console.error('Error downloading form:', e);
+    } finally {
+      setLoadingFormId(null);
     }
   };
 
   const handleDownloadClick = (form: OfflineForm) => {
+    if (loadingFormId) return;
     if (form.price > 0) {
       setSelectedForm(form);
       setPaymentStatus('IDLE');
@@ -111,15 +124,30 @@ export function OfflineFormsView({ forms, theme }: OfflineFormsViewProps) {
 
               <button
                 type="button"
+                disabled={loadingFormId !== null}
                 onClick={() => handleDownloadClick(form)}
                 className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2.5 text-[11px] font-black rounded-xl border cursor-pointer active:scale-95 transition-all ${
-                  form.price === 0
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500/20'
-                    : 'bg-amber-500 hover:bg-amber-600 text-slate-900 border-amber-400/20'
+                  loadingFormId !== null
+                    ? 'bg-slate-200 text-slate-400 border-slate-300 cursor-not-allowed opacity-75'
+                    : form.price === 0
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500/20'
+                      : 'bg-amber-500 hover:bg-amber-600 text-slate-900 border-amber-400/20'
                 }`}
               >
-                <FileDown className="h-3.5 w-3.5" />
-                <span>{form.price === 0 ? 'ડાઉનલોડ (Download)' : 'ચૂકવણી કરી ડાઉનલોડ'}</span>
+                {loadingFormId === form.id ? (
+                  <>
+                    <svg className="animate-spin h-3.5 w-3.5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>લાવી રહ્યા છીએ...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="h-3.5 w-3.5" />
+                    <span>{form.price === 0 ? 'ડાઉનલોડ (Download)' : 'ચૂકવણી કરી ડાઉનલોડ'}</span>
+                  </>
+                )}
               </button>
             </div>
           ))}

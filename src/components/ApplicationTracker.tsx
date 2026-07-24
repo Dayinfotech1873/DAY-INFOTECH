@@ -4,7 +4,8 @@ import {
   Search, FileText, CheckCircle, Clock, Edit3, Trash2, Eye, Printer, ArrowLeft, ArrowRight,
   Download, Upload, Inbox, Award, Check, UserCheck, CreditCard, Sprout, Landmark, X, AlertTriangle, LogIn, Heart, Shield, HelpCircle, Briefcase, Gift, Settings, User,
   Globe, ExternalLink, Users, XCircle, Megaphone, Info, Image, Facebook, Instagram, Percent, QrCode, RefreshCw, Sparkles, Plus, Menu, Camera,
-  IdCard, BadgeCheck, Vote, HardHat, Receipt, IndianRupee, HeartPulse, Activity, Building2, Baby, FileCheck, FileX, Coins, Utensils, UserPlus, UserMinus, FileBadge, FileEdit, HandHeart
+  IdCard, BadgeCheck, Vote, HardHat, Receipt, IndianRupee, HeartPulse, Activity, Building2, Baby, FileCheck, FileX, Coins, Utensils, UserPlus, UserMinus, FileBadge, FileEdit, HandHeart,
+  Bell, Home
 } from 'lucide-react';
 import { AboutDayInfotech } from './AboutDayInfotech';
 import { UserProfileCustomizer } from './UserProfileCustomizer';
@@ -63,7 +64,9 @@ import {
   deleteCustomUser,
   getApkConfig,
   saveApkConfig,
-  subscribeToApkConfig
+  subscribeToApkConfig,
+  uploadApkToStorage,
+  subscribeToApplications
 } from '../utils/db';
 import { WalletDashboard } from './WalletDashboard';
 import { THEMES } from '../utils/theme';
@@ -83,23 +86,47 @@ export const ALL_SERVICES_LIST: {
 }[] = [
   { 
     type: 'PAN_CARD', 
-    labelGu: 'પેન કાર્ડ સેવાઓ (નવું / સુધારો / સગીર)', 
-    labelEn: 'PAN Card Services (New / Correction / Minor)', 
+    labelGu: 'નવું પેન કાર્ડ (New PAN Card)', 
+    labelEn: 'New PAN Card', 
     icon: IdCard, 
     colorClass: 'text-indigo-600 border-indigo-200 bg-indigo-50 hover:bg-indigo-100', 
     bgClass: 'bg-gradient-to-r from-blue-600 to-indigo-700' 
   },
   { 
+    type: 'PAN_CARD_CORRECTION', 
+    labelGu: 'પેન કાર્ડ સુધારો (PAN Correction)', 
+    labelEn: 'PAN Card Correction', 
+    icon: FileEdit, 
+    colorClass: 'text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100', 
+    bgClass: 'bg-gradient-to-r from-indigo-600 to-blue-700' 
+  },
+  { 
+    type: 'MINOR_PAN_CARD', 
+    labelGu: 'સગીર પેન કાર્ડ (Minor PAN Card)', 
+    labelEn: 'Minor PAN Card', 
+    icon: Baby, 
+    colorClass: 'text-violet-600 border-violet-200 bg-violet-50 hover:bg-violet-100', 
+    bgClass: 'bg-gradient-to-r from-violet-600 to-purple-700' 
+  },
+  { 
     type: 'VOTER_ID', 
-    labelGu: 'મતદાર આઈડી સેવાઓ (નવું / સુધારો)', 
-    labelEn: 'Voter ID Services (New / Correction)', 
+    labelGu: 'નવું મતદાર આઈડી (New Voter ID)', 
+    labelEn: 'New Voter ID', 
     icon: Vote, 
     colorClass: 'text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100', 
     bgClass: 'bg-gradient-to-r from-emerald-600 to-teal-700' 
   },
   { 
+    type: 'VOTER_ID_CORRECTION', 
+    labelGu: 'મતદાર આઈડી સુધારો (Voter Correction)', 
+    labelEn: 'Voter ID Correction', 
+    icon: FileEdit, 
+    colorClass: 'text-teal-600 border-teal-200 bg-teal-50 hover:bg-teal-100', 
+    bgClass: 'bg-gradient-to-r from-teal-600 to-cyan-700' 
+  },
+  { 
     type: 'E_SHRAM', 
-    labelGu: 'ઈ-શ્રમ કાર્ડ અરજી', 
+    labelGu: 'ઈ-શ્રમ કાર્ડ અરજી (E-Shram Card)', 
     labelEn: 'New E-Shram Card', 
     icon: HardHat, 
     colorClass: 'text-amber-600 border-amber-200 bg-amber-50 hover:bg-amber-100', 
@@ -107,7 +134,7 @@ export const ALL_SERVICES_LIST: {
   },
   { 
     type: 'FARMER_SUBSIDY', 
-    labelGu: 'ખેડૂત સબસિડી અરજી', 
+    labelGu: 'ખેડૂત સબસિડી અરજી (Farmer Subsidy)', 
     labelEn: 'New Farmer Subsidy', 
     icon: Sprout, 
     colorClass: 'text-lime-700 border-lime-200 bg-lime-50 hover:bg-lime-100', 
@@ -115,7 +142,7 @@ export const ALL_SERVICES_LIST: {
   },
   { 
     type: 'CAST_CERTIFICATE', 
-    labelGu: 'જાતિ પ્રમાણપત્ર અરજી', 
+    labelGu: 'જાતિ પ્રમાણપત્ર અરજી (Caste Certificate)', 
     labelEn: 'New Caste Certificate', 
     icon: FileBadge, 
     colorClass: 'text-purple-600 border-purple-200 bg-purple-50 hover:bg-purple-100', 
@@ -123,7 +150,7 @@ export const ALL_SERVICES_LIST: {
   },
   { 
     type: 'INCOME_CERTIFICATE', 
-    labelGu: 'આવક પ્રમાણપત્ર અરજી', 
+    labelGu: 'આવક પ્રમાણપત્ર અરજી (Income Certificate)', 
     labelEn: 'New Income Certificate', 
     icon: IndianRupee, 
     colorClass: 'text-fuchsia-600 border-fuchsia-200 bg-fuchsia-50 hover:bg-fuchsia-100', 
@@ -131,7 +158,7 @@ export const ALL_SERVICES_LIST: {
   },
   { 
     type: 'AYUSHYMAN_CARD', 
-    labelGu: 'આયુષ્માન ભારત કાર્ડ', 
+    labelGu: 'આયુષ્માન ભારત કાર્ડ (Ayushman Card)', 
     labelEn: 'New Ayushman Card', 
     icon: HeartPulse, 
     colorClass: 'text-rose-600 border-rose-200 bg-rose-50 hover:bg-rose-100', 
@@ -139,7 +166,7 @@ export const ALL_SERVICES_LIST: {
   },
   { 
     type: 'AABHA_CARD', 
-    labelGu: 'આભા હેલ્થ કાર્ડ અરજી', 
+    labelGu: 'આભા હેલ્થ કાર્ડ અરજી (ABHA Card)', 
     labelEn: 'New ABHA Card', 
     icon: Activity, 
     colorClass: 'text-teal-600 border-teal-200 bg-teal-50 hover:bg-teal-100', 
@@ -147,7 +174,7 @@ export const ALL_SERVICES_LIST: {
   },
   { 
     type: 'UDHYAM_AADHAR', 
-    labelGu: 'ઉદ્યમ આધાર (MSME)', 
+    labelGu: 'ઉદ્યમ આધાર જીએસટી (Udhyam MSME)', 
     labelEn: 'New Udhyam MSME', 
     icon: Building2, 
     colorClass: 'text-orange-600 border-orange-200 bg-orange-50 hover:bg-orange-100', 
@@ -155,7 +182,7 @@ export const ALL_SERVICES_LIST: {
   },
   { 
     type: 'MANAV_KALYAN', 
-    labelGu: 'માનવ કલ્યાણ યોજના', 
+    labelGu: 'માનવ કલ્યાણ યોજના (Manav Kalyan)', 
     labelEn: 'Manav Kalyan Yojna', 
     icon: HandHeart, 
     colorClass: 'text-cyan-600 border-cyan-200 bg-cyan-50 hover:bg-cyan-100', 
@@ -163,7 +190,7 @@ export const ALL_SERVICES_LIST: {
   },
   {
     type: 'NEW_BIRTH_CERTIFICATE',
-    labelGu: 'નવું જન્મ પ્રમાણપત્ર',
+    labelGu: 'નવું જન્મ પ્રમાણપત્ર (New Birth)',
     labelEn: 'New Birth Certificate',
     icon: Baby,
     colorClass: 'text-sky-600 border-sky-200 bg-sky-50 hover:bg-sky-100',
@@ -171,15 +198,15 @@ export const ALL_SERVICES_LIST: {
   },
   {
     type: 'BIRTH_CERTIFICATE_CORRECTION',
-    labelGu: 'જન્મ પ્રમાણપત્ર સુધારો',
+    labelGu: 'જન્મ પ્રમાણપત્ર સુધારો (Birth Correction)',
     labelEn: 'Birth Certificate Correction',
-    icon: Baby,
+    icon: FileEdit,
     colorClass: 'text-indigo-600 border-indigo-200 bg-indigo-50 hover:bg-indigo-100',
     bgClass: 'bg-gradient-to-r from-blue-600 to-indigo-600'
   },
   {
     type: 'DEATH_CERTIFICATE',
-    labelGu: 'મરણ પ્રમાણપત્ર',
+    labelGu: 'મરણ પ્રમાણપત્ર (Death Certificate)',
     labelEn: 'Death Certificate',
     icon: FileX,
     colorClass: 'text-slate-600 border-slate-200 bg-slate-50 hover:bg-slate-100',
@@ -187,7 +214,7 @@ export const ALL_SERVICES_LIST: {
   },
   {
     type: 'KUVAR_BAI_MAMERU', 
-    labelGu: 'કુંવરબાઈ મામેરું યોજના', 
+    labelGu: 'કુંવરબાઈ મામેરું યોજના (Mameru)', 
     labelEn: 'Kuvar Bai Mameru', 
     icon: Coins, 
     colorClass: 'text-pink-600 border-pink-200 bg-pink-50 hover:bg-pink-100', 
@@ -195,15 +222,31 @@ export const ALL_SERVICES_LIST: {
   },
   {
     type: 'RATION_CARD_ADD_NAME',
-    labelGu: 'રેશન કાર્ડ સેવાઓ (નામ ઉમેરવું / કમી કરવું / સુધારો)',
-    labelEn: 'Ration Card Services (Add Name / Remove Name / Correction)',
-    icon: Utensils,
+    labelGu: 'રેશન કાર્ડ - નામ ઉમેરવું (Add Name)',
+    labelEn: 'Ration Card - Add Name',
+    icon: UserPlus,
+    colorClass: 'text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100',
+    bgClass: 'bg-gradient-to-r from-emerald-600 to-green-600'
+  },
+  {
+    type: 'RATION_CARD_REMOVE_NAME',
+    labelGu: 'રેશન કાર્ડ - નામ કમી કરવું (Remove Name)',
+    labelEn: 'Ration Card - Remove Name',
+    icon: UserMinus,
+    colorClass: 'text-rose-600 border-rose-200 bg-rose-50 hover:bg-rose-100',
+    bgClass: 'bg-gradient-to-r from-rose-500 to-red-600'
+  },
+  {
+    type: 'RATION_CARD_CORRECTION',
+    labelGu: 'રેશન કાર્ડ - સુધારો (Correction)',
+    labelEn: 'Ration Card Correction',
+    icon: FileEdit,
     colorClass: 'text-amber-600 border-amber-200 bg-amber-50 hover:bg-amber-100',
     bgClass: 'bg-gradient-to-r from-amber-600 to-yellow-600'
   },
   {
     type: 'PASSPORT',
-    labelGu: 'પાસપોર્ટ સેવા (નવો / રિન્યુ)',
+    labelGu: 'પાસપોર્ટ સેવા (Passport Service)',
     labelEn: 'Passport Service (New/Renew)',
     icon: Globe,
     colorClass: 'text-indigo-600 border-indigo-200 bg-indigo-50 hover:bg-indigo-100',
@@ -211,7 +254,7 @@ export const ALL_SERVICES_LIST: {
   },
   { 
     type: 'OTHER_SERVICE', 
-    labelGu: 'અન્ય સેવાઓ પૂછપરછ', 
+    labelGu: 'અન્ય સેવાઓ પૂછપરછ (Enquiry)', 
     labelEn: 'Other Services Enquiry', 
     icon: HelpCircle, 
     colorClass: 'text-slate-600 border-slate-200 bg-slate-50 hover:bg-slate-100', 
@@ -280,7 +323,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
   currentUser: propCurrentUser,
   onToggleSidebar,
 }) => {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
 
   const [applications, setApplications] = useState<ApplicationEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -431,6 +474,35 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [pendingWalletActionsCount, setPendingWalletActionsCount] = useState<number>(0);
 
+  // --- Notification System ---
+  interface AppNotification {
+    id: string;
+    titleGu: string;
+    titleEn: string;
+    messageGu: string;
+    messageEn: string;
+    type: 'announcement' | 'status_change';
+    status?: string;
+    createdAt: string;
+    isRead: boolean;
+    relatedId?: string;
+  }
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
+
+  const getSrvFormName = (formType: string) => {
+    const srv = ALL_SERVICES_LIST.find(s => s.type === formType);
+    if (!srv) return formType;
+    return language === 'gu' ? srv.labelGu : srv.labelEn;
+  };
+
+  const saveNotificationsToStorage = (updatedList: AppNotification[]) => {
+    setNotifications(updatedList);
+    if (!currentUser) return;
+    const username = currentUser.username || currentUser.uid;
+    localStorage.setItem(`notifications_${username}`, JSON.stringify(updatedList));
+  };
+
   const loadWalletStats = async () => {
     try {
       const user = getLoggedInUser();
@@ -473,6 +545,7 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
   const [showUpdateAlertInput, setShowUpdateAlertInput] = useState(true);
   const [isSavingApk, setIsSavingApk] = useState(false);
   const [isUploadingApk, setIsUploadingApk] = useState(false);
+  const [apkUploadProgress, setApkUploadProgress] = useState(0);
 
   const safeGetLocalStorage = (key: string): string | null => {
     try {
@@ -517,6 +590,22 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
     }
     // General Android device check to ensure all APK users see the update banner
     if (ua.includes('android')) {
+      return true;
+    }
+    return false;
+  };
+
+  const isRealApkClient = () => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('platform') === 'apk' || params.get('apk') === 'true') {
+      return true;
+    }
+    if ((window as any).isApk === true || (window as any).isApkClient === true) {
+      return true;
+    }
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes('wv') || ua.includes('webview') || ua.includes('crosswalk') || ua.includes('apk_app')) {
       return true;
     }
     return false;
@@ -616,21 +705,21 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
       return;
     }
 
-    // Direct browser download trigger
+    // Direct browser download trigger (same-tab download avoids opening blank window)
     const link = document.createElement('a');
     link.href = url;
     link.download = apkConfig.fileName || 'day_infotech.apk';
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    // Android WebView / External system browser download trigger
-    try {
-      window.open(url, '_system') || window.open(url, '_blank');
-    } catch (e) {
-      console.error('Error opening download URL:', e);
+    // Only run fallback window.open if they are inside a WebView wrapper where normal anchors might fail
+    if (isRealApkClient()) {
+      try {
+        window.open(url, '_system');
+      } catch (e) {
+        console.error('Error opening download URL inside WebView:', e);
+      }
     }
   };
 
@@ -700,6 +789,155 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
     });
     return () => unsubscribe();
   }, []);
+
+  // --- Real-time Notifications Setup ---
+  
+  // Load notifications from local storage on user change
+  useEffect(() => {
+    if (!currentUser) return;
+    const username = currentUser.username || currentUser.uid;
+    const stored = localStorage.getItem(`notifications_${username}`);
+    if (stored) {
+      try {
+        setNotifications(JSON.parse(stored));
+      } catch (e) {
+        console.error('Error parsing notifications:', e);
+      }
+    } else {
+      setNotifications([]);
+    }
+  }, [currentUser?.username, currentUser?.uid]);
+
+  // Subscribe to applications in real-time
+  useEffect(() => {
+    if (!currentUser) return;
+    setLoading(true);
+    const unsub = subscribeToApplications((data) => {
+      setApplications(data);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, [currentUser?.username, currentUser?.uid]);
+
+  // Real-time tracking of application status changes
+  useEffect(() => {
+    if (isOwner() || !currentUser || loading || applications.length === 0) return;
+    
+    const username = currentUser.username || currentUser.uid;
+    const cacheKey = `prev_app_statuses_${username}`;
+    const storedCache = localStorage.getItem(cacheKey);
+    
+    let cachedStatuses: Record<string, string> = {};
+    let isFirstLoad = false;
+    
+    if (storedCache) {
+      try {
+        cachedStatuses = JSON.parse(storedCache);
+      } catch (e) {
+        cachedStatuses = {};
+      }
+    } else {
+      isFirstLoad = true;
+    }
+
+    const newNotifications: AppNotification[] = [];
+    const updatedStatuses: Record<string, string> = { ...cachedStatuses };
+
+    applications.forEach((app) => {
+      const prevStatus = cachedStatuses[app.id];
+      
+      if (prevStatus !== undefined) {
+        if (app.status !== prevStatus) {
+          // Status has changed!
+          const formName = getSrvFormName(app.formType);
+          let titleGu = 'અરજી સ્ટેટસ અપડેટ 📝';
+          let titleEn = 'Application Status Updated 📝';
+          let messageGu = `તમારી અરજી (ID: ${app.id}) ${formName} ની સ્થિતિ બદલાઈને ${app.status} થઈ ગઈ છે.`;
+          let messageEn = `Your application (ID: ${app.id}) for ${formName} has been updated to ${app.status}.`;
+          
+          if (app.status === 'APPROVED') {
+            titleGu = 'અરજી મંજૂર (Approved) 🎉';
+            titleEn = 'Application Approved 🎉';
+            messageGu = `અભિનંદન! તમારી અરજી (ID: ${app.id}) ${formName} સફળતાપૂર્વક મંજૂર કરવામાં આવી છે.`;
+            messageEn = `Congratulations! Your application (ID: ${app.id}) for ${formName} has been approved.`;
+          } else if (app.status === 'REJECTED') {
+            titleGu = 'અરજી અસ્વીકાર (Rejected) ❌';
+            titleEn = 'Application Rejected ❌';
+            messageGu = `ખેદજનક રીતે, તમારી અરજી (ID: ${app.id}) ${formName} અસ્વીકાર કરવામાં આવી છે. વધુ માહિતી માટે વિગત તપાસો.`;
+            messageEn = `Unfortunately, your application (ID: ${app.id}) for ${formName} has been rejected. Check details for more information.`;
+          } else if (app.status === 'CORRECTION_REQUIRED') {
+            titleGu = 'સુધારો જરૂરી (Correction) ⚠️';
+            titleEn = 'Correction Required ⚠️';
+            messageGu = `ધ્યાન આપો! તમારી અરજી (ID: ${app.id}) ${formName} માં એડમિન દ્વારા સુધારો માંગવામાં આવ્યો છે. કૃપા કરીને તાત્કાલિક સુધારો કરો.`;
+            messageEn = `Attention! Your application (ID: ${app.id}) for ${formName} requires correction. Please update the details or documents.`;
+          }
+
+          newNotifications.push({
+            id: `status_${app.id}_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+            titleGu,
+            titleEn,
+            messageGu,
+            messageEn,
+            type: 'status_change',
+            status: app.status,
+            createdAt: new Date().toISOString(),
+            isRead: false,
+            relatedId: app.id
+          });
+
+          setTimeout(() => {
+            showToast(language === 'gu' ? messageGu : messageEn, app.status === 'APPROVED' ? 'success' : 'error');
+          }, 50);
+        }
+      }
+      
+      updatedStatuses[app.id] = app.status;
+    });
+
+    localStorage.setItem(cacheKey, JSON.stringify(updatedStatuses));
+
+    if (!isFirstLoad && newNotifications.length > 0) {
+      setNotifications((prev) => {
+        const updated = [...newNotifications, ...prev];
+        localStorage.setItem(`notifications_${username}`, JSON.stringify(updated));
+        return updated;
+      });
+    }
+  }, [applications, currentUser?.username, currentUser?.uid, loading]);
+
+  // Real-time tracking of new announcement updates
+  useEffect(() => {
+    if (isOwner() || !currentUser || !announcementMsg) return;
+
+    const annId = 'ann_' + announcementMsg.replace(/[^a-zA-Z0-9]/g, '').substring(0, 50);
+
+    setNotifications((prev) => {
+      const alreadyExists = prev.some(n => n.relatedId === annId);
+      if (alreadyExists) return prev;
+
+      const newAnnNotification: AppNotification = {
+        id: `ann_notif_${Date.now()}`,
+        titleGu: 'સત્તાવાર જાહેરાત 📢',
+        titleEn: 'Official Announcement 📢',
+        messageGu: announcementMsg,
+        messageEn: announcementMsg,
+        type: 'announcement',
+        createdAt: new Date().toISOString(),
+        isRead: false,
+        relatedId: annId
+      };
+
+      const updated = [newAnnNotification, ...prev];
+      const username = currentUser.username || currentUser.uid;
+      localStorage.setItem(`notifications_${username}`, JSON.stringify(updated));
+      
+      setTimeout(() => {
+        showToast(language === 'gu' ? 'નવી એડમિન જાહેરાત ઉપલબ્ધ છે.' : 'New official announcement from admin is available.', 'success');
+      }, 50);
+
+      return updated;
+    });
+  }, [announcementMsg, currentUser?.username, currentUser?.uid]);
 
   // Real-time subscription to service prices and discounts
   useEffect(() => {
@@ -1125,6 +1363,884 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
   });
 
   const correctionApplications = applications.filter(app => app.status === 'CORRECTION_REQUIRED');
+
+  const renderApplicantMode = () => {
+    const userApplications = applications;
+    const totalAppsCount = userApplications.length;
+    const inProgressAppsCount = userApplications.filter(a => a.status === 'DRAFT' || a.status === 'COMPLETED' || a.status === 'CORRECTION_REQUIRED').length;
+    const completedAppsCount = userApplications.filter(a => a.status === 'APPROVED').length;
+
+    const categoriesList = [
+      { id: 'PAN', titleGu: 'પેન કાર્ડ સેવાઓ', titleEn: 'PAN Card Services', desc: 'નવું, સુધારો, અને માઇનોર પેન', icon: IdCard, filter: 'PAN_CARD', color: 'from-blue-600 to-indigo-600' },
+      { id: 'VOTER', titleGu: 'મતદાર સેવાઓ', titleEn: 'Voter ID Services', desc: 'નવું મતદાર કાર્ડ અને સુધારો', icon: Vote, filter: 'VOTER_ID', color: 'from-emerald-600 to-teal-600' },
+      { id: 'FARMER', titleGu: 'ખેડૂત સબસિડી', titleEn: 'Farmer Subsidy', desc: 'સરકારી કૃષિ યોજનાઓ', icon: Sprout, filter: 'FARMER_SUBSIDY', color: 'from-amber-600 to-orange-600' },
+      { id: 'HEALTH', titleGu: 'આરોગ્ય કાર્ડ સેવાઓ', titleEn: 'Health Cards', desc: 'આયુષ્માન અને આભા કાર્ડ', icon: HeartPulse, filter: 'AYUSHYMAN_CARD', color: 'from-rose-600 to-pink-600' },
+      { id: 'CERTIFICATE', titleGu: 'પ્રમાણપત્રો', titleEn: 'Certificates', desc: 'આવક અને જાતિના દાખલા', icon: FileCheck, filter: 'CAST_CERTIFICATE', color: 'from-purple-600 to-violet-600' },
+      { id: 'WALLET', titleGu: 'વોલેટ અને રીચાર્જ', titleEn: 'Wallet System', desc: 'UPI અને વોલેટ પેમેન્ટ', icon: Coins, tab: 'WALLET', color: 'from-cyan-600 to-blue-600' },
+      { id: 'SUPPORT', titleGu: 'સપોર્ટ અને હેલ્પ', titleEn: 'Help & Support', desc: 'તમામ પ્રશ્નો માટે સંપર્ક કરો', icon: HelpCircle, action: 'SUPPORT', color: 'from-teal-600 to-emerald-600' }
+    ];
+
+    return (
+      <div className="flex flex-col min-h-screen bg-slate-50/50 pb-24 font-sans select-none relative">
+        
+        {/* PREMIUM APPLICANT HEADER */}
+        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-xs px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {onToggleSidebar && (
+              <button 
+                onClick={onToggleSidebar}
+                className="p-2 hover:bg-slate-100 active:scale-95 rounded-xl transition-all cursor-pointer text-slate-700"
+                title="મેનુ (Menu)"
+              >
+                <Menu className="h-5.5 w-5.5" />
+              </button>
+            )}
+            
+            <div onClick={() => setActiveTab('DASHBOARD')} className="cursor-pointer flex items-center gap-2">
+              <Logo size={28} showText={true} />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab('WALLET')}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full border border-indigo-100 transition-all text-xs font-black"
+            >
+              <Coins className="h-4 w-4 text-indigo-600 animate-pulse" />
+              <span>₹{currentUser?.walletBalance || 0}</span>
+            </button>
+
+            <button
+              onClick={() => setLanguage(language === 'gu' ? 'en' : 'gu')}
+              className="px-2.5 py-1 text-xs font-black border border-slate-200 rounded-lg hover:bg-slate-50 transition-all text-slate-600"
+            >
+              {language === 'gu' ? 'EN' : 'ગુજ'}
+            </button>
+
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotificationsMenu(!showNotificationsMenu)}
+                className="p-2 hover:bg-slate-100 active:scale-95 rounded-xl transition-all text-slate-600 relative cursor-pointer flex items-center justify-center"
+                title={language === 'gu' ? 'નોટિફિકેશન' : 'Notifications'}
+              >
+                <Bell className="h-5 w-5" />
+                {notifications.filter(n => !n.isRead).length > 0 && (
+                  <span className="absolute top-1 right-1 px-1 min-w-[16px] h-4 bg-[#FF7A00] text-white text-[9px] font-black rounded-full flex items-center justify-center border border-white">
+                    {notifications.filter(n => !n.isRead).length}
+                  </span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown Panel */}
+              {showNotificationsMenu && (
+                <>
+                  {/* Backdrop for click outside */}
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setShowNotificationsMenu(false)}
+                  />
+                  
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl border border-slate-200 shadow-xl z-50 overflow-hidden text-left">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-150 flex items-center justify-between">
+                      <span className="text-xs font-black text-slate-800 uppercase tracking-wider font-mono flex items-center gap-1.5">
+                        <Bell className="h-4 w-4 text-[#FF7A00]" />
+                        {language === 'gu' ? 'નોટિફિકેશન' : 'Notifications'}
+                      </span>
+                      {notifications.filter(n => !n.isRead).length > 0 && (
+                        <button
+                          onClick={() => {
+                            const updated = notifications.map(n => ({ ...n, isRead: true }));
+                            saveNotificationsToStorage(updated);
+                            showToast(language === 'gu' ? 'બધી નોટિફિકેશન વાંચેલી માર્ક કરી છે.' : 'All notifications marked as read.', 'success');
+                          }}
+                          className="text-[10px] font-black text-indigo-600 hover:underline cursor-pointer"
+                        >
+                          {language === 'gu' ? 'બધી વાંચેલી કરો' : 'Mark all read'}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                      {notifications.length === 0 ? (
+                        <div className="px-4 py-8 text-center text-slate-400 flex flex-col items-center justify-center">
+                          <Inbox className="h-8 w-8 text-slate-300 mb-2" />
+                          <span className="text-xs font-black">
+                            {language === 'gu' ? 'કોઈ નવી નોટિફિકેશન નથી.' : 'No new notifications.'}
+                          </span>
+                        </div>
+                      ) : (
+                        notifications.map((notif) => {
+                          let IconComp = Bell;
+                          let colorClass = 'bg-slate-100 text-slate-600';
+                          if (notif.type === 'announcement') {
+                            IconComp = Megaphone;
+                            colorClass = 'bg-rose-50 text-rose-600 border border-rose-100';
+                          } else if (notif.status === 'APPROVED') {
+                            IconComp = CheckCircle;
+                            colorClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+                          } else if (notif.status === 'REJECTED') {
+                            IconComp = XCircle;
+                            colorClass = 'bg-rose-50 text-rose-600 border border-rose-100';
+                          } else if (notif.status === 'CORRECTION_REQUIRED') {
+                            IconComp = AlertTriangle;
+                            colorClass = 'bg-amber-50 text-amber-600 border border-amber-100';
+                          }
+
+                          return (
+                            <div 
+                              key={notif.id}
+                              onClick={() => {
+                                // Mark as read on click
+                                if (!notif.isRead) {
+                                  const updated = notifications.map(n => n.id === notif.id ? { ...n, isRead: true } : n);
+                                  saveNotificationsToStorage(updated);
+                                }
+                                // If it's a status change, redirect user to the applications list or edit if correction required
+                                if (notif.relatedId && notif.type === 'status_change') {
+                                  const app = applications.find(a => a.id === notif.relatedId);
+                                  if (app) {
+                                    if (app.status === 'CORRECTION_REQUIRED') {
+                                      onEdit(app);
+                                    } else {
+                                      setViewingEntry(app);
+                                    }
+                                    setActiveTab('YOUR_APPLICATIONS');
+                                  }
+                                }
+                                setShowNotificationsMenu(false);
+                              }}
+                              className={`p-3.5 flex gap-3 cursor-pointer transition-all hover:bg-slate-50 ${
+                                !notif.isRead ? 'bg-indigo-50/30' : ''
+                              }`}
+                            >
+                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${colorClass}`}>
+                                <IconComp className="h-5 w-5" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <h5 className={`text-xs font-black truncate ${!notif.isRead ? 'text-slate-900' : 'text-slate-600'}`}>
+                                    {language === 'gu' ? notif.titleGu : notif.titleEn}
+                                  </h5>
+                                  <span className="text-[9px] text-slate-400 font-semibold shrink-0 font-mono">
+                                    {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                <p className={`text-[11px] leading-normal mt-0.5 font-medium ${notif.type === 'announcement' ? 'break-words' : 'line-clamp-2'} ${!notif.isRead ? 'text-slate-700' : 'text-slate-500'}`}>
+                                  {language === 'gu' ? notif.messageGu : notif.messageEn}
+                                </p>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const updated = notifications.filter(n => n.id !== notif.id);
+                                  saveNotificationsToStorage(updated);
+                                }}
+                                className="text-slate-300 hover:text-rose-500 p-1 rounded-lg hover:bg-slate-100 self-start cursor-pointer shrink-0"
+                                title={language === 'gu' ? 'દૂર કરો' : 'Delete'}
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {notifications.length > 0 && (
+                      <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-150 flex justify-between items-center text-[11px]">
+                        <span className="font-bold text-slate-500 font-mono">
+                          {notifications.length} {language === 'gu' ? 'ટોટલ' : 'Total'}
+                        </span>
+                        <button
+                          onClick={() => {
+                            saveNotificationsToStorage([]);
+                            showToast(language === 'gu' ? 'તમામ નોટિફિકેશન કાઢી નાખવામાં આવી છે.' : 'All notifications cleared.', 'success');
+                          }}
+                          className="font-black text-rose-600 hover:underline cursor-pointer"
+                        >
+                          {language === 'gu' ? 'બધી કાઢી નાખો' : 'Clear All'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => setActiveTab('PROFILE')}
+              className="w-8 h-8 rounded-full border-2 border-indigo-600 overflow-hidden shadow-xs hover:scale-105 active:scale-95 transition-all"
+            >
+              {currentUser?.profilePic ? (
+                <img src={currentUser.profilePic} alt="Profile" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-indigo-600 to-purple-700 text-white flex items-center justify-center text-xs font-black uppercase">
+                  {currentUser?.username?.substring(0, 2) || 'DI'}
+                </div>
+              )}
+            </button>
+          </div>
+        </header>
+
+        {/* MAIN BODY SCROLL AREA */}
+        <div className="flex-1 max-w-4xl w-full mx-auto p-4 space-y-6">
+          
+          {/* Active Banner/Notification if correction is required */}
+          {correctionApplications.length > 0 && (
+            <div className="bg-rose-50 border border-rose-200 rounded-3xl p-4 flex items-start gap-3 text-rose-950 shadow-sm animate-pulse">
+              <div className="p-2 bg-rose-100 rounded-xl text-rose-600 shrink-0 mt-0.5">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div className="flex-1 space-y-1">
+                <p className="text-xs font-black text-rose-900">
+                  ⚠️ તમારી અરજીમાં સુધારો કરવો જરૂરી છે! (Correction Required)
+                </p>
+                <p className="text-[11px] text-rose-700 font-medium leading-relaxed">
+                  એડમિન દ્વારા તમારી અરજીમાં અમુક ભૂલો સુધારવા જણાવવામાં આવ્યું છે. કૃપા કરીને 'અરજીઓની યાદી' માં જઈને સુધારો કરો.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 1: HOME (DASHBOARD) */}
+          {activeTab === 'DASHBOARD' && (
+            <div className="space-y-6">
+
+              {/* WELCOME BANNER (Left Mockup Style) */}
+              <div className="bg-gradient-to-br from-indigo-700 via-indigo-900 to-[#0A192F] text-white rounded-xl p-3 sm:p-4 shadow-lg relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="absolute -right-20 -top-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -left-10 -bottom-20 w-60 h-60 bg-[#FF7A00]/10 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="space-y-1 text-center sm:text-left z-10 max-w-md">
+                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-amber-300 text-[8px] font-black uppercase tracking-wider border border-white/10">
+                    <Sparkles className="h-2.5 w-2.5 text-amber-400 animate-pulse" />
+                    <span>{language === 'gu' ? 'ડિજિટલ ઓનલાઇન સેવાઓ' : 'Digital Online Services'}</span>
+                  </div>
+                  
+                  <h1 className="text-sm sm:text-base font-black tracking-tight leading-tight">
+                    {language === 'gu' ? `આવકાર્ય છે, ${currentUser?.username || 'કસ્ટમર!'}` : `Welcome back, ${currentUser?.username || 'Valued User!'}`}
+                  </h1>
+                  
+                  <p className="text-[10px] text-slate-300 font-medium leading-normal max-w-sm">
+                    {language === 'gu' 
+                      ? 'અહીંથી તમે લાઈવ સ્ટેટસ જોઈ શકો છો અને તમામ ડિજિટલ સેવાઓ માટે ઘરે બેઠા અરજી કરી શકો છો.' 
+                      : 'View your live status and easily apply for any smart digital government services online.'}
+                  </p>
+
+                  <div className="pt-0.5">
+                    <button
+                      onClick={() => setActiveTab('APPLY_SERVICE')}
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#FF7A00] to-orange-600 hover:from-orange-500 hover:to-red-600 text-white font-black text-[9px] rounded-full transition-all cursor-pointer shadow-md active:scale-95 group"
+                    >
+                      <span>{language === 'gu' ? 'સેવાઓ ઓનલાઇન અપ્લાય કરો' : 'Apply Services Online'}</span>
+                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="shrink-0 flex gap-2 w-full sm:w-auto items-center justify-center border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0 z-10">
+                  <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-lg px-2.5 py-1 text-center min-w-[60px] shadow-inner">
+                    <span className="block text-sm font-black text-indigo-300">{totalAppsCount}</span>
+                    <span className="text-[7.5px] text-slate-300 font-black tracking-wide uppercase block leading-none">
+                      {language === 'gu' ? 'કુલ' : 'Total'}
+                    </span>
+                  </div>
+                  <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-lg px-2.5 py-1 text-center min-w-[60px] shadow-inner">
+                    <span className="block text-sm font-black text-amber-400">{inProgressAppsCount}</span>
+                    <span className="text-[7.5px] text-slate-300 font-black tracking-wide uppercase block leading-none">
+                      {language === 'gu' ? 'પ્રોસેસ' : 'Pending'}
+                    </span>
+                  </div>
+                  <div className="bg-white/5 backdrop-blur-md border border-white/15 rounded-lg px-2.5 py-1 text-center min-w-[60px] shadow-inner">
+                    <span className="block text-sm font-black text-emerald-400">{completedAppsCount}</span>
+                    <span className="text-[7.5px] text-slate-300 font-black tracking-wide uppercase block leading-none">
+                      {language === 'gu' ? 'પૂર્ણ' : 'Approved'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Aadhar Mobile Link News Ticker (Replaces Search Bar) */}
+              <div className="bg-white border-2 border-rose-500 rounded-2xl shadow-md overflow-hidden flex items-stretch">
+                {/* News Header Label - Styled like dynamic news board */}
+                <div className="bg-rose-600 px-3 md:px-5 py-3 flex items-center gap-2 text-white shrink-0 relative z-10 shadow-[4px_0_10px_rgba(225,29,72,0.3)]">
+                  <span className="flex h-2.5 w-2.5 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-300"></span>
+                  </span>
+                  <span className="text-xs md:text-sm font-black tracking-wider uppercase font-sans whitespace-nowrap">
+                    {language === 'gu' ? 'લાઈવ સમાચાર 🔴' : 'LIVE UPDATE 🔴'}
+                  </span>
+                </div>
+
+                {/* News Scrolling Content Container */}
+                <div className="flex-1 overflow-hidden bg-amber-50 flex items-center relative py-3 group">
+                  <div className="animate-marquee whitespace-nowrap flex items-center gap-16">
+                    {/* First copy */}
+                    <span className="text-sm md:text-base font-black text-rose-850 flex items-center gap-2.5">
+                      {language === 'gu' ? (
+                        <>
+                          <span className="text-rose-600 font-extrabold font-sans">★</span>
+                          તમામ અરજદારોએ ખાસ ધ્યાન આપવું કે સરકારી યોજનાઓ અને ઓનલાઈન સેવાઓનો લાભ લેવા માટે તમારા <strong className="text-rose-600 underline decoration-2">આધાર કાર્ડ સાથે સક્રિય મોબાઈલ નંબર લિંક હોવો ફરજિયાત છે</strong>. જો આધાર કાર્ડમાં મોબાઈલ નંબર લિંક નહીં હોય તો ઓનલાઈન વેરિફિકેશન માટે ઓટીપી (OTP) મેળવવામાં મુશ્કેલી થશે અને તમારી અરજી રદ થઈ શકે છે. જો લિંક ન હોય તો વહેલી તકે નજીકના આધાર કેન્દ્ર પર જઈને લિંક કરાવી લેશો.
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-rose-600 font-extrabold font-sans">★</span>
+                          It is mandatory for all applicants to <strong className="text-rose-600 underline decoration-2">link an active mobile number with your Aadhaar Card</strong> to avail government schemes and online services. Without this, OTP verification will fail and your application may get rejected. Please visit your nearest Aadhaar center to link it immediately.
+                        </>
+                      )}
+                    </span>
+
+                    {/* Second copy for seamless scroll loop */}
+                    <span className="text-sm md:text-base font-black text-rose-850 flex items-center gap-2.5">
+                      {language === 'gu' ? (
+                        <>
+                          <span className="text-rose-600 font-extrabold font-sans">★</span>
+                          તમામ અરજદારોએ ખાસ ધ્યાન આપવું કે સરકારી યોજનાઓ અને ઓનલાઈન સેવાઓનો લાભ લેવા માટે તમારા <strong className="text-rose-600 underline decoration-2">આધાર કાર્ડ સાથે સક્રિય મોબાઈલ નંબર લિંક હોવો ફરજિયાત છે</strong>. જો આધાર કાર્ડમાં મોબાઈલ નંબર લિંક નહીં હોય તો ઓનલાઈન વેરિફિકેશન માટે ઓટીપી (OTP) મેળવવામાં મુશ્કેલી થશે અને તમારી અરજી રદ થઈ શકે છે. જો લિંક ન હોય તો વહેલી તકે નજીકના આધાર કેન્દ્ર પર જઈને લિંક કરાવી લેશો.
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-rose-600 font-extrabold font-sans">★</span>
+                          It is mandatory for all applicants to <strong className="text-rose-600 underline decoration-2">link an active mobile number with your Aadhaar Card</strong> to avail government schemes and online services. Without this, OTP verification will fail and your application may get rejected. Please visit your nearest Aadhaar center to link it immediately.
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Gentle hover prompt to pause */}
+                  <div className="absolute right-2 bottom-0.5 text-[8px] md:text-[9px] text-slate-400 font-bold tracking-wider opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 px-1 rounded border pointer-events-none">
+                    {language === 'gu' ? 'સ્થિર કરવા માટે માઉસ ઉપર રાખશો' : 'Hover to Pause'}
+                  </div>
+                </div>
+              </div>
+
+              {/* RECENT APPLICATIONS LIST (Moved from My Apps Tab to Home Tab) */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <h3 className="text-xs font-black uppercase text-slate-450 tracking-wider font-mono flex items-center gap-1.5">
+                    <FileText className="h-4 w-4 text-indigo-600" />
+                    <span>{language === 'gu' ? 'તાજેતરની પ્રવૃત્તિ / અરજીઓ' : 'Recent Activity / Applications'}</span>
+                  </h3>
+                  <button 
+                    onClick={() => setActiveTab('YOUR_APPLICATIONS')}
+                    className="text-xs font-extrabold text-indigo-600 hover:underline"
+                  >
+                    {language === 'gu' ? 'બધી જુઓ' : 'View All'}
+                  </button>
+                </div>
+
+                {loading ? (
+                  <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center shadow-2xs">
+                    <div className="animate-spin inline-block h-6 w-6 border-3 border-indigo-500 border-t-transparent rounded-full" />
+                  </div>
+                ) : userApplications.length === 0 ? (
+                  <div className="bg-white rounded-xl border border-slate-150 p-4 text-center text-slate-400 shadow-3xs">
+                    <Inbox className="h-6 w-6 mx-auto text-slate-300 mb-1" />
+                    <p className="text-xs font-black text-slate-600">{language === 'gu' ? 'હજુ સુધી કોઈ અરજીઓ મળી નથી.' : 'No applications found yet.'}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5 font-medium">{language === 'gu' ? 'નવી અરજી કરવા માટે ઓનલાઇન સેવાઓ ટેબ નો ઉપયોગ કરો.' : 'Go to online services tab to submit your first application.'}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {userApplications.slice(0, 5).map((app) => (
+                      <div 
+                        key={app.id}
+                        className="bg-white border border-slate-200/80 hover:border-indigo-350 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[9px] font-bold font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/50">
+                              ID: {app.id}
+                            </span>
+                            <span className="text-[10px] font-black text-indigo-750 font-sans">
+                              {getFormName(app.formType)}
+                            </span>
+                          </div>
+                          
+                          <h4 className="text-xs sm:text-sm font-black text-slate-800 tracking-tight leading-snug mt-1 truncate group-hover:text-indigo-900 transition-colors">
+                            {app.applicantName || 'Applicant Name'}
+                          </h4>
+                          
+                          <p className="text-[10px] text-slate-450 font-semibold font-sans mt-0.5">
+                            તારીખ: {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'} • મો: {app.mobileNo || 'N/A'}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 border-slate-50 pt-2 sm:pt-0 shrink-0">
+                          {getStatusPill(app.status)}
+
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => setViewingEntry(app)}
+                              className="p-1.5 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all cursor-pointer text-slate-500"
+                              title="અરજી જુઓ (View Application)"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            {(app.status === 'DRAFT' || app.status === 'CORRECTION_REQUIRED') && (
+                              <button
+                                onClick={() => onEdit(app)}
+                                className="p-1.5 hover:bg-amber-50 hover:text-amber-600 rounded-xl transition-all cursor-pointer text-slate-500"
+                                title="સુધારો કરો (Edit)"
+                              >
+                                <Edit3 className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* LIVE ANNOUNCEMENT MESSAGE CARD */}
+              {(announcementMsg || announcementPhoto) && (
+                <div className="bg-white rounded-3xl border border-slate-200 p-5 space-y-4 shadow-2xs">
+                  <div className="flex items-center gap-2 text-rose-600 font-black text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
+                    <Megaphone className="h-4 w-4 animate-bounce text-rose-500" />
+                    <span>{language === 'gu' ? 'નવી જાહેરાતો / એડમિન અપડેટ' : 'Important Announcement'}</span>
+                  </div>
+                  {announcementMsg && (
+                    <p className="text-xs md:text-sm text-slate-600 font-medium leading-relaxed whitespace-pre-wrap">
+                      {announcementMsg}
+                    </p>
+                  )}
+                  {announcementPhoto && (
+                    <div className="max-w-md mx-auto rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:brightness-95 transition-all cursor-zoom-in">
+                      <img 
+                        src={announcementPhoto} 
+                        alt="Announcement" 
+                        referrerPolicy="no-referrer"
+                        className="w-full h-auto object-cover" 
+                        onClick={() => setIsViewingFullImage(true)}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: SERVICES (APPLY_SERVICE) */}
+          {activeTab === 'APPLY_SERVICE' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setActiveTab('DASHBOARD')}
+                    className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors mr-1"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </button>
+                  <h2 className="text-lg font-black text-slate-800 tracking-tight">
+                    {language === 'gu' ? 'તમામ સેવાઓ ઓનલાઇન અરજી કરો' : 'All Services'}
+                  </h2>
+                </div>
+                <span className="text-xs font-black text-[#0D47A1] bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                  {ALL_SERVICES_LIST.length} {language === 'gu' ? 'સેવાઓ' : 'Services'}
+                </span>
+              </div>
+
+              {/* Services Tab Search Box */}
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                  <Search className="h-5 w-5" />
+                </span>
+                <input
+                  type="text"
+                  placeholder={language === 'gu' ? 'નામ અથવા સેવાથી ફિલ્ટર કરો... (Search Services...)' : 'Search services...'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-11 pr-12 py-3 rounded-2xl bg-white border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-[#0F4CFF] text-xs font-semibold shadow-xs"
+                />
+              </div>
+
+              {/* Mobile-style Grid Menu of all Services */}
+              <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {ALL_SERVICES_LIST.filter(srv => {
+                  const query = searchQuery.toLowerCase();
+                  return srv.labelGu.toLowerCase().includes(query) || srv.labelEn.toLowerCase().includes(query) || srv.type.toLowerCase().includes(query);
+                }).map((srv) => {
+                  const isEnabled = serviceStatuses[srv.type] !== false;
+                  const IconComp = srv.icon;
+                  const basePrice = SERVICE_PRICES[srv.type] || 0;
+                  const walletDiscountPct = discountsState?.walletDiscount || 0;
+                  const upiDiscountPct = discountsState?.upiDiscount || 0;
+                  const finalWalletPrice = Math.round(basePrice * (100 - walletDiscountPct) / 100);
+                  const finalUpiPrice = Math.round(basePrice * (100 - upiDiscountPct) / 100);
+
+                  const cleanGu = srv.labelGu.includes('(') ? srv.labelGu.split('(')[0].trim() : srv.labelGu;
+
+                  return (
+                    <div 
+                      key={srv.type}
+                      onClick={() => isEnabled && onAddNew(srv.type)}
+                      className={`bg-white rounded-3xl border border-slate-200 p-4 flex flex-col items-center justify-between text-center cursor-pointer transition-all active:scale-[0.97] hover:shadow-md hover:border-indigo-400 shadow-xs relative group overflow-hidden ${
+                        !isEnabled ? 'opacity-60 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      <div className="flex flex-col items-center w-full">
+                        {/* App Icon Circle Wrapper */}
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xs group-hover:scale-105 group-hover:rotate-2 transition-all duration-200 ${
+                          isEnabled ? srv.bgClass : 'bg-slate-400'
+                        }`}>
+                          <IconComp className="h-6 w-6 text-white" />
+                        </div>
+
+                        {/* Text labels */}
+                        <div className="mt-3.5 w-full">
+                          <h4 className="text-xs sm:text-xs font-black text-slate-850 tracking-tight leading-snug line-clamp-2 h-8 flex items-center justify-center">
+                            {language === 'gu' ? cleanGu : srv.labelEn}
+                          </h4>
+                          
+                          <p className="text-[9px] text-slate-400 font-extrabold font-mono tracking-wide uppercase truncate mt-0.5">
+                            {language === 'gu' ? srv.labelEn : cleanGu}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Pricing list or Status */}
+                      {isEnabled ? (
+                        <div className="w-full mt-3.5 pt-2 border-t border-slate-100 flex flex-col gap-1 text-[9px] font-bold text-slate-500">
+                          <div className="flex justify-between items-center px-0.5">
+                            <span className="text-slate-400">{language === 'gu' ? 'રોકડા' : 'Cash'}</span>
+                            <span className="font-extrabold text-slate-700">₹{basePrice}</span>
+                          </div>
+                          <div className="flex justify-between items-center px-0.5 text-emerald-600">
+                            <span>{language === 'gu' ? 'વોલેટ' : 'Wallet'}</span>
+                            <span className="font-extrabold text-emerald-700">₹{finalWalletPrice}</span>
+                          </div>
+                          <div className="flex justify-between items-center px-0.5 text-indigo-600">
+                            <span>UPI</span>
+                            <span className="font-extrabold text-indigo-700">₹{finalUpiPrice}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full mt-3.5 pt-2 border-t border-slate-100">
+                          <span className="text-[9px] font-black text-rose-500 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 inline-block">
+                            {language === 'gu' ? 'કામચલાઉ બંધ' : 'Closed'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+
+          {/* TAB 3: MY APPLICATIONS */}
+          {activeTab === 'YOUR_APPLICATIONS' && (
+            <div className="space-y-6">
+              <div className="space-y-1">
+                <h2 className="text-xl font-black text-slate-800 leading-tight">
+                  {language === 'gu' ? `કેમ છો, ${currentUser?.username || 'આવકાર્ય છે!'}` : `Hello, ${currentUser?.username || 'Welcome Back!'}`}
+                </h2>
+                <p className="text-xs text-slate-400 font-medium">
+                  {language === 'gu' ? 'તમારા એપ્લિકેશન ટ્રેકર અને વોલેટની સંપૂર્ણ વિગતો.' : 'Detailed real-time application tracker.'}
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-5 border border-indigo-500/20 shadow-xl grid grid-cols-3 gap-3 text-center divide-x divide-white/10">
+                <div>
+                  <span className="block text-xl font-black font-sans leading-none text-indigo-200">{totalAppsCount}</span>
+                  <span className="text-[9px] text-slate-300 font-bold uppercase tracking-wider font-mono mt-1.5 block leading-none">
+                    {language === 'gu' ? 'કુલ અરજીઓ' : 'Total Apps'}
+                  </span>
+                </div>
+                <div className="pl-1">
+                  <span className="block text-xl font-black font-sans leading-none text-amber-300">{inProgressAppsCount}</span>
+                  <span className="text-[9px] text-slate-300 font-bold uppercase tracking-wider font-mono mt-1.5 block leading-none">
+                    {language === 'gu' ? 'પ્રોસેસમાં' : 'In Progress'}
+                  </span>
+                </div>
+                <div className="pl-1">
+                  <span className="block text-xl font-black font-sans leading-none text-emerald-400">{completedAppsCount}</span>
+                  <span className="text-[9px] text-slate-300 font-bold uppercase tracking-wider font-mono mt-1.5 block leading-none">
+                    {language === 'gu' ? 'પૂર્ણ થયેલ' : 'Completed'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider font-mono">
+                    {language === 'gu' ? 'તાજેતરની અરજીઓ' : 'Recent Applications'}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold">
+                    <span>સેવા ફિલ્ટર:</span>
+                    <select
+                      value={formFilter}
+                      onChange={(e) => setFormFilter(e.target.value as any)}
+                      className="bg-white border border-slate-200 rounded-lg px-2 py-0.5 outline-hidden text-xs cursor-pointer font-bold text-indigo-700"
+                    >
+                      <option value="ALL">બધી (All)</option>
+                      {ALL_SERVICES_LIST.map(s => (
+                        <option key={s.type} value={s.type}>{s.labelEn}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {loading ? (
+                  <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+                    <div className="animate-spin inline-block h-6 w-6 border-3 border-indigo-500 border-t-transparent rounded-full" />
+                  </div>
+                ) : filteredApplications.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400">
+                    <FileText className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+                    <p className="text-xs font-black">{language === 'gu' ? 'કોઈ રેકોર્ડ મળ્યો નથી' : 'No applications found'}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {filteredApplications.map((app) => (
+                      <div 
+                        key={app.id}
+                        className="bg-white border border-slate-200/80 hover:border-indigo-300 rounded-2xl p-3.5 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[9px] font-bold font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/50">
+                              ID: {app.id}
+                            </span>
+                            <span className="text-[10px] font-black text-indigo-700 font-sans">
+                              {getFormName(app.formType)}
+                            </span>
+                          </div>
+                          
+                          <h4 className="text-xs sm:text-sm font-black text-slate-800 tracking-tight leading-snug mt-1 truncate group-hover:text-indigo-900 transition-colors">
+                            {app.applicantName || 'Applicant Name'}
+                          </h4>
+                          
+                          <p className="text-[10px] text-slate-400 font-medium font-sans mt-0.5">
+                            તારીખ: {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'} • મો: {app.mobileNo || 'N/A'}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 border-slate-50 pt-2 sm:pt-0 shrink-0">
+                          {getStatusPill(app.status)}
+
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => setViewingEntry(app)}
+                              className="p-1.5 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all cursor-pointer text-slate-500"
+                              title="અરજી જુઓ (View Application)"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            {(app.status === 'DRAFT' || app.status === 'CORRECTION_REQUIRED') && (
+                              <button
+                                onClick={() => onEdit(app)}
+                                className="p-1.5 hover:bg-amber-50 hover:text-amber-600 rounded-xl transition-all cursor-pointer text-slate-500"
+                                title="સુધારો કરો (Edit)"
+                              >
+                                <Edit3 className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* QUICK LINKS SECTION */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider font-mono">
+                  {language === 'gu' ? 'ઝડપી લિંક્સ' : 'Quick Actions'}
+                </h3>
+                <div className="grid grid-cols-4 gap-2.5 text-center">
+                  <button 
+                    onClick={() => setActiveTab('PROFILE')}
+                    className="p-3 bg-white border border-slate-200/80 hover:border-indigo-400 rounded-2xl transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col items-center group"
+                  >
+                    <div className="p-2.5 bg-blue-50 text-blue-600 rounded-full group-hover:scale-105 transition-all">
+                      <User className="h-5 w-5" />
+                    </div>
+                    <span className="text-[10px] font-black text-slate-700 leading-none mt-1.5 block">
+                      {language === 'gu' ? 'મારી પ્રોફાઇલ' : 'My Profile'}
+                    </span>
+                  </button>
+
+                  <button 
+                    onClick={() => setActiveTab('WALLET')}
+                    className="p-3 bg-white border border-slate-200/80 hover:border-indigo-400 rounded-2xl transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col items-center group"
+                  >
+                    <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-full group-hover:scale-105 transition-all">
+                      <Coins className="h-5 w-5 animate-pulse" />
+                    </div>
+                    <span className="text-[10px] font-black text-slate-700 leading-none mt-1.5 block">
+                      {language === 'gu' ? 'વોલેટ રીચાર્જ' : 'My Wallet'}
+                    </span>
+                  </button>
+
+                  <button 
+                    onClick={() => setActiveTab('ABOUT_DAY_INFOTECH')}
+                    className="p-3 bg-white border border-slate-200/80 hover:border-indigo-400 rounded-2xl transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col items-center group"
+                  >
+                    <div className="p-2.5 bg-indigo-50 text-indigo-650 rounded-full group-hover:scale-105 transition-all">
+                      <Info className="h-5 w-5" />
+                    </div>
+                    <span className="text-[10px] font-black text-slate-700 leading-none mt-1.5 block">
+                      {language === 'gu' ? 'અમારા વિશે' : 'About Us'}
+                    </span>
+                  </button>
+
+                  <button 
+                    onClick={() => window.open('https://wa.me/917600361873', '_blank')}
+                    className="p-3 bg-white border border-slate-200/80 hover:border-indigo-400 rounded-2xl transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col items-center group"
+                  >
+                    <div className="p-2.5 bg-rose-50 text-rose-600 rounded-full group-hover:scale-105 transition-all">
+                      <HelpCircle className="h-5 w-5" />
+                    </div>
+                    <span className="text-[10px] font-black text-slate-700 leading-none mt-1.5 block">
+                      {language === 'gu' ? 'હેલ્પ સેન્ટર' : 'Help Desk'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* HELP & SUPPORT BOX */}
+              <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4.5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="space-y-1 text-center sm:text-left">
+                  <h4 className="text-xs sm:text-sm font-black text-amber-950 flex items-center gap-1.5 justify-center sm:justify-start">
+                    <HandHeart className="h-4.5 w-4.5 text-amber-600" />
+                    {language === 'gu' ? 'મદદ જોઈતી હોય?' : 'Need Help?'}
+                  </h4>
+                  <p className="text-[11px] text-amber-800 font-medium">
+                    {language === 'gu' 
+                      ? 'અમારી લાઈવ સપોર્ટ ટીમ તમારા તમામ પ્રશ્નોના જવાબો આપવા માટે હાજર છે.' 
+                      : 'Our support team is ready to answer your questions and assist with applications.'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => window.open('https://wa.me/917600361873', '_blank')}
+                  className="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black text-xs rounded-xl active:scale-95 transition-all shadow-md shrink-0 cursor-pointer"
+                >
+                  {language === 'gu' ? 'સપોર્ટનો સંપર્ક કરો' : 'Contact Support'}
+                </button>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB 4: WALLET VIEW */}
+          {activeTab === 'WALLET' && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-4">
+                <button 
+                  onClick={() => setActiveTab('YOUR_APPLICATIONS')}
+                  className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors mr-1"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <h2 className="text-lg font-black text-slate-800 tracking-tight">
+                  {language === 'gu' ? 'મારું ડિજિટલ વોલેટ' : 'My Wallet Dashboard'}
+                </h2>
+              </div>
+              <WalletDashboard 
+                themeId={themeId} 
+                refreshTrigger={refreshTrigger} 
+                onRefreshStats={loadWalletStats}
+              />
+            </div>
+          )}
+
+          {/* TAB 5: PROFILE VIEW */}
+          {activeTab === 'PROFILE' && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-4">
+                <button 
+                  onClick={() => setActiveTab('YOUR_APPLICATIONS')}
+                  className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors mr-1"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <h2 className="text-lg font-black text-slate-800 tracking-tight">
+                  {language === 'gu' ? 'પ્રોફાઇલ એડિટ કરો' : 'My Profile'}
+                </h2>
+              </div>
+              <UserProfileCustomizer 
+                currentUser={currentUser}
+                onUpdateUser={(updated) => {
+                  setCurrentUser(updated);
+                  if (onUpdateUser) {
+                    onUpdateUser(updated);
+                  }
+                }}
+                showToast={(msg, type) => showToast(msg, type || 'success')}
+              />
+            </div>
+          )}
+
+          {/* TAB 6: ABOUT VIEW */}
+          {(activeTab === 'ABOUT_DAY_INFOTECH' || activeTab === 'ABOUT') && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-4">
+                <button 
+                  onClick={() => setActiveTab('YOUR_APPLICATIONS')}
+                  className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors mr-1"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <h2 className="text-lg font-black text-slate-800 tracking-tight font-sans">
+                  About DAY INFOTECH
+                </h2>
+              </div>
+              <AboutDayInfotech />
+            </div>
+          )}
+
+        </div>
+
+        {/* PERSISTENT FLOATING BOTTOM NAVIGATION BAR */}
+        <nav className="no-print fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] px-4 py-2.5 flex items-center justify-around">
+          {[
+            { id: 'DASHBOARD', labelGu: 'હોમ', labelEn: 'Home', icon: Home },
+            { id: 'APPLY_SERVICE', labelGu: 'સેવાઓ', labelEn: 'Services', icon: Briefcase },
+            { id: 'YOUR_APPLICATIONS', labelGu: 'અરજીઓ', labelEn: 'My Apps', icon: FileText },
+            { id: 'PROFILE', labelGu: 'પ્રોફાઇલ', labelEn: 'Profile', icon: User }
+          ].map((tabItem) => {
+            const IconComp = tabItem.icon;
+            const isTabActive = activeTab === tabItem.id || (tabItem.id === 'YOUR_APPLICATIONS' && (activeTab === 'WALLET' || activeTab === 'ABOUT_DAY_INFOTECH'));
+            return (
+              <button
+                key={tabItem.id}
+                onClick={() => {
+                  setActiveTab(tabItem.id as any);
+                  setViewingEntry(null);
+                }}
+                className={`flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-2xl transition-all cursor-pointer relative ${
+                  isTabActive 
+                    ? 'text-[#0F4CFF] font-black' 
+                    : 'text-slate-400 hover:text-slate-600 font-bold'
+                }`}
+              >
+                {isTabActive && (
+                  <motion.span 
+                    layoutId="activeTabIndicator"
+                    className="absolute -top-1 w-1.5 h-1.5 bg-[#FF7A00] rounded-full"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <IconComp className={`h-5 w-5 transition-transform duration-200 ${isTabActive ? 'scale-110 text-[#0F4CFF]' : 'scale-100'}`} />
+                <span className="text-[9px] uppercase tracking-wider font-mono">
+                  {language === 'gu' ? tabItem.labelGu : tabItem.labelEn}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+        
+      </div>
+    );
+  };
+
+  if (!isOwner()) {
+    return renderApplicantMode();
+  }
 
   return (
     <div className="space-y-4 pb-2">
@@ -3007,34 +4123,43 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
                     </div>
                   )}
 
-                  <div className="relative border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-4 transition-all bg-slate-50/30 flex flex-col items-center justify-center space-y-1.5 text-center group cursor-pointer">
+                   <div className="relative border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-4 transition-all bg-slate-50/30 flex flex-col items-center justify-center space-y-1.5 text-center group cursor-pointer">
                     <input
                       type="file"
                       accept=".apk"
                       disabled={isUploadingApk}
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          if (file.size > 48 * 1024 * 1024) {
-                            showToast(language === 'gu' ? 'તમે ૪૮ MB થી મોટી ફાઇલ પસંદ કરી છે!' : 'You selected a file larger than 48MB!', 'error');
+                          if (file.size > 150 * 1024 * 1024) {
+                            showToast(language === 'gu' ? 'તમે ૧૫૦ MB થી મોટી ફાઇલ પસંદ કરી છે!' : 'You selected a file larger than 150MB!', 'error');
                             return;
                           }
                           setApkFileNameInput(file.name);
                           setIsUploadingApk(true);
+                          setApkUploadProgress(0);
                           
-                          const reader = new FileReader();
-                          reader.onload = async (event) => {
+                          try {
+                            // Primary Attempt: Cloud Firestore/Storage direct global CDN upload
+                            const cloudDownloadUrl = await uploadApkToStorage(file, (progress) => {
+                              setApkUploadProgress(progress);
+                            });
+                            
+                            setApkFileInput(cloudDownloadUrl);
+                            setApkUrlInput(cloudDownloadUrl);
+                            setApkFileNameInput(file.name);
+                            showToast(language === 'gu' ? 'APK ફાઇલ ક્લાઉડ સ્ટોરેજ પર સફળતાપૂર્વક અપલોડ થઈ ગઈ!' : 'APK file uploaded to Cloud Storage successfully!', 'success');
+                          } catch (cloudErr) {
+                            console.warn('Primary Cloud Storage upload failed. Gracefully falling back to server disk storage:', cloudErr);
+                            
+                            // Secondary Attempt Fallback: Server local storage API
                             try {
-                              const result = event.target?.result as string;
+                              const formData = new FormData();
+                              formData.append('file', file);
+
                               const response = await fetch('/api/upload-apk', {
                                 method: 'POST',
-                                headers: {
-                                  'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                  fileData: result,
-                                  fileName: file.name
-                                })
+                                body: formData
                               });
                               
                               if (!response.ok) {
@@ -3053,11 +4178,11 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
                             } catch (err) {
                               console.error('APK upload error:', err);
                               showToast(language === 'gu' ? 'APK અપલોડ કરવામાં ભૂલ આવી! કૃપા કરીને ફરીથી પ્રયાસ કરો.' : 'Failed to upload APK! Please try again.', 'error');
-                            } finally {
-                              setIsUploadingApk(false);
                             }
-                          };
-                          reader.readAsDataURL(file);
+                          } finally {
+                            setIsUploadingApk(false);
+                            setApkUploadProgress(100);
+                          }
                         }
                       }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
@@ -3066,7 +4191,15 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
                       <div className="flex flex-col items-center justify-center space-y-2">
                         <span className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
                         <div className="text-xs font-black text-indigo-700 animate-pulse">
-                          {language === 'gu' ? 'સર્વર પર અપલોડ થઈ રહ્યું છે... (કૃપા કરીને રાહ જુઓ)' : 'Uploading to server... (Please wait)'}
+                          {language === 'gu' 
+                            ? `અપલોડ થઈ રહ્યું છે... ${apkUploadProgress}% (કૃપા કરીને રાહ જુઓ)` 
+                            : `Uploading... ${apkUploadProgress}% (Please wait)`}
+                        </div>
+                        <div className="w-48 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                          <div 
+                            className="bg-indigo-600 h-full transition-all duration-300" 
+                            style={{ width: `${apkUploadProgress}%` }}
+                          />
                         </div>
                       </div>
                     ) : (
@@ -3076,11 +4209,48 @@ export const ApplicationTracker: React.FC<ApplicationTrackerProps> = ({
                           {apkFileNameInput ? apkFileNameInput : (language === 'gu' ? 'APK ફાઇલ પસંદ કરો અથવા ડ્રેગ કરો' : 'Select or Drag APK file')}
                         </div>
                         <div className="text-[9px] text-slate-400 font-bold font-mono">
-                          મહત્તમ ફાઇલ સાઇઝ મર્યાદા: ૪૮ MB (ઝડપી અપલોડ માટે ઑપ્ટિમાઇઝ કરેલ)
+                          મહત્તમ ફાઇલ સાઇઝ મર્યાદા: ૧૫૦ MB (ઝડપી અપલોડ માટે ઑપ્ટિમાઇઝ કરેલ)
                         </div>
                       </>
                     )}
                   </div>
+                </div>
+
+                {/* Short Download URL Card */}
+                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                      <Globe className="h-4 w-4 text-indigo-600" />
+                      શોર્ટ ડાઉનલોડ લિંક (Premium Short Download Link) :
+                    </span>
+                    <span className="text-[9px] font-black bg-indigo-600 text-white rounded-full px-2.5 py-0.5 animate-pulse">
+                      લેટેસ્ટ APK માટે
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={typeof window !== 'undefined' ? `${window.location.origin}/apk` : '/apk'}
+                      className="flex-1 bg-white border border-slate-200 rounded-xl p-2.5 text-xs font-mono font-bold text-indigo-800 select-all focus:outline-hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof window !== 'undefined') {
+                          navigator.clipboard.writeText(`${window.location.origin}/apk`);
+                          showToast(language === 'gu' ? 'લિંક કોપી થઈ ગઈ છે!' : 'Link copied to clipboard!', 'success');
+                        }
+                      }}
+                      className="px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl flex items-center gap-1 active:scale-95 transition-all cursor-pointer shadow-sm shrink-0"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      <span>કોપી (Copy)</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                    તમારા કસ્ટમર્સ અથવા ગ્રૂપમાં ફોર્મ મોકલવા માટે ફક્ત આ એક નાની લિંક શેર કરો! આ લિંક પર ક્લિક કરવાથી યુઝરને સીધું જ તમારું અપલોડ કરેલું લેટેસ્ટ APK ફાઈલ ડાઉનલોડ થશે.
+                  </p>
                 </div>
 
                 <div className="flex gap-2 pt-2">

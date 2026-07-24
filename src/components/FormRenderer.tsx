@@ -348,6 +348,8 @@ export const FormRenderer: React.FC<FormRendererProps> = ({
           const statuses = await getServiceStatuses();
           if (statuses[formType] === false) {
             setIsServiceClosed(true);
+          } else {
+            setIsServiceClosed(false);
           }
         } catch (e) {
           console.error('Error checking service status:', e);
